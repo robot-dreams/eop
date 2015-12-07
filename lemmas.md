@@ -89,3 +89,31 @@ Combining the two inequalities, it follows that c is exactly d1 + d2, and the pr
     0 <= distance(x, y, f) < c
 
 **Proof.** If x = y, then distance(x, y, f) = 0, which satisfies the conclusion of the lemma.  Otherwise, by Lemma 2.5, distance(y, x, f) is defined, and since x != f^0(y) = y, distance(y, x, f) > 0, so distance(x, y, f) >= c would contradict Lemma 2.6.
+
+**Lemma 2.H** Suppose the orbit of x under the transformation f is circular or p-shaped.  Then there exists an integer n such that f^n(x) = f^{2n+1}(x).
+**Proof.** Let k be the smallest integer such that f^k(x) is cyclic (such a k exists by the assumption that f is circular or p-shaped and the well-ordering property of the integers).  Let d be the distance from f^{2k+1}(x) to f^k(x) (such a d exists by Lemma 2.5).  Then by repeated application of Lemmas 2.A and 2.B,
+
+    f^{2(k+d)+1}(x) = f^d(f^d(f^{2k+1}(x)))
+                    = f^d(f^k(x))
+                    = f^{k+d}(x)
+
+Taking n = k + d gives the desired conclusion.
+
+**Lemma 2.I** Let y be a cyclic element of the orbit O of x under the transformation f, and let k be the smallest positive integer such that f^k(y) = y.  Then k is the cycle size of O.
+**Proof.** We will begin by showing that every cyclic element of O appears among y, f(y), ..., f^{k-1}(y).  Let z be any cyclic element of O.  Then by Lemma 2.5, d = distance(y, z) is defined.  If d < k, then z = f^d(y) is an element of f(y), ..., f^{k-1}(y)  If d >= k, use the division algorithm to write d = qk + r, where 0 <= r < k; then Lemma 2.A and Lemma 2.B show that z = f^d(y) = f^r(y), and z is again an element of y, f(y), ..., f^{k-1}(y).
+
+Next, we will show that the elements y, f(y), ..., f^{k-1}(y) are distinct.  Suppose that f^i(y) = f^j(y) for some 0 <= i < j <= k - 1; then Lemma 2.A and Lemma 2.B show that f^{i+k-j} = f^{k-j}(f^i(y)) = f^{k-j}(f^j(y)) = f^k(y) = y, which contradicts that k is the smallest positive integer such that f^k(y) = y.
+
+Finally, by Lemma 2.F, each of the elements y, f(y), ..., f^{k-1}(y) are cyclic.  We conclude that O has exactly k cyclic elements.
+
+**Lemma 2.J** Let O be the orbit of x under the transformation f, let c be the cycle size of O, let h be the handle size of O, and let y = f^n(x) be the collision point of f and x.  Use the division algorithm to write h = mc + r, where 0 <= r < c; then the distance from y to the connection point of O is given by r + 1.
+**Proof.** Use the division algorithm to write n + 1 = qc + r0, where 0 <= r0 < c.  Since f^n(x) = f^{2n+1}(x), we must have r0 = 0 (otherwise, Lemma 2.I would imply that the cycle size of O is less than c, which is a contradiction).
+
+Next, note that n >= h (since f^n(x) is cyclic, Lemma 2.F implies that f^m(x) is cyclic for every m > n, so n < h would imply that the handle size of O is less than h, which is a contradiction).  Let d be the distance from f^{2h+1} to the cyclic element f^h(x), which exists by Lemma 2.5.  By the proof of Lemma 2.H, f^{2(h+d)+1}(x) = f^{h+d}(x); by Lemma 2.7, d < c, and by the proof of Lemma 2.I, the elements f^h(x), f^{h+1}(x), ..., f^{h+d}(x) are distinct; thus d is the smallest non-negative integer for which f^{h+d}(x) = f^{2(h+d)+1}(x), and we have n = h + d.  Now use the division algorithm to write h = mc + r, where 0 <= r < c; then by combining the equations n + 1 = qc, h = mc + r, and n = h + d, we have:
+
+    n + 1 = qc
+    h + d + 1 = qc
+    mc + r + d + 1 = qc
+    d + 1 = (q-m)c - r
+
+Since 0 <= d < c and 0 <= r < c, we must have q - m = 1 (q - m < 1 would imply that d is negative, and q - m > 1 would imply that d >= c).  Thus d = c - r - 1.  Furthermore, d < c and the proof of Lemma 2.I implies that f^h(x), f^{h+1}(x), ..., f^{h+d}(x) are all distinct, and that d is the distance from the connection point f^h(x) to the collision point f^{h+d}(x).  Finally, by Lemma 2.6, we conclude that c - d = r + 1 is the distance from the collision point f^{h+d}(x) = f^n(x) to the connection point f^h(x).

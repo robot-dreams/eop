@@ -200,3 +200,7 @@ The **connection point** is the first cyclic element (i.e. f^n(x) where n is the
 The **orbit size (o)** of an orbit is the number of distinct elements in the orbit
 The **handle size (h)** of an orbit is the number of elements in the orbit handle
 The **cycle size (c)** of an orbit is the number of elements in the orbit cycle
+
+### 2.3
+
+The **collision point** of a transformation f and a starting point x is the unique y such that y = f^n(x) = f^{2n+1}(x), and n >= 0 is the smallest integer satisfying this condition
