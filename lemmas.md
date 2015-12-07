@@ -114,6 +114,18 @@ Next, note that n >= h (since f^n(x) is cyclic, Lemma 2.F implies that f^m(x) is
     n + 1 = qc
     h + d + 1 = qc
     mc + r + d + 1 = qc
-    d + 1 = (q-m)c - r
+    d = (q-m)c - r - 1
 
 Since 0 <= d < c and 0 <= r < c, we must have q - m = 1 (q - m < 1 would imply that d is negative, and q - m > 1 would imply that d >= c).  Thus d = c - r - 1.  Furthermore, d < c and the proof of Lemma 2.I implies that f^h(x), f^{h+1}(x), ..., f^{h+d}(x) are all distinct, and that d is the distance from the connection point f^h(x) to the collision point f^{h+d}(x).  Finally, by Lemma 2.6, we conclude that c - d = r + 1 is the distance from the collision point f^{h+d}(x) = f^n(x) to the connection point f^h(x).
+
+**Corollary 2.K** Let O be the orbit of x under the transformation f, and let y = f^n(x) be the collision point of f and x.  Then f(y) = x if and only if O is circular.
+**Proof.** If f(y) = x, then Lemmas 2.A and 2.B imply f(f^n(x)) = f^{n+1}(x) = x; thus x is cyclic, and O is circular.  Conversely if O is circular, then h = 0 (h is the handle size of O), so r = 0 in the statement of Lemma 2.J, and by the conclusion of the lemma, the distance from y to the connection point is 1.  Since O is circular, x is the connection point of O; thus f(y) = x, and the proof is complete.
+
+**Corollary 2.L** If c is the cycle size of O, then for any cyclic element y we have y = f^c(y).
+**Proof** If y = f(y) then Lemma 2.I implies that c = 1, and there is nothing more to prove.  Otherwise, y and f(y) are distinct cyclic elements of O.  Let d be the distance from f(y) to y; then by Lemma 2.6, 1 + d = c, so we have f^c(y) = f^{d+1}(y) = f^d(f(y)) = y.
+
+**Lemma 2.M** Let O be the orbit of x under the transformation f, let y = f^n(x) be the collision point of f and x, and let h be the handle size of O.  Then h is the smallest integer such that f^h(x) = f^h(f(y)).
+**Proof.** If f^i(x) were cyclic for any i < h, then Lemma 2.F would imply that h <= i, which contradicts i < h; thus none of x, f(x), ..., f^{h-1}(x) are cyclic.  Since y is cyclic, by Lemma 2.F so are f(y), ..., f^{h-1}(f(y)).  It follows that for any i < h, we cannot have f^i(x) = f^i(f(y)) because the expression on the left is not cyclic but the expression on the right is cyclic.  It remains to show that f^h(x) = f^h(f(y)).  Write h = mc + r where c is the cycle size of O.  By Lemma 2.J, the distance from y to the connection point f^h(x) is r + 1, and by Corollary 2.L, f^c(f(y)) = f(y); thus by Lemmas 2.A and 2.B, f^h(f(y)) = f^{r+mc}(f(y)) = f^r(f(y)) = f^{r+1}(y) = f^h(x), and the proof is complete.
+
+**Lemma 2.8** If the orbits O1 and O2 of the elements x1 and x2 under the transformation f intersect, then O1 and O2 have the same cyclic elements.
+**Proof.** Let z be the intersection point of O1 and O2.  Given an arbitrary cyclic element y1 of O1, Lemma 2.5 shows that y1 is reachable from z; thus y1 is reachable from x2.  Similarly, given an arbitrary cyclic element y2 of O2, Lemma 2.5 shows that y2 is reachable from z; thus y2 is reachable from x1.  It follows that set of cyclic elements of O1 is equal to the set of cyclic elements of O2.

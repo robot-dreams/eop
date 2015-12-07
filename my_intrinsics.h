@@ -3,4 +3,6 @@
 
 #define requires(...)
 
+#define pointer(T) T*
+
 #endif
