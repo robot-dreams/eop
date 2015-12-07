@@ -1,12 +1,15 @@
 ## Loose Ends
 
 Project 1.1
+Project 2.1
 
 ## Questions
 
 What would it look like for a programming language to distinguish value types from object types?
 How can we tell when a given finite set of procedures actually forms a computational basis for a type?
 What does it mean to have a concept defined on more than one type?  What's an example of such a concept?
+How would you formally define the "action" concept?
+When would a transformation be more efficient than an action?
 
 ## Definitions
 
@@ -204,3 +207,7 @@ The **cycle size (c)** of an orbit is the number of elements in the orbit cycle
 ### 2.3
 
 The **collision point** of a transformation f and a starting point x is the unique y such that y = f^n(x) = f^{2n+1}(x), and n >= 0 is the smallest integer satisfying this condition
+
+### 2.5
+
+An **action** is a procedure that changes the state of an object

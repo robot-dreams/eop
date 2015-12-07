@@ -16,6 +16,11 @@ struct input_type;
 #define InputType(T, i) typename input_type< T, i >::type
 
 template<typename T>
+struct input_type<void (*)(T&), 0> {
+    typedef T type;
+};
+
+template<typename T>
 struct input_type<T (*)(T), 0> {
     typedef T type;
 };
@@ -42,6 +47,11 @@ struct distance_type<int> {
 
 template<>
 struct distance_type<unsigned long> {
+    typedef unsigned long type;
+};
+
+template<typename T>
+struct distance_type<T*> {
     typedef unsigned long type;
 };
 
