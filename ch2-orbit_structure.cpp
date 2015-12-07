@@ -220,6 +220,36 @@ pointer(Domain(F)) convergent_point_guarded(Domain(F) x0, Domain(F) x1, F f, P p
     return new Domain(F)(x0);
 }
 
+template<typename F, typename P>
+    requires(Transformation(F) && UnaryPredicate(P) &&
+        Domain(F) == Domain(P))
+triple<DistanceType(F), DistanceType(F), Domain(F)>
+orbit_structure(const Domain(F)& x, F f, P p)
+{
+    // Preconditions:
+    // p(x) if and only if f(x) is defined
+    typedef DistanceType(F) N;
+    Domain(F) y = connection_point(x, f, p);
+    N m = distance(x, y, f);
+    N n(0);
+    if (p(y)) n = distance(f(y), y, f);
+    // Terminating: m = h - 1, n = 0
+    // Otherwise: m = h, n = c - 1
+    return triple<N, N, Domain(F)>(m, n, y);
+}
+
+template<typename F>
+    requires(Transformation(F))
+triple<DistanceType(F), DistanceType(F), Domain(F)>
+orbit_structure_nonterminating_orbit(const Domain(F)& x, F f)
+{
+    typedef DistanceType(F) N;
+    Domain(F) y = connection_point_nonterminating_orbit(x, f);
+    return triple<N, N, Domain(F)>(distance(x, y, f),
+                                   distance(f(y), y, f),
+                                   y);
+}
+
 template<int modulus>
 int mod_increment(int x)
 {
@@ -238,10 +268,16 @@ bool mod_valid(int x)
     return x >= 0 && x < modulus;
 }
 
+bool rand_valid(unsigned long x)
+{
+    return x < (1L << 32);
+}
+
+unsigned long rand_next(unsigned long x)
+{
+    return (69069L * x + 1L) % (1L << 32);
+}
+
 int main() {
-    cout << boolalpha;
-    int* result = convergent_point_guarded(3, 2, mod_square<13>, mod_valid<13>);
-    if (result != NULL) {
-        cout << *result << endl;
-    }
+    cout << orbit_structure(65535, rand_next, rand_valid) << endl;
 }
