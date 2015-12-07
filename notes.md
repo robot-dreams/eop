@@ -167,3 +167,36 @@ A procedure is **partial** if its definition space is a subset of the direct pro
 A procedure is **total** if its definition space is equal to the direct product of the types of its inputs (we consider a total function to be partial)
 A procedure is **nontotal** if it is partial but not total
 A **definition-space predicate** for a partial procedure f is a [total] predicate p, with the same input types as f, that returns true if and only if the inputs are within the definition space of f
+
+    Transformation(F) :=
+        Operation(F)
+      ^ UnaryFunction(F)
+      ^ DistanceType: Transformation -> Integer
+
+When f is a transformation, we define its powers as follows:
+
+    f^n(x) = | x              if n = 0
+             | f^{n-1}(f(x))  if n > 0
+
+### 2.2
+
+y is **reachable** from x under a transformation f if for some n >= 0, y = f^n(x)
+x is **cyclic** under f if for some n >= 1, x = f^n(x)
+x is **terminal** under f if x is not in the definition space of f
+The **orbit** of x under a transformation f is the set of all elements reachable from x under f
+If y is reachable from x under f, the **distance** from x to y is the smallest non-negative integer n such that f^n(x) = y
+Given a transformation type F, DistanceType(F) is an integer type large enough to encode the distance between any two elements of Domain(F)
+An orbit of x under a transformation is:
+  **infinite**      if it has no cyclic or terminal elements (otherwise, it is **finite**)
+  **terminating**   if it has a terminal element
+  **circular**      if x is cyclic
+  **p-shaped**      if x is not cyclic, but its orbit contains a cyclic element
+The **orbit cycle** is the set of cyclic elements in the orbit (empty for infinite orbits and terminating orbits)
+The **orbit handle** is the complement of the orbit cycle with respect to the orbit (empty for circular orbits)
+The **connection point** is the first cyclic element (i.e. f^n(x) where n is the smallest non-negative integer such that f^n(x) is cyclic under f)
+  The connection point of a circular orbit is the first element
+  The connection point of a p-shaped orbit is the first element after the handle
+  Infinite orbits and terminating orbits do not have a connection point
+The **orbit size (o)** of an orbit is the number of distinct elements in the orbit
+The **handle size (h)** of an orbit is the number of elements in the orbit handle
+The **cycle size (c)** of an orbit is the number of elements in the orbit cycle

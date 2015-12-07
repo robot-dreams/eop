@@ -25,4 +25,17 @@ struct input_type<T (*)(T, T), 0> {
 
 #define Domain(T) InputType(T, 0)
 
+// DistanceType: Transformation -> Integer
+
+template<typename F>
+    requires(Transformation(F))
+struct distance_type;
+
+template<>
+struct distance_type<int> {
+    typedef unsigned int type;
+};
+
+#define DistanceType(T) typename distance_type< Domain(T) >::type
+
 #endif
