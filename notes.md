@@ -1,9 +1,10 @@
 ## Loose Ends
 
-Project 1.1
-Project 2.1
-3.1: For an associative operation, all possible parentheses groupings are equivalent
+Project 1.1 (page 14)
+Project 2.1 (page 29)
+3.1: Prove that for an associative operation, all possible parentheses groupings are equivalent
 Footnote 3.3 (page 34)
+*Project 3.1 (page 42)
 
 ## Questions
 

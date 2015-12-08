@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "my_intrinsics.h"
 #include "my_type_functions.h"
+#include "my_integer.h"
 
 using namespace std;
 
@@ -188,6 +189,59 @@ Domain(Op) power_3(Domain(Op) a, I n, Op op)
     return power_accumulate_positive_0(a, op(a, a), n, op);
 }
 
+template<typename I, typename Op>
+    requires(Integer(I) && BinaryOperation(Op))
+Domain(Op) power_accumulate_positive(Domain(Op) r, Domain(Op) a, I n, Op op)
+{
+    // Preconditions:
+    //     associative(op)
+    //     positive(n)
+    while (true) {
+        if (odd(n)) {
+            r = op(r, a);
+            if (one(n)) return r;
+        }
+        a = op(a, a);
+        n = half_nonnegative(n);
+    }
+}
+
+template<typename I, typename Op>
+    requires(Integer(I) && BinaryOperation(Op))
+Domain(Op) power_accumulate(Domain(Op) r, Domain(Op) a, I n, Op op)
+{
+    // Preconditions:
+    //     associative(op)
+    //     !negative(n)
+    if (zero(n)) return r;
+    return power_accumulate_positive(r, a, n, op);
+}
+
+template<typename I, typename Op>
+    requires(Integer(I) && BinaryOperation(Op))
+Domain(Op) power(Domain(Op) a, I n, Op op)
+{
+    // Preconditions:
+    //     associative(op)
+    //     positive(n)
+    while (even(n)) {
+        a = op(a, a);
+        n = half_nonnegative(n);
+        // Since n is even, setting a <- a^2 and n <- n / 2
+        // does not change a^n
+    }
+    // n = 2k + 1 after the loop terminates
+    // The next line sets n <- k
+    n = half_nonnegative(n);
+    // If k = 0, then n = 1; thus a^n = a^1 = a
+    if (zero(n)) return a;
+    // Otherwise, k > 0, and
+    //     a^n = a^{2k+1}
+    //         = a * a^{2k}
+    //         = a * (a^2)^k
+    return power_accumulate_positive(a, op(a, a), n, op);
+}
+
 int addition(int a, int b) {
     return a + b;
 }
@@ -240,5 +294,6 @@ int main() {
     test_accumulate(power_accumulate_5, "power_accumulate_5");
     test(power_2, "power_2");
     test(power_3, "power_3");
+    test(power, "power");
 }
 
