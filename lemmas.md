@@ -227,3 +227,13 @@ from which we conclude that either f o (g o h) and (f o g) o h are both undefine
 
 **Lemma 4.6** A weak ordering is strict.
 **Proof.** Since e(a, a) holds for any equivalence relation, having r(a, a) would violate weak-trichotomy.
+
+**Lemma 4.7** select_2_5 performs six comparisons.
+**Proof.** By direct count:
+
+    select_2_5 performs one comparison and then calls select_2_5_ab
+    select_2_5_ab performs one comparison and then calls select_2_5_ab_cd
+    select_2_5_ab_cd performs one comparison and then calls select_1_4_ab
+    select_1_4_ab performs one comparison and then calls select_1_4_ab_cd
+    select_1_4_ab_cd performs one comparison and then calls select_0_2
+    select_0_2 performs one comparison and then returns

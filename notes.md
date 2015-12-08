@@ -17,6 +17,7 @@ How would you formally define the "action" concept?
 When would a transformation be more efficient than an action?
 Footnote 3.6 (page 42): How would you write such an identity_element function?
 What's an example of an optimization that can be made for non-regular functions / types?
+Is the difficulty of order-selection with order 5 somehow related to the insolubility of quintics?
 
 ## Definitions
 
