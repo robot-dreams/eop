@@ -13,6 +13,7 @@ How can we tell when a given finite set of procedures actually forms a computati
 What does it mean to have a concept defined on more than one type?  What's an example of such a concept?
 How would you formally define the "action" concept?
 When would a transformation be more efficient than an action?
+Footnote 3.6 (page 42): How would you write such an identity_element function?
 
 ## Definitions
 
@@ -239,3 +240,14 @@ which shows that x^{n*(m-n)} is idempotent.
 
 A recursive procedure is in **tail-recursive form** if the procedure's execution ends with the recursive call
 A recursive procedure is in **strict tail-recursive form** if all the tail-recursive calls are done with the formal parameters of the procedure being the corresponding arguments
+Using an operator symbol or procedure name with the same semantics on different types is called **overloading**
+  In this case, we say that the operator symbol or procedure name is **overloaded** on the type
+A **linear recurrence function of order k** is a function f such that
+
+    f(y_0, ..., y_{k-1}) = \Sum_{i=0}^{k-1} a_i y_i, where a_0, a_{k-1} != 0
+
+A sequence is a **linear recurrence of order k** if there is a linear recurrence function of order k--say f--and
+
+    (forall n >= k) x_n = f(x_{n-1}, ..., x_{n-k})
+
+Changing the state of an object by combining it with another object via a binary operation defines an **accumulation procedure** on the object

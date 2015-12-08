@@ -15,10 +15,14 @@ struct input_type;
 
 #define InputType(T, i) typename input_type< T, i >::type
 
+// action
+
 template<typename T>
 struct input_type<void (*)(T&), 0> {
     typedef T type;
 };
+
+// unary operation
 
 template<typename T>
 struct input_type<T (*)(T), 0> {
@@ -26,9 +30,37 @@ struct input_type<T (*)(T), 0> {
 };
 
 template<typename T>
+struct input_type<T (*)(const T&), 0> {
+    typedef T type;
+};
+
+// left binary accumulation
+
+template<typename T>
+struct input_type<void (*)(T&, const T&), 0> {
+    typedef T type;
+};
+
+// right binary accumulation
+
+template<typename T>
+struct input_type<void (*)(const T&, T&), 0> {
+    typedef T type;
+};
+
+// binary operation
+
+template<typename T>
 struct input_type<T (*)(T, T), 0> {
     typedef T type;
 };
+
+template<typename T>
+struct input_type<T (*)(const T&, const T&), 0> {
+    typedef T type;
+};
+
+// unary predicate
 
 template<typename T>
 struct input_type<bool (*)(T), 0> {
@@ -36,7 +68,19 @@ struct input_type<bool (*)(T), 0> {
 };
 
 template<typename T>
+struct input_type<bool (*)(const T&), 0> {
+    typedef T type;
+};
+
+// binary predicate
+
+template<typename T>
 struct input_type<bool (*)(T, T), 0> {
+    typedef T type;
+};
+
+template<typename T>
+struct input_type<bool (*)(const T&, const T&), 0> {
     typedef T type;
 };
 
