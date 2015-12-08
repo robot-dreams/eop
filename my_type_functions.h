@@ -30,9 +30,46 @@ struct input_type<T (*)(T, T), 0> {
     typedef T type;
 };
 
+template<typename T>
+struct input_type<bool (*)(T), 0> {
+    typedef T type;
+};
+
+template<typename T>
+struct input_type<bool (*)(T, T), 0> {
+    typedef T type;
+};
+
 // Domain: HomogeneousFunction -> Regular
 
 #define Domain(T) InputType(T, 0)
+
+// Codomain: FunctionalProcedure -> Regular
+
+template<typename T>
+struct codomain_type;
+
+template<typename T>
+struct codomain_type<T (*)(T)> {
+    typedef T type;
+};
+
+template<typename T>
+struct codomain_type<T (*)(T, T)> {
+    typedef T type;
+};
+
+template<typename T>
+struct codomain_type<bool (*)(T)> {
+    typedef bool type;
+};
+
+template<typename T>
+struct codomain_type<bool (*)(T, T)> {
+    typedef bool type;
+};
+
+#define Codomain(T) typename codomain_type< T >::type
 
 // DistanceType: Transformation -> Integer
 
