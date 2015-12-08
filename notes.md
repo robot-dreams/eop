@@ -2,6 +2,8 @@
 
 Project 1.1
 Project 2.1
+3.1: For an associative operation, all possible parentheses groupings are equivalent
+Footnote 3.3 (page 34)
 
 ## Questions
 
@@ -211,3 +213,28 @@ The **collision point** of a transformation f and a starting point x is the uniq
 ### 2.5
 
 An **action** is a procedure that changes the state of an object
+
+### 3.1
+
+    BinaryOperation(Op) :=
+        Operation(Op)
+      ^ Arity(Op) = 2
+
+If f and g are transformations on the same domain, their **composition**, g o f, is a transformation mapping x to g(f(x))
+An element x has **finite order** under an associative operation if there exist integers 0 < n < m such that x^n = x^m
+An element x is an **idempotent element** under an associative operation if x = x^2
+
+**Theorem 3.1.** An element of finite order has an idempotent power.
+**Proof.** Suppose x has finite order, i.e. x^n = x^m for integers 0 < n < m.  Let f be the transformation that maps y to xy; then the orbit of x under f contains the cyclic element x^n (since f^{m-n}(x^n) = x^{m-n} * x^n = x^m = x^n).  Then
+
+    x^{n*(m-n)}^2 = x^{n*(m-n)} * x^n * x^{n*(m-n-1)}
+                  = f^{n*(m-n)}(x^n) * x^{n*(m-n-1)}
+                  = x^n * x^{n*(m-n-1)}
+                  = x^{n*(m-n)}
+
+which shows that x^{n*(m-n)} is idempotent.
+
+**Proof.** (EoP) Suppose x has finite order, and let f be the transformation that maps z to xz.  Then the orbit of x under f has a cyclic element.  Let y = f^n(x) be the collision point of f and x; then f^n(x) = f^{2n+1}(x), and by the definition of f, x^{n+1} = x^{2n+2}, which shows that x^{n+1} is idempotent.
+
+A recursive procedure is in **tail-recursive form** if the procedure's execution ends with the recursive call
+A recursive procedure is in **strict tail-recursive form** if all the tail-recursive calls are done with the formal parameters of the procedure being the corresponding arguments

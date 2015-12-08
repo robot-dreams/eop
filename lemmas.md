@@ -129,3 +129,83 @@ Since 0 <= d < c and 0 <= r < c, we must have q - m = 1 (q - m < 1 would imply t
 
 **Lemma 2.8** If the orbits O1 and O2 of the elements x1 and x2 under the transformation f intersect, then O1 and O2 have the same cyclic elements.
 **Proof.** Let z be the intersection point of O1 and O2.  Given an arbitrary cyclic element y1 of O1, Lemma 2.5 shows that y1 is reachable from z; thus y1 is reachable from x2.  Similarly, given an arbitrary cyclic element y2 of O2, Lemma 2.5 shows that y2 is reachable from z; thus y2 is reachable from x1.  It follows that set of cyclic elements of O1 is equal to the set of cyclic elements of O2.
+
+**Lemma 3.1** a^m a^n = a^n a^m = a^{n+m} (powers of the same element commute).
+**Proof.** We consider only positive powers m and n, and we will proceed by induction on m + n.  If m + n = 2, then we must have m = n = 1, so a^m a^n, a^n a^n, and a^2 are all equivalent to a * a.  Now suppose the claim is true for m + n = k - 1, where k > 2 (in particular, either m > 1 or n > 1).  Consider the following cases:
+
+1. If m = 1, then
+
+        a^m a^n = a * a^n
+                = a * (a^{n-1} * a)
+                = (a * a^{n-1}) * a
+                = a^n * a
+                = a^n a^m
+
+        a^m a^n = a * a^n
+                = a^{1+n}
+                = a^{m+n}
+
+2. If n = 1, then
+
+        a^m a^n = a^m * a
+                = (a * a^{m-1}) * a
+                = a * (a^{m-1} * a)
+                = a * a^m
+                = a^n a^m
+
+        a^m a^n = a^m * a
+                = a^{m+1}
+                = a^{m+n}
+
+3. If m > 1 and n > 1, then
+
+        a^m a^n = (a * a^{m-1}) * (a * a^{n-1})
+                = a * (a^{m-1} * a^{n-1}) * a
+                = a * (a^{n-1} * a^{m-1}) * a
+                = (a * a^{n-1}) * (a^{m-1} * a)
+                = a^n * a^m
+
+        a^m a^n = (a * a^{m-1}) * a^n
+                = a * (a^{m-1} * a^n)
+                = a * a^{m-1+n}
+                = a^{m+n}
+
+**Lemma 3.2** (a^n)^m = a^{nm}
+**Proof.** We consider only positive integers m and n, and we will proceed by induction on m + n.  If m + n = 2, then we must have m = n = 1, so (a^n)^m = (a^1)^1 = a, and a^{nm} = a^{1*1} = a^1 = a.  Now suppose the claim is true for m + n = k - 1, where k > 2, and consider the following cases:
+
+1. If m = 1, then
+
+        (a^n)^m = a^n
+                = a^{n*1}
+                = a^{nm}
+
+2. If n = 1, then
+
+        (a^n)^m = (a^1)^m
+                = a^m
+                = a^{1*m}
+                = a^{nm}
+
+3. If m > 1 and n > 1, then by Lemma 3.1 and our inductive hypothesis we have
+
+        (a^n)^m = a^n * (a^n)^{m-1}
+                = a^n * a^{n(m-1)}
+                = a^n * a^{nm-n}
+                = a^{n+nm-n}
+                = a^nm
+
+**Lemma 3.3** The binary operation of composition is associative.
+**Proof.** Let f, g, and h be transformations on T; then for any element x in T, we have
+
+    f o (g o h)(x) = f(g o h(x))
+                   = f(g(h(x)))
+
+as well as
+
+    (f o g) o h(x) = (f o g)(h(x))
+                   = f(g(h(x)))
+
+from which we conclude that either f o (g o h) and (f o g) o h are both undefined, or they both map x to the same element.  Since x was arbitrary, we conclude that they are the same transformation.
+
+**Lemma 3.4** collision_point_nonterminating_orbit can be used in the proof of Theorem 3.1.
+**Proof.** By Lemma 2.2, the orbit of x under f cannot contain both a cyclic element and a terminal element; since x has finite order, its orbit contains a cyclic element and no terminal elements.  In particular, f^n(x) is in the definition space of f for every non-negative integer n (otherwise f^n(x) would be a terminal element of the orbit), so p(x) will always return true in the collision_point algorithm.
