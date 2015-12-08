@@ -209,3 +209,21 @@ from which we conclude that either f o (g o h) and (f o g) o h are both undefine
 
 **Lemma 3.4** collision_point_nonterminating_orbit can be used in the proof of Theorem 3.1.
 **Proof.** By Lemma 2.2, the orbit of x under f cannot contain both a cyclic element and a terminal element; since x has finite order, its orbit contains a cyclic element and no terminal elements.  In particular, f^n(x) is in the definition space of f for every non-negative integer n (otherwise f^n(x) would be a terminal element of the orbit), so p(x) will always return true in the collision_point algorithm.
+
+**Lemma 4.1** If r is an equivalence relation, a = b implies r(a, b).
+**Proof.** This follows immediately from the fact that equivalence relations are reflexive.
+
+**Lemma 4.2** key_function(f, r) implies equivalence(r)
+**Proof.** Let a, b, c be arbitrary elements in the domain of r.  Suppose r(a, b) and r(b, c); then f(a) = f(b) and f(b) = f(c).  By transitivity of equality, f(a) = f(c); then r(a, c), and r is transitive.  Next, suppose r(a, b); then f(a) = f(b).  By symmetry of equality ,f(b) = f(a); then r(b, a) and r is symmetric.  Finally, since f(a) = f(a) for any a in the domain of f (which is the same as the domain of r), we have r(a, a), i.e. r is reflexive.  We conclude that r is an equivalence relation.
+
+**Lemma 4.3** The symmetric complement of a weak ordering is an equivalence relation.
+**Proof.** Let r be a weak ordering, and let e be its associated equivalence relation.  Suppose !r(a, b) ^ !r(b, a) as well as !r(b, c) ^ !r(c, b).  Then weak-trichotomy gives e(a, b) and e(b, c), which implies e(a, c).  A second application of weak-trichtomy shows !r(a, c) ^ !r(c, a).  Next, suppose !r(a, b) ^ !r(b, a).  Since conjunction is a commutative operation, we also have !r(b, a) ^ !r(a, b).  Finally, since e(a, a) for any a in the domain of e (which is the same as the domain of r), weak-trichotomy implies that !r(a, a), and the proof is complete.
+
+**Lemma 4.4** A total ordering is a weak ordering.
+**Proof.** Take equality to be the equivalence relation in the definition of a weak ordering.
+
+**Lemma 4.5** A weak ordering is asymmetric.
+**Proof.** Having both r(a, b) and r(b, a) hold would violate weak-trichotomy.
+
+**Lemma 4.6** A weak ordering is strict.
+**Proof.** Since e(a, a) holds for any equivalence relation, having r(a, a) would violate weak-trichotomy.

@@ -5,6 +5,8 @@ Project 2.1 (page 29)
 3.1: Prove that for an associative operation, all possible parentheses groupings are equivalent
 Footnote 3.3 (page 34)
 *Project 3.1 (page 42)
+*Project 3.2 (page 47)
+Footnote 4.4 (page 55)
 
 ## Questions
 
@@ -14,6 +16,7 @@ What does it mean to have a concept defined on more than one type?  What's an ex
 How would you formally define the "action" concept?
 When would a transformation be more efficient than an action?
 Footnote 3.6 (page 42): How would you write such an identity_element function?
+What's an example of an optimization that can be made for non-regular functions / types?
 
 ## Definitions
 
@@ -251,3 +254,85 @@ A sequence is a **linear recurrence of order k** if there is a linear recurrence
     (forall n >= k) x_n = f(x_{n-1}, ..., x_{n-k})
 
 Changing the state of an object by combining it with another object via a binary operation defines an **accumulation procedure** on the object
+An algorithm is **abstract** if it can be used with different models satisfying the same requirements (eg. associativity)
+
+### 4.1
+
+A [binary] **relation** is a predicate taking two parameters of the same type:
+
+    Relation(Op) :=
+        HomogeneousPredicate(Op)
+      ^ Arity(Op) = 2
+
+A relation is **transitive** if whenever it holds between a and b, and between b and c, it holds between a and c
+
+    property(R: relation)
+    transitive: R
+        r |-> (forall a, b, c in Domain(R)) (r(a, b) ^ r(b, c) implies r(a, c))
+
+A relation is **strict** if it never holds between an element and itself
+A relation is **reflexive** if it always holds between an element and itself
+
+    property(R: relation)
+    strict: R
+        r |-> (forall a in Domain(R)) !r(a, a)
+
+    property(R: relation)
+    reflexive: R
+        r |-> (forall a in Domain(R)) r(a, a)
+
+A relation is **symmetric** if whenever it holds in one direction, it holds in the other
+A relation is **asymmetric** if it never holds in both directions
+
+    property(R: relation)
+    symmetric: R
+        r |-> (forall a, b in Domain(R)) (r(a, b) implies r(b, a))
+
+    property(R: relation)
+    asymmetric: R
+        r |-> (forall a, b in Domain(R)) (r(a, b) implies !r(b, a))
+
+Given a relation r(a, b), we define the following **derived relations** with the same domain:
+
+                complement_r(a, b) <=> !r(a, b)
+                  converse_r(a, b) <=> r(b, a)
+    complement_of_converse_r(a, b) <=> !r(b, a)
+
+A relation is an **equivalence** if it is transitive, reflexive, and symmetric
+
+    property(R: relation)
+    equivalence: R
+        r |-> transitive(r) ^ reflexive(r) ^ symmetric(r)
+
+An **equivalence class** for an equivalence relation is a subset of its domain containing all elements equivalent to a given element
+We can implement an equivalence relation by defining a **key function**, a function that returns the same value for all elements in a given equivalence class (and different values for elements in different equivalence classes)
+
+    property(F: UnaryFunction, R: Relation)
+        requires(Domain(F) = Domain(R))
+    key_function: F x R
+        (f, r) |-> (forall a, b in Domain(F)) (r(a, b) <=> f(a) = f(b))
+
+A relation is a **total ordering** if it is transitive and obeys the **trichotomy law** (for every pair of elements, exactly one of the following holds: the relation, its converse, or equality)
+
+    property(R: Relation)
+    total_ordering: R
+        r |-> transitive(r) ^
+              (forall a, b in Domain(R)) exactly one of the following holds:
+                  r(a, b), r(b, a), or a = b
+
+A relation is a **weak ordering** if it is transitive and there is an equivalence relation on the same domain such that the original relation obeys the **weak-trichotomy law** (for every pair of elements, exactly one of the following holds: the relation, its converse, or the equivalence relation)
+
+    property(R: Relation, E: Relation)
+        requires(Domain(R) = Domain(E))
+    weak_ordering: R
+        r |-> transitive(r) ^ (exists e in E) equivalence(e) ^
+              (forall a, b in Domain(R)) exactly one of the following holds:
+                  r(a, b), r(b, a), or e(a, b)
+
+Given a relation r, the relation !r(a, b) ^ !r(b, a) is called the **symmetric complement** of r
+Given a key function f on a set T, together with a total ordering r on the codomain of f, we can define the following weak ordering on T:
+
+    r'(x, y) <=> r(f(x), f(y))
+
+We refer to total and weak orderings as **linear orderings**
+An algorithm is **stable** if it respects the original order of equivalent objects
