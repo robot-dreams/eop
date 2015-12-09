@@ -312,3 +312,72 @@ Real numbers: Let a >= 0, b > 0 be given.  Let b' be any rational number between
 
 **Lemma 5.11** The result of doubling a positive element of a halvable monoid k times may be halved k times.
 **Proof.** We proceed by induction on k.  If k = 0 then there is nothing to prove.  Suppose the claim is true for k - 1, where k > 0.  Let c be the result of doubling some element b of the halvable monoid k - 1 times.  Doubling again gives an element c' = c + c.  By definition of a halvable monoid, we must have half(c') = c.  By our inductive hypothesis, we can halve c k - 1 additional times to obtain b.  Thus halving c' k times gives b, and the proof is complete.
+
+**Lemma 5.B** Given an Archimedean monoid T and elements a >= 0, b > 0, there is a unique element n in QuotientType(T) such that 0 <= a - nb < b.
+**Proof.** Since T is an Archimedean monoid, such an n exists.  Suppose n' > n; then a - n'b = a - nb - (n' - n)b <= a - nb - b, but a - nb < b implies a - nb - b < 0.  Next, suppose n' < n; then a - n'b = a - nb + (n - n')b >= a - nb + b, but a - nb >= 0 implies a - nb + b >= b.  By trichotomy of QuotientType(T), we conclude that n = n'.
+
+**Lemma 5.12** In an Archimedean monoid T with positive x, a, b:
+
+    (1) b divides a <=> remainder_nonnegative(a, b) = 0
+    (2) b divides a implies b <= a
+    (3) a > b ^ x divides a ^ x divides b implies x divides (a - b)
+    (4) x divides a ^ x divides b implies x divides remainder_nonnegative(a, b)
+
+**Proof.**
+
+(1) Since b divides a, there exists an element n in QuotientType(T) such that a = nb, i.e. a - nb = 0.  The procedure remainder_nonnegative returns some n' in QuotientType(T) such that 0 <= a - n'b < b.  By Lemma 5.B, there is only one possible value of n' such that 0 <= a - n'b < b; thus we must have n = n'.
+
+(2) Write a = nb.  We will proceed by induction on n.  Note that n must be positive (if n = 0 then we would have nb = 0, and if n < 0 then we would have nb < 0).  If n = 1, then a = 1 * b = b, and the claim trivially holds.  Suppose the claim is true for n - 1, where n > 1.  If a = nb, then a - b = (n - 1)b.  By the inductive hypothesis, a - b >= b.  Since b is positive, we have a > a - b >= b, and the proof is complete.
+
+(3) If x divides a, then we can write a = nx.  If x divides b, then we can write b = mx.  By distributivity, it follows that a - b = nx - mx = (n - m)x, so x divides (a - b).
+
+(4) First note that if x divides b, then x divides kb for any k in QuotientType(T) (if x divides b then we can write b = mx; then kb = kmx).  The procedure remainder_nonnegative returns the value a - kb for some k; since x divides a and x divides kb, by (3) x divides their difference.
+
+**Lemma 5.13** In an Archimedean monoid, the following holds for positive x, a, b:
+
+    (1) gcd is commutative
+    (2) gcd is associative
+    (3) x divides a ^ x divides b implies x <= gcd(a, b)
+    (4) gcd(a, b) is unique
+    (5) gcd(a, a) = a
+    (6) a > b implies gcd(a, b) = gcd(a - b, b)
+
+**Proof.**
+
+    (1) Swapping the roles of a and b in the definition of gcd(a, b) only changes the order of conjunctions; since conjunction is commutative, so is gcd.
+    (2) Let x = gcd(gcd(a, b), c).  Then (i) x divides gcd(a, b), (ii) x divides c, and (iii) if x' divides both gcd(a, b) and c, then x' divides x.  Furthermore, expanding (i) gives that x divides a and x divides b.  Let y = gcd(a, gcd(b, c)).  Then (i) y divides a, (ii) y divides gcd(b, c), and (iii) if y' divides both a and gcd(b, c), then y' divides y.  Furthermore, expanding (ii) gives that y divides b and y divides c.
+
+    We already know that x divides a.  Since x divides b and x divides c, x divides gcd(b, c).  Thus x divides y, and x <= y.  We already know that y divides c.  Since y divides a and y divides b, y divides gcd(a, b).  Thus y divides x, and y <= x.  We conclude that x = y.
+
+    (3) By definition of gcd(a, b), x divides a and x divides b implies that x divides gcd(a, b); Lemma 5.12(2) implies that x <= gcd(a, b).
+    (4) Suppose d and d' are both greatest common divisors of a and b.  Then d divides d', so Lemma 5.12(2) implies that d <= d', and d' divides d, so Lemma 5.12(2) implies that d' <= d.  By trichotomy, we conclude that d' = d.
+    (5) First, note that a divides a (a = 1 * a) and a divides a.  Next, suppose d divides a and d divides a.  Then d divides a.  Thus a satisfies the definition of gcd(a, a).
+
+**Lemma 5.14** subtractive_gcd_nonzero always terminates for integers and rationals.
+**Proof.** We start with the integer case.  Consider a single iteration of the loop.
+
+If a = b then the procedure returns, and there is nothing to prove.  If a > b, then a - b < a and max(a, b) = a, so max(a - b, b) < max(a, b).  If b < a, then b - a < b and max(a, b) = b, so max(a, b - a) < max(a, b).  In either case, max(a, b) decreases.
+
+Next, note that since we only set a to a - b if a > b, and we only set b to b - a if b > a, a and b are always positive.  In particular, max(a, b) is always positive.
+
+Suppose the procedure executes more than max(a, b) iterations of the loop; since a single iteration of the loop decreases max(a, b) by 1, max(a, b) would become negative, which is a contradiction.  We conclude that the procedure must terminate after no more than max(a, b) iterations of the loop.
+
+Next, we consider the rational case.  Note that multiplication by a positive integer preserves the order of rationals; in particular, if a < b then ka < kb.  Furthermore, if c = a - b, then kc = ka - kb.  Thus the procedure will perform precisely the same number of iterations if we multiply both of its arguments by the same positive integer.  Let a = a0/a1 and b = b0/b1 be the original arguments; then applying the procedure with a' = a0 * b1 and b' = b0 * a1 will perform the same number of iterations, but since a' and b' are integers, our proof for the integer case shows that the rational case also terminates.
+
+**Lemma 5.15** gcd(a / gcd(a, b), b / gcd(a, b)) = 1.
+**Proof.** Suppose d divides a / gcd(a, b) and b / gcd(a, b).  Then d * gcd(a, b) divides a, and d * gcd(a, b) divides b.  If d > 1, then this would contradict Lemma 5.13(3); thus d = 1 is the only common divisor of a / gcd(a, b) and b / gcd(a, b).
+
+**Lemma 5.16** If the square of a positive integer n is even, then n is even.
+**Proof.** Suppose n is odd.  Then we can write n = 2k + 1, and n^2 = (2k + 1)(2k + 1) = 4k^2 + 4k + 1 = 2(k^2 + 2k) + 1, which shows that n^2 is odd.  Taking the contrapositive, we conclude that if n^2 is even, then n is even.
+
+**Lemma 5.17** Every Archimedean monoid with a smallest positive element is Euclidean.
+**Proof.** Let e be the smallest positive element of the given Archimedean monoid.  We use a similar argument to the proof of Lemma 5.14.  If a > b, then a - b >= e, and if b > a, then b - a >= e; thus at every step, max(a, b) decreases by at least e.  Since the monoid is Archimedean, there exists some n in its QuotientType such that 0 <= max(a, b) - ne < e, i.e. max(a, b) - ne = 0.  Since max(a, b) is always positive, we conclude that the procedure can go through at most n iterations of the loop before terminating.
+
+**Lemma 5.18** The rational numbers are a Euclidean monoid.
+**Proof.** This is a restatement of the second part of Lemma 5.14.
+
+**Lemma 5.19** In a Euclidean semiring, a * b = 0 implies a = 0 or b = 0.
+**Proof.** Suppose a * b = 0 and b != 0.  Then we must have w(a * b) >= w(a).  But a * b = 0 and w(0) = 0; thus w(a) <= 0.  Since for any element x in a Euclidean semiring w(x) >= 0, we must have w(a) = 0.  Finally, w(a) = 0 implies a = 0.  Thus either b = 0 or a = 0, as desired.
+
+**Lemma 5.20** gcd terminates on a Euclidean semiring.
+**Proof.** At every iteration, w(max(a, b)) must decrease.  But max(a, b) is always positive; thus w(max(a, b)) is also positive.  If the procedure executes more than w(max(a0, b0)) iterations (where a0 and b0 are the initial values of the arguments), then w(max(a, b)) would become zero or negative, which is a contradiction.  We conclude that the procedure terminates after at most w(max(a0, b0)) iterations of the loop.

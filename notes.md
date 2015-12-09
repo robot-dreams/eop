@@ -5,6 +5,7 @@ Footnote 3.3 (page 34)
 Footnote 4.4 (page 55)
 Exercise 4.5: Prove that my solution performs 5 2/3 comparisons on average
 Exercise 4.6: My solution is really sloppy
+Footnotes 5.9-5.11 (page 81)
 
 ## Questions
 
@@ -16,6 +17,7 @@ When would a transformation be more efficient than an action?
 Footnote 3.6 (page 42): How would you write such an identity_element function?
 What's an example of an optimization that can be made for non-regular functions / types?
 Is the difficulty of order-selection with order 5 somehow related to the insolubility of quintics?
+What's the motivation for the axiom w(a * b) >= w(a) in the definition of a EuclideanSemiring?
 
 ## Definitions
 
@@ -508,3 +510,39 @@ A model is called **partial** when the operations satisfy the axioms where they 
         ArchimedeanMonoid(T)
       ^ half: T -> T
       ^ (forall a, b in T) b > 0 ^ a = b + b implies half(a) = b
+
+For a >= b and b > 0 in an Archimedean monoid T, we define **divisibility** as follows:
+
+    b divides a <=> (exists n in QuotientType(T)) a = nb
+
+A **greatest common divisor** of a and b, denoted by gcd(a, b), is a divisor of a and b that is divisible by any other common divisor of a and b
+
+**Theorem.** subtractive_gcd_nonzero(sqrt(2), 1) does not terminate [assuming an arbitrary precision representation of sqrt(2)]
+**Proof.** Suppose it terminates and returns d.  Write m = sqrt(2) / d and n = 1 / d.  Then m / n = sqrt(2), so m^2 = 2n^2, and m is even.  Write m = 2u; then (2u)^2 = 4u^2 = 2n^2, so n is even.  This contradicts Lemma 5.15; we conclude that subtractive_gcd_nonzero does not terminate.
+
+A **Euclidean monoid** is an Archimedean monoid where subtractive_gcd_nonzero always terminates:
+
+    EuclideanMonoid(T) :=
+        ArchimedeanMonoid(T)
+      ^ (forall a, b in T) (a > b ^ b > 0) implies subtractive_gcd_nonzero(a, b) terminates
+
+    EuclideanSemiring(T) :=
+        CommutativeSemiring(T)
+      ^ NormType: EuclideanSemiring -> Integer
+      ^ w: T -> NormType(T)
+      ^ (forall a in T) w(a) >= 0
+      ^ (forall a in T) w(a) = 0 <=> a = 0
+      ^ (forall a, b in T) b != 0 implies w(a * b) >= w(a)
+      ^ remainder: T x T -> T
+      ^ quotient: T x T -> T
+      ^ (forall a, b in T) b != 0 implies a = quotient(a, b) * b + remainder(a, b)
+      ^ (forall a, b in T) b != 0 implies w(remainder(a, b)) < w(b)
+
+w is called the **Euclidean function** [Euclidean norm?]
+
+    EuclideanSemimodule(T, S) :=
+        Semimodule(T, S)
+      ^ remainder: T x T -> T
+      ^ quotient: T x T -> S
+      ^ (forall a, b in T) b != 0 implies a = quotient(a, b) * b + remainder(a, b)
+      ^ (forall a, b in T) (a != 0 v b != 0) implies gcd(a, b) terminates

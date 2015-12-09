@@ -110,4 +110,18 @@ inline bool odd(I n)
     return n & 1;
 }
 
+template<typename I>
+    requires(Integer(I))
+inline I quotient(I a, I b)
+{
+    return a / b;
+}
+
+template<typename I>
+    requires(Integer(I))
+inline I remainder(I a, I b)
+{
+    return a % b;
+}
+
 #endif
