@@ -1,13 +1,10 @@
 ## Loose Ends
 
-Project 1.1 (page 14)
-Project 2.1 (page 29)
 3.1: Prove that for an associative operation, all possible parentheses groupings are equivalent
 Footnote 3.3 (page 34)
-*Project 3.1 (page 42)
-*Project 3.2 (page 47)
 Footnote 4.4 (page 55)
 Exercise 4.5: Prove that my solution performs 5 2/3 comparisons on average
+Exercise 4.6: My solution is really sloppy
 
 ## Questions
 
@@ -338,3 +335,8 @@ Given a key function f on a set T, together with a total ordering r on the codom
 
 We refer to total and weak orderings as **linear orderings**
 An algorithm is **stable** if it respects the original order of equivalent objects
+
+    TotallyOrdered(T) :=
+        Regular(T)
+      ^ <: T x T -> bool
+      ^ total_ordering(<)
