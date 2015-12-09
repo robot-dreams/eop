@@ -299,6 +299,18 @@ const Domain(R)& select_2_5(const Domain(R)& a,
 
 template<typename R>
     requires(Relation(R))
+inline const Domain(R)& select_2_5(const Domain(R)& a,
+                                   const Domain(R)& b,
+                                   const Domain(R)& c,
+                                   const Domain(R)& d,
+                                   const Domain(R)& e,
+                                   R r)
+{
+    return select_2_5<0, 1, 2, 3, 4>(a, b, c, d, e, r);
+}
+
+template<typename R>
+    requires(Relation(R))
 inline const Domain(R)& median_5(const Domain(R)& a,
                                  const Domain(R)& b,
                                  const Domain(R)& c,

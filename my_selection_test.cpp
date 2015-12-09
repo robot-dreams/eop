@@ -68,8 +68,7 @@ public:
     bool operator()(pair<const Domain(R)&, size_t> lhs,
                     pair<const Domain(R)&, size_t> rhs)
     {
-        if (r(lhs.first, rhs.first)) return true;
-        return lhs.second < rhs.second;
+        return lhs.first < rhs.first;
     }
 
 private:
@@ -110,13 +109,81 @@ void test_j_2(string procedure_name,
     }
 }
 
-template<typename Test, typename SR>
+template<typename SR>
+void test_j_3(string procedure_name,
+              const Domain(SR)&
+                  (*select_j_3)(const Domain(SR)&,
+                                const Domain(SR)&,
+                                const Domain(SR)&,
+                                SR),
+              const vector<pair<int, size_t> >& v,
+              SR sr,
+              pair<int, size_t> expected)
+{
+    pair<int, size_t> actual = select_j_3(v[0], v[1], v[2], sr);
+    if (expected != actual) {
+        cout << "    test failed for procedure " << procedure_name << endl;
+        cout << "        a: " << v[0] << "; b: " << v[1] << "; c: " << v[2];
+        cout << "; expected: " << expected << "; actual: " << actual << endl;
+        failures++;
+    } else {
+        successes++;
+    }
+}
+
+template<typename SR>
+void test_j_4(string procedure_name,
+              const Domain(SR)&
+                  (*select_j_4)(const Domain(SR)&,
+                                const Domain(SR)&,
+                                const Domain(SR)&,
+                                const Domain(SR)&,
+                                SR),
+              const vector<pair<int, size_t> >& v,
+              SR sr,
+              pair<int, size_t> expected)
+{
+    pair<int, size_t> actual = select_j_4(v[0], v[1], v[2], v[3], sr);
+    if (expected != actual) {
+        cout << "    test failed for procedure " << procedure_name << endl;
+        cout << "        a: " << v[0] << "; b: " << v[1];
+        cout  << "; c: " << v[2] << "; d: " << v[3];
+        cout << "; expected: " << expected << "; actual: " << actual << endl;
+        failures++;
+    } else {
+        successes++;
+    }
+}
+
+template<typename SR>
+void test_j_5(string procedure_name,
+              const Domain(SR)&
+                  (*select_j_5)(const Domain(SR)&,
+                                const Domain(SR)&,
+                                const Domain(SR)&,
+                                const Domain(SR)&,
+                                const Domain(SR)&,
+                                SR),
+              const vector<pair<int, size_t> >& v,
+              SR sr,
+              pair<int, size_t> expected)
+{
+    pair<int, size_t> actual = select_j_5(v[0], v[1], v[2], v[3], v[4], sr);
+    if (expected != actual) {
+        cout << "    test failed for procedure " << procedure_name << endl;
+        cout << "        a: " << v[0] << "; b: " << v[1];
+        cout  << "; c: " << v[2] << "; d: " << v[3] << "; e: " << v[4];
+        cout << "; expected: " << expected << "; actual: " << actual << endl;
+        failures++;
+    } else {
+        successes++;
+    }
+}
+
+template<typename Test, typename Select, typename SR>
 void test_all_permutations(Test test_j_k,
                            string procedure_name,
-                           const Domain(SR)&
-                               (*select)(const Domain(SR)&,
-                                         const Domain(SR)&,
-                                         SR),
+                           Select select,
                            vector<int> v,
                            SR sr,
                            pair<int, size_t> expected)
@@ -128,18 +195,33 @@ void test_all_permutations(Test test_j_k,
     } while (next_permutation(v.begin(), v.end()));
 }
 
-int main()
+void run_all_test_cases()
 {
     vector<int> v;
-    v.push_back(0);
-    v.push_back(1);
 
-    test_all_permutations(test_j_2<StabilityRelation<bool (*)(int, int)> >,
-                          "select_0_2",
-                          select_0_2<StabilityRelation<bool (*)(int, int)> >,
-                          v,
-                          strengthen(less_than),
-                          pair<const int&, size_t>(0, 0));
+#define TEST_CASE(J, K, E0, E1, ...) v = { __VA_ARGS__ };\
+    test_all_permutations(test_j_##K<StabilityRelation<bool (*)(int, int)> >,\
+                          string("select_") + #J + "_" + #K,\
+                          select_##J##_##K<StabilityRelation<bool (*)(int, int)> >,\
+                          v,\
+                          strengthen(less_than),\
+                          pair<const int&, size_t>(E0, E1));
+#define MY_TEST_CASE(J, K, E0, E1, ...) v = { __VA_ARGS__ };\
+    test_all_permutations(test_j_##K<StabilityRelation<bool (*)(int, int)> >,\
+                          string("my_select_") + #J + "_" + #K,\
+                          my_select_##J##_##K<StabilityRelation<bool (*)(int, int)> >,\
+                          v,\
+                          strengthen(less_than),\
+                          pair<const int&, size_t>(E0, E1));
+#include "my_selection_test_cases.h"
+#undef TEST_CASE
+#undef MY_TEST_CASE
+
+}
+
+int main()
+{
+    run_all_test_cases();
 
     cout << successes << " " << pluralize("test", successes) << " passed" << endl;
     if (failures) {

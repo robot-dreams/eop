@@ -7,6 +7,7 @@ Footnote 3.3 (page 34)
 *Project 3.1 (page 42)
 *Project 3.2 (page 47)
 Footnote 4.4 (page 55)
+Exercise 4.5: Prove that my solution performs 5 2/3 comparisons on average
 
 ## Questions
 
