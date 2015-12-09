@@ -32,6 +32,15 @@ inline I twice(I n)
 
 template<typename I>
     requires(Integer(I))
+inline I half(I n)
+{
+    // Preconditions:
+    //     n >= 0
+    return n >> 1;
+}
+
+template<typename I>
+    requires(Integer(I))
 inline I half_nonnegative(I n)
 {
     // Preconditions:

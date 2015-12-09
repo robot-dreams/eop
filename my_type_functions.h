@@ -138,6 +138,16 @@ struct distance_type<T*> {
 
 #define DistanceType(T) typename distance_type< Domain(T) >::type
 
+template<typename T>
+    requires(ArchimedeanMonoid(T))
+struct quotient_type;
+
+template<>
+struct quotient_type<int> {
+    typedef int type;
+};
+
+#define QuotientType(T) typename quotient_type< T >::type
 template<typename T0, typename T1, typename T2>
     requires(Regular(T0), Regular(T1), Regular(T2))
 struct triple
@@ -175,4 +185,5 @@ ostream& operator<<(ostream& output, const triple<T0, T1, T2>& x)
     output << combiner.str();
     return output;
 }
+
 #endif

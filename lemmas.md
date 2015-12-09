@@ -237,3 +237,78 @@ from which we conclude that either f o (g o h) and (f o g) o h are both undefine
     select_1_4_ab performs one comparison and then calls select_1_4_ab_cd
     select_1_4_ab_cd performs one comparison and then calls select_0_2
     select_0_2 performs one comparison and then returns
+
+**Lemma 5.1** An identity element is unique:
+
+    identity_element(e, op) ^ identity_element(e', op) implies e = e'
+
+**Proof.** Since e is an identity element, op(e, e') = e.  Since e' is an identity element, op(e, e') = e'.  Combining these two equations gives e = e'.
+
+**Lemma 5.2** f(n) = n^3 is the multiplicative inverse for the multiplication of non-zero remainders modulo 5.
+**Proof.** We simply check each case (modular multiplication is commutative, so we only need to check one direction):
+
+    1 * 1^3 = 1 (mod 5)
+    2 * 2^3 = 16 = 1 (mod 5)
+    3 * 3^3 = 81 = 1 (mod 5)
+    4 * 4^3 = -1 * (-1)^3 = 1 (mod 5)
+
+**Lemma 5.A** Composition of transformations is not necessarily commutative.
+**Proof.** Let f(x) = x^2 and g(x) = x + 1; then f(g(1)) = 4, but g(f(1)) = 2.
+
+**Lemma 5.3** In an additive group, -0 = 0.
+**Proof.** By defition of an inverse operation, (-0) + 0 = 0.  Since 0 is the identity element of +, it follows that (-0) + 0 = (-0).  Combining these two equations gives 0 = -0.
+
+**Lemma 5.4** Every additive group is a module over integers with appropriately defined scalar multiplication.
+**Proof.** Define scalar multiplication as follows, where a is an arbitrary element of the additive group:
+
+    0 * a = 0 (the 0 on the left refers to the integer, the 0 on the right refers to the identity of the additive group)
+    1 * a = a
+    -1 * a = -a (the - on the right refers to the inverse operation of the additive group)
+    For any positive integer n:
+
+        n * a = a + ... + a (n copies)
+        -n * a = (-a) + ... + (-a) (n copies)
+
+The fact that this definition makes the additive group into a module over integers follows immediately from the associativity and commutativity properties of the additive group.
+
+**Lemma 5.5** In an ordered additive semigroup, a < b ^ c < d implies a + c < b + d.
+**Proof.** Since a < b, the definition of OrderedAdditiveSemigroup gives a + c < b + c.  Furthermore, since c < d, we also have c + b < d + b.  By regularity of type and commutativity of addition, we also have b + c < b + d.  Finally, by transitivity of <, we have a + c < b + d.
+
+**Lemma 5.6** In an ordered additive monoid viewed as a semimodule over natural numbers, a > 0 ^ n > 0 implies na > 0.
+**Proof.** We proceed by induction.  If n = 1, then na = a, and a > 0 by assumption.  Suppose a > 0 and (n-1)a > 0, where n > 1.  Then na = a + ... + a = a + (n-1)a = (n-1)a + a; by the definition of OrderedAdditiveMonoid, (n-1)a > 0 implies (n-1)a + a > 0 + a; by regularity of type and definition of additive identity, na > a; finally, by transitivity of > (since a > 0), na > 0, and the induction is complete.
+
+**Lemma 5.7** In an ordered additive group, a < b implies -b < -a.
+**Proof.** Since a < b, by the definition of OrderedAdditiveGroup, a + (-a) < b + (-a); by regularity of type and the definition of additive inverse, 0 < b + (-a).  Furthermore, another application of the definition of OrderedAdditiveGroup gives 0 + (-b) < b + (-a) + (-b).  Using the definition of additive identity on the right as well as commutativity of + and the definition of additive inverse on the left, we have -b < -a, as desired.
+
+**Lemma 5.8** In an ordered additive group, a < 0 implies 0 < -a.
+**Proof.** This follows immediately from Lemma 5.3 (-0 = 0) and Lemma 5.7 (a < b implies -b < -a).
+
+**Lemma 5.9** Absolute value satisfies the following properties:
+
+    |a  -  b|    =    |b  -  a|     (1)
+    |a  +  b|   <=    |a| + |b|     (2)
+    |a  -  b|   >=    |a| - |b|     (3)
+    |a| =  0  implies  a  =  0      (4)
+     a !=  0  implies |a| >  0      (5)
+
+**Proof.**
+
+    (1) Suppose a - b > 0.  Since a - b + b - a = 0, we have -(a - b) = b - a, and by Lemmas 5.3 and 5.7, b - a < 0.  Thus |a - b| = a - b and |b - a| = -(b - a) = a - b.  We can use a similar argument in the case of b - a > 0.  Finally, if a - b = 0, then |a - b| = -0 = 0 and |b - a| = -0 = 0.
+    (2) If a and b are both positive, then |a| + |b| = a + b, and Lemma 5.5 implies a + b > 0, i.e. |a + b| = a + b.  If a and b are both zero or negative, then |a| + |b| = -a + -b, and Lemma 5.5 implies a + b <= 0, i.e. |a + b| = -(a + b) = -a + -b.  If a is positive, b is zero or negative, and a + b > 0, then |a| + |b| = a + -b, and |a + b| = a + b, and -b > b implies |a| + |b| > |a + b|.  If a is positive, b is zero or negative, and a + b <= 0, then |a| + |b| = a + -b, and |a + b| = -(a + b) = -a + -b, and a > -a implies |a| + |b| > |a + b|.  For the last two cases (the two cases where b is positive and a is zero or negative), we use a similar argument to the two cases where a is positive and b is zero or negative.
+    (3) We enumerate each case, similar to the proof of (2)
+    (4) Suppose |a| = 0.  Then by trichotomy, |a| > 0 does not hold, and by the contrapositive of (5), which we prove below, a != 0 does not hold.  We conclude that if |a| = 0, then a = 0.
+    (5) If a > 0, then |a| = a, and there is nothing to prove.  If a < 0, then |a| = -a, and Lemma 5.8 shows that -a > 0.
+
+**Lemma 5.10** The following are Archimedean monoids: integers, rational numbers, binary fractions {n / 2^k}, ternary fractions {n / 3^k}, and real numbers.
+**Proof.**
+
+Integers: let a >= 0, b > 0 be given.  Every step of the algorithm decreases a by at least 1; thus after a steps, we are guaranteed to have a <= 0 < b; thus b <= a will not hold, and the algorithm will terminate.
+
+Rational numbers: Write a = a0/a1 and b = b0/b1, where a0 is nonnegative and a1, b0, b1 are all positive.  Note that a0/a1 - n * b0/b1 < b0/b1 if and only if a0 * b1 - n * b0 * a1 < b0 * a1.  Since integers are an Archimedean monoid, there exists n such that the latter holds; thus there exists n such that the former holds.
+
+Binary fractions, ternary fractions: These are a special case of rational numbers.
+
+Real numbers: Let a >= 0, b > 0 be given.  Let b' be any rational number between 0 and b, and let a' be any rational number greater than a (we will not prove here that such b' and a' exist).  Since rational numbers are an Archimedean monoid, we can find n such that a' - n * b' < b'.  Since b' < b, we have a' - n * b' < b; since -n * b < -n * b', we have a' - n * b < b; finally, since a < a', we have a - n * b < b.  Thus the original algorithm applied to the real numbers a and b will terminate after at most n steps.
+
+**Lemma 5.11** The result of doubling a positive element of a halvable monoid k times may be halved k times.
+**Proof.** We proceed by induction on k.  If k = 0 then there is nothing to prove.  Suppose the claim is true for k - 1, where k > 0.  Let c be the result of doubling some element b of the halvable monoid k - 1 times.  Doubling again gives an element c' = c + c.  By definition of a halvable monoid, we must have half(c') = c.  By our inductive hypothesis, we can halve c k - 1 additional times to obtain b.  Thus halving c' k times gives b, and the proof is complete.

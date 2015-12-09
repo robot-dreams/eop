@@ -218,7 +218,7 @@ The **collision point** of a transformation f and a starting point x is the uniq
 
 An **action** is a procedure that changes the state of an object
 
-### 3.1
+### Chapter 3
 
     BinaryOperation(Op) :=
         Operation(Op)
@@ -255,7 +255,7 @@ A sequence is a **linear recurrence of order k** if there is a linear recurrence
 Changing the state of an object by combining it with another object via a binary operation defines an **accumulation procedure** on the object
 An algorithm is **abstract** if it can be used with different models satisfying the same requirements (eg. associativity)
 
-### 4.1
+## Chapter 4
 
 A [binary] **relation** is a predicate taking two parameters of the same type:
 
@@ -340,3 +340,171 @@ An algorithm is **stable** if it respects the original order of equivalent objec
         Regular(T)
       ^ <: T x T -> bool
       ^ total_ordering(<)
+
+## Chapter 5
+
+An element is called an **identity element** of a binary operation if, when combined with any other element as the first or second element, the operation returns the other element:
+
+    property(T: Regular, Op: BinaryOperation)
+        requires(T = Domain(Op))
+    identity_element: T x Op
+        (e, op) |-> (forall a in T) op(a, e) = op(e, a) = a
+
+A transformation is called an **inverse operation** of a binary operation with respect to a given element (usually the identity of the binary operation) if it satisfies the following:
+
+    property(F: Transformation, T: Regular, Op: BinaryOperation)
+        requires(Domain(F) = T = Domain(Op))
+    inverse_operation: F x T x Op
+        (inv, e, op) |-> (forall a in T) op(a, inv(a)) = op(inv(a), a) = e
+
+A binary operation is **commutative** if its result is the same when its arguments are interchanged:
+
+    property(Op: BinaryOperation)
+    commutative: Op
+        op |-> (forall a, b in Domain(Op)) op(a, b) = op(b, a)
+
+A set with an associative operation is called a **semigroup**
+A type with + (which should be commutative) is called an **additive semigroup**
+
+    AdditiveSemigroup(T) :=
+        Regular(T)
+      ^ +: T x T -> T
+      ^ associative(+)
+      ^ commutative(+)
+
+A type with * (which is not necessarily commutative) is called a **multiplicative semigroup**
+
+    MultiplicativeSemigroup(T) :=
+        Regular(T)
+      ^ *: T x T -> T
+      ^ associative(*)
+
+A semigroup with an identity element is called a **monoid**
+We denote the additive identity element by 0, and define an **additive monoid** as follows:
+
+    AdditiveMonoid(T) :=
+        AdditiveSemigroup(T)
+      ^ 0 in T
+      ^ identity_element(0, +)
+
+We denote the multiplicative identity element by 1, and define a **multiplicative monoid** as follows:
+
+    MultiplicativeMonoid(T) :=
+        MultiplicativeSemigroup(T)
+      ^ 1 in T
+      ^ identity_element(1, *)
+
+A monoid with an inverse operation is called a **group**
+We denote the inverse operation of an additive monoid by -, and define an **additive group** as follows:
+
+    AdditiveGroup(T) :=
+        AdditiveMonoid(T)
+      ^ -: T -> T
+      ^ InverseOperation(unary -, 0, +)
+      ^ -: T x T -> T
+            (a, b) |-> a + (-b)
+
+Similarly, we define a **multiplicative group** as follows:
+
+    MultiplicativeGroup(T) :=
+        MultiplicativeMonoid(T)
+      ^ multiplicative_inverse: T -> T
+      ^ InverseOperation(multiplicative_inverse, 1, *)
+      ^ /: T x T -> T
+            (a, b) |-> a * multiplicative_inverse(b)
+
+We write multiplicative_inverse(x) as x^{-1}
+When both + and * are present on a type, they are [i.e. should be] interrelated with axioms defining a **semiring**:
+
+    Semiring(T) :=
+        AdditiveMonoid(T)
+      ^ MultiplicativeMonoid(T)
+      ^ 0 != 1
+      ^ (forall a in T) a * 0 = 0
+      ^ (forall a, b, c in T)
+            a * (b + c) = a * b + a * c
+          ^ (a + b) * c = a * c + b * c
+
+The axiom about multiplication by zero is called the **annihilation property**
+The axiom connecting + and * is called the **distributive property**, or **distributivity**
+
+    CommutativeSemiring(T) :=
+        Semiring(T)
+      ^ commutative(*)
+
+    Ring(T) :=
+        AdditiveGroup(T)
+      ^ Semiring(T)
+
+    CommutativeRing(T) :=
+        AdditiveGroup(T)
+      ^ CommutativeSemiring(T)
+
+A **relational concept** is a concept defined on two types
+**semimodule** is a relational concept that connects an additive monoid and a commutative semiring:
+
+    Semimodule(T, S) :=
+        AdditiveMonoid(T)
+      ^ CommutativeSemiring(S)
+      ^ *: S x T -> T
+      ^ (forall A, B in S) (forall a, b, in T)
+            A * (B * a) = (A * B) * a
+            (A + B) * a = A * a + B * a
+            A * (a + b) = A * a + A * b
+                  1 * a = a
+
+If Semimodule(T, S), we say that T is a semimodule over S; we call elements of T **vectors** and elements of S **scalars**
+
+**Theorem 5.1** AdditiveMonoid(T) implies Semimodule(T, N), where scalar multiplication is defined as n * x = x + ... + x (n times).
+**Proof.** Let A, B be natural numbers, and let a, b be vectors in T.  Then
+
+    A * (B * a) = (B * a) + ... + (B * a)
+                = (a + ... + a) + ... + (a + ... + a)
+
+where there are A parenthesized terms and B copies of a inside each parenthesized term, for a total of A * B copies of a; thus A * (B * a) = (A * B) * a.  Next,
+
+    A * a + B * a = (a + ... + a) + (a + ... + a)
+
+where there are A copies of a in the left parenthesized term and B copies of a in the right parenthesized term, for a total of A + B copies of a; thus A * a + B * a = (A + B) * a.  Furthermore,
+
+    A * (a + b) = (a + b) + ... + (a + b)
+
+and by commutativity of addition, the expression on the left becomes (a + ... + a) + (b + ... + b); thus A * (a + b) = A * a + A * b.  Finally, 1 * a = a follows immediately from the definition of *.
+
+Replacing the additive monoid with an additive group and replacing the semiring with a ring in the definition of a semimodule transforms the semimodule into a **module**:
+
+    Module(S, T) :=
+        Semimodule(T, S)
+      ^ AdditiveGroup(T)
+      ^ Ring(S)
+
+A model is called **partial** when the operations satisfy the axioms where they are defined, but are not everywhere defined
+
+    OrderedAdditiveSemigroup(T) :=
+        AdditiveSemigroup(T)
+      ^ TotallyOrdered(T)
+      ^ (forall a, b, c in T) a < b implies a + c < b + c
+
+    OrderedAdditiveMonoid(T) :=
+        OrderedAdditiveSemigroup(T)
+      ^ AdditiveMonoid(T)
+
+    OrderedAdditiveGroup(T) :=
+        OrderedAdditiveMonoid(T)
+      ^ AdditiveGroup(T)
+
+    CancellableMonoid(T) :=
+        OrderedAdditiveMonoid(T)
+      ^ -: T x T -> T
+      ^ (forall a, b in T) b <= a implies
+            a - b is defined ^ (a - b) + b = a
+
+    ArchimedeanMonoid(T) :=
+        CancellableMonoid(T)
+      ^ (forall a, b in T) (a >= 0 ^ b > 0) implies slow_remainder(a, b) terminates
+      ^ QuotientType: ArchimedeanMonoid -> Integer
+
+    HalvableMonoid(T) :=
+        ArchimedeanMonoid(T)
+      ^ half: T -> T
+      ^ (forall a, b in T) b > 0 ^ a = b + b implies half(a) = b
