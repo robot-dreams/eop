@@ -195,21 +195,60 @@ void test_all_permutations(Test test_j_k,
     } while (next_permutation(v.begin(), v.end()));
 }
 
+template<typename R, int k>
+    requires(Relation(R))
+struct select_t;
+
+template<typename R>
+    requires(Relation(R))
+struct select_t<R, 2>
+{
+    typedef const Domain(R)& (*type)(const Domain(R)&, const Domain(R)&, R);
+};
+
+template<typename R>
+    requires(Relation(R))
+struct select_t<R, 3>
+{
+    typedef const Domain(R)& (*type)(const Domain(R)&, const Domain(R)&, const Domain(R)&, R);
+};
+
+template<typename R>
+    requires(Relation(R))
+struct select_t<R, 4>
+{
+    typedef const Domain(R)& (*type)(const Domain(R)&, const Domain(R)&, const Domain(R)&, const Domain(R)&, R);
+};
+
+template<typename R>
+    requires(Relation(R))
+struct select_t<R, 5>
+{
+    typedef const Domain(R)& (*type)(const Domain(R)&, const Domain(R)&, const Domain(R)&, const Domain(R)&, const Domain(R)&, R);
+};
+
 void run_all_test_cases()
 {
     vector<int> v;
 
+    select_t<StabilityRelation<bool (*)(int, int)>, 2>::type s2;
+    select_t<StabilityRelation<bool (*)(int, int)>, 3>::type s3;
+    select_t<StabilityRelation<bool (*)(int, int)>, 4>::type s4;
+    select_t<StabilityRelation<bool (*)(int, int)>, 5>::type s5;
+
 #define TEST_CASE(J, K, E0, E1, ...) v = { __VA_ARGS__ };\
+    s##K = select_##J##_##K;\
     test_all_permutations(test_j_##K<StabilityRelation<bool (*)(int, int)> >,\
                           string("select_") + #J + "_" + #K,\
-                          select_##J##_##K<StabilityRelation<bool (*)(int, int)> >,\
+                          s##K,\
                           v,\
                           strengthen(less_than),\
                           pair<const int&, size_t>(E0, E1));
 #define MY_TEST_CASE(J, K, E0, E1, ...) v = { __VA_ARGS__ };\
+    s##K = my_select_##J##_##K;\
     test_all_permutations(test_j_##K<StabilityRelation<bool (*)(int, int)> >,\
                           string("my_select_") + #J + "_" + #K,\
-                          my_select_##J##_##K<StabilityRelation<bool (*)(int, int)> >,\
+                          s##K,\
                           v,\
                           strengthen(less_than),\
                           pair<const int&, size_t>(E0, E1));
