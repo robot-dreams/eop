@@ -785,6 +785,45 @@ pair<I0, I1> find_mismatch_n0_n1(I0 f0,
     //     zero(n0) || zero(n1) || !r(source(f0), source(f1))
 }
 
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+I find_adjacent_mismatch(I f, I l, R r)
+{
+    // Precondition: readable_bounded_range(f, l)
+    if (f == l) return f;
+    ValueType(I) x = source(f);
+    f = successor(f);
+    while (f != l && r(x, source(f))) {
+        // This is ok because source must be regular
+        // (only successor might not be regular)
+        x = source(f);
+        f = successor(f);
+    }
+    return f;
+    // Postcondition: f == l || !r(x, source(f))
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+I find_adjacent_mismatch_n(I f, DistanceType(I) n, R r)
+{
+    // Precondition: readable_weak_range(f, n)
+    if (zero(n)) return f;
+    ValueType(I) x = source(f);
+    f = successor(f);
+    while (!zero(n) && r(x, source(f))) {
+        // This is ok because source must be regular
+        // (only successor might not be regular)
+        x = source(f);
+        n = predecessor(n);
+        f = successor(f);
+    }
+    return f;
+    // Postcondition: zero(n) || !r(x, source(f))
+}
+
 template<typename T>
 struct input_type<plus<T>, 0> {
     typedef T type;
@@ -801,7 +840,7 @@ int main() {
         x[i] = i;
         x[5 + i] = i;
     }
-    pair<int*, int*> q = find_mismatch_n0_n1(x, 5, x, 10, equal_to<int>());
-    cout << (q.first - x) << ", " << (q.second - x) << endl;
+    int* y = find_adjacent_mismatch_n(x, 10, less_equal<int>());
+    cout << y - x << endl;
     delete[] x;
 }
