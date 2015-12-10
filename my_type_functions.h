@@ -84,6 +84,18 @@ struct input_type<bool (*)(const T&, const T&), 0> {
     typedef T type;
 };
 
+// iterator traversal
+
+template<typename T>
+struct input_type<void (*)(T), 0> {
+    typedef T type;
+};
+
+template<typename T>
+struct input_type<void (*)(const T&), 0> {
+    typedef T type;
+};
+
 // Domain: HomogeneousFunction -> Regular
 
 #define Domain(T) InputType(T, 0)
@@ -160,6 +172,34 @@ template<typename T>
 struct input_type<pair<QuotientType(T), T> (*)(const T&, const T&), 0> {
     typedef T type;
 };
+
+template<typename T>
+    requires(Regular(T))
+struct value_type {
+    typedef T type;
+};
+
+template<typename T>
+    requires(Regular(T))
+struct value_type< T* > {
+    typedef T type;
+};
+
+#define ValueType(T) typename value_type< T >::type
+
+template<typename T>
+    requires(Regular(T))
+ValueType(T) source(T x)
+{
+    return x;
+}
+
+template<typename T>
+    requires(Regular(ValueType(T)))
+ValueType(T*) source(T* x)
+{
+    return *x;
+}
 
 template<typename T0, typename T1, typename T2>
     requires(Regular(T0), Regular(T1), Regular(T2))

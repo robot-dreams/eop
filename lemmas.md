@@ -413,3 +413,47 @@ Next, we consider the case where b does not divide a.  If a and b are both posit
 
 **Lemma 5.21B** quotient_remainder is correct whenever op is correct.
 **Proof.** Lemma 5.H shows that the first property (a = qb + r) holds.  Since the remainder part of quotient_remainder is implemented identically to the 'remainder' procedure, Lemma 5.21A implies that the second and third properties (|r| < |b| and congruence) also hold.
+
+**Lemma 6.1**
+
+    0 <= j <= i ^ weak_range(f, i) implies weak_range(f, j)
+
+**Proof.** Take any k in DistanceType(I) such that 0 <= k <= j.  Then 0 <= k <= i, so weak_range(f, i) implies that successor^k(f) is defined.
+
+**Lemma 6.2** (f + n) + m = f + (n + m)
+**Proof.** If n = 0, then f + n = f and n + m = m; thus (f + n) + m = f + m and f + (n + m) = f + m.  Consider n > 0, and suppose the claim is true for predecessor(n).  Then
+
+    f + (n + m) = f + successor(predecessor(n) + m)
+                = successor(f + (predecessor(n) + m))
+                = successor((f + predecessor(n)) + m)
+                = (f + predecessor(n)) + successor(m)
+                = (f + predecessor(n)) + successor(m + 0)
+                = (f + predecessor(n)) + m + successor(0)
+                = ((f + predecessor(n)) + successor(0)) + m
+                = (f + (predecessor(n) + successor(0))) + m
+                = (f + successor(predecessor(n) + 0)) + m
+                = (f + successor(predecessor(n))) + m
+                = (f + n) + m
+
+**Lemma 6.3** successor is defined for every iterator in a half-open range and for every iterator except the last in a closed range.
+**Proof.** Suppose (f, n) is a weak or counted range.  Then successor^k(f) is defined for each 0 <= k <= n, which implies that successor(successor^k(f)) is defined for each 0 <= k < n.  Since {successor^k(f), 0 <= k < n} comprise every iterator in a half-open range, or every iterator except the last in a closed range, the claim follows for weak and counted ranges.  If [f, l) is a half-open bounded range, then [[f, l - f)) is a half-open counted range; we have already proved that successor is defined for every iterator in [[f, l - f|), and since [[f, l - f|) and [f, l) are the same range, it follows that successor is defined for every iterator in [f, l).  Similarly, if [f, l] is a closed bounded range, then [[f, l - f]] is a closed counted range; we have already proved that successor is defined for every iterator except the last in [[f, l - f]], and since [[f, l - f]] and [f, l] are the same range, it follows that successor is defined for every iterator except the last in [f, l].
+
+**Lemma 6.4** If i is in [f, l), both [f, i) and [i, l) are bounded ranges.
+**Proof.** Since [f, l) is equivalent to the half-open counted range [[f, l - f|), i is in [f, l) implies i = successor^k(f) for some 0 <= k < l - f.  Note that by definition of distance, i = successor^k(f) and i - f = k.  Since counted ranges are weak ranges, Lemma 6.1 implies that [[f, k|) = [[f, i - f|) is a counted range, i.e. [f, i) is a bounded range.  Next, note that successor^j(i) is defined and distinct for each 0 <= j <= (l - f) - k; thus [[i, (l - f) - k|) is a counted range.  Finally, since l = successor^{l-f}(f) = successor^{(l-f)-k}(successor^k(f)) = successor^{(l-f)-k}(i), it follows that [[i, (l - f) - k|) is precisely the bounded range [i, l).
+
+**Lemma 6.5.** i is not an element of [[i, 0|) and i is not an element of [i, i).
+**Proof.** [[i, 0|) is defined as the sequence of iterators {successor^k(i) | 0 <= k < 0}; since there are no k for which 0 <= k < 0, [[i, 0|) is the empty sequence of iterators.  Since [i, i) is defined as [[i, i - i|) and i - i is defined as 0 for any iterator i, [i, i) is also the empty sequence of iterators.  We conclude that i is neither an element of [[i, 0|) nor an element of [i, 0), since i is not an element of the empty set.
+
+**Lemma 6.6** Empty ranges have neither first nor last elements.
+**Proof.** The proof of Lemma 6.5 shows that an empty range [[i, 0|) or [i, i) actually does correspond to an empty sequence of iterators, and an empty sequence has neither a first nor a last element.
+
+**Lemma 6.7**
+    (1) The size of a half-open weak range [[f, n|) is n
+    (2) The size of a closed weak range [[f, n]] is n + 1
+    (3) The size of a half-open bounded range [f, l) is l - f
+    (4) The size of a closed bounded range [f, l] is (l - f) + 1
+**Proof.**
+    (1) [[f, n|) is the sequence of iterators {successor^k(f) | 0 <= k < n}; since there are n values of k such that 0 <= k < n, the sequence has n terms.  Note that for a weak range that's not a counted range, even though the sequence of iterators has n terms, the set of iterators that appear in the sequence might have fewer than n elements.
+    (2) [[f, n]] is the sequence of iterators {successor^k(f) | 0 <= k <= n}; since there are n + 1 values of k such that 0 <= k <= n, the sequence has n + 1 terms.
+    (3) This follows from the fact that [f, l) is the same sequence as [[f, l - f)).
+    (4) This follows from the fact that [f, l] is the same sequence as [[f, l - f]].

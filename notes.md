@@ -21,6 +21,8 @@ What's an example of an optimization that can be made for non-regular functions 
 Is the difficulty of order-selection with order 5 somehow related to the insolubility of quintics?
 What's the motivation for the axiom w(a * b) >= w(a) in the definition of a EuclideanSemiring?
 Chapter 5 Conclusion: What's a case of "adjusting theories to fit algorithmic requirements"?
+What are some sample implementations of "source" for a readable type, and how can we verify that the implementation is about as fast as an ordinary pointer dereference?
+How should we define equality for iterators?
 
 ## Definitions
 
@@ -587,3 +589,73 @@ A concept is **inconsistent** if both a proposition and its negation can be deri
 A concept is **useful** if there are useful algorithms for which this is the most abstract setting
 A **bounded unsigned binary integer type** U_n, where n = 8, 16, 32, 64, ..., is an unsigned integer type capable of representing a value in the interval [0, 2^n)
 A **bounded signed binary integer type** S_n, where n = 8, 16, 32, 64, ..., is a signed integer type capable of representing a value in the interval [-2^{n-1}, 2^{n-1})
+
+### Chapter 6
+
+A type T is **readable** if a unary function "source" defined on it returns an object of type ValueType(T):
+
+    Readable(T) :=
+        Regular(T)
+      ^ ValueType: Readable -> Regular
+      ^ source: T -> ValueType(T)
+
+A **pseudotransformation** has the signature of a transformation but is not necessarily regular
+
+    Iterator(T) :=
+        Regular(T)
+      ^ DistanceType: Iterator -> Integer
+      ^ successor: T -> T
+      ^ successor is not necessarily regular
+
+An iterator algorithm is **single-pass** if it applies successor to the value of each iterator once
+
+    property(I: Iterator)
+    weak_range: I x DistanceType(I)
+        (f, n) |-> (forall i in DistanceType(I))
+                       (0 <= i <= n) implies successor^i(f) is defined
+
+    property(I: Iterator, N: Integer)
+    counted_range: I x N
+        (f, n) |-> weak_range(f, n) ^
+                       (forall i, j in N) (0 <= i < j <= n) implies
+                           successor^i(f) != successor^j(f)
+
+    property(I: Iterator)
+    bounded_range: I x I
+        (f, l) |-> (exists k in DistanceType(I))
+                       counted_range(f, k) ^ successor^k(f) = l
+
+A **half-open weak (or counted) range** [[f, n|), where n >= 0 is an integer, denotes the sequence of iterators
+
+    {successor^k(f) | 0 <= k < n}
+
+A **closed weak (or counted) range** [[f, n]], where n >= 0 is an integer, denotes the sequence of iterators
+
+    {successor^k(f) | 0 <= k <= n}
+
+A **half-open bounded range** [f, l) is equivalent to the half-open counted range[[f, l - f|)
+A **closed bounded range** [f, l] is equivalent to the closed counted range [[f, l - f]]
+    [Also known as a compact range--jk lol]
+If r is a range and i is an iterator, we say i is in r, or i is an element of r, if i is a member of r when we consider the set of iterators in r (note that r itself is a sequence of iterators, not a set of iterators)
+We denote empty half-open ranges by [[i, 0|) or [i, i) for some iterator i
+An iterator l is called the **limit** of a half-open bounded range [f, l); also, f + n is the limit of the half-open weak range [[f, n|)
+    Note that i is the limit of the empty ranges [[i, 0|) and [i, i)
+Given two iterators i and j in a counted or bounded range, we say i precedes j if i != j and bounded_range(i, j), i.e. one or more applications of successor leads from i to j
+A range of iterators from a type modeling Readable and Iterator is **readable** if source is defined on all iterators in the range:
+
+    property(I: Readable)
+        requires(Iterator(I))
+    readable_bounded_range: I x I
+        (f, l) |-> bounded_range(f, l) ^ (forall i in [f, l)) source(i) is defined
+
+    property(I: Readable)
+        requires(Iterator(I))
+    readable_weak_range: I x DistanceType(I)
+        (f, n) |-> weak_range(f, n) ^ (forall i in [[f, n))) source(i) is defined
+
+    property(I: Readable)
+        requires(Iterator(I))
+    readable_counted_range: I x DistanceType(I)
+        (f, n) |-> counted_range(f, n) ^ (forall i in [[f, n))) source(i) is defined
+
+
