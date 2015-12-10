@@ -25,6 +25,7 @@ What are some sample implementations of "source" for a readable type, and how ca
 How should we define equality for iterators?
 What's the motivation for having count_if accept (and return) an iterator, as opposed to an integer?
 What sort of copy semantics do we need to ensure for iterators?
+When would operations involving the identity element "be slow or require extra logic to implement"?
 
 ## Definitions
 
@@ -660,4 +661,9 @@ A range of iterators from a type modeling Readable and Iterator is **readable** 
     readable_counted_range: I x DistanceType(I)
         (f, n) |-> counted_range(f, n) ^ (forall i in [[f, n))) source(i) is defined
 
-
+    property(Op: BinaryOperation)
+    partially_associative: Op
+        op |-> (forall a, b, c in Domain(Op))
+                   if op(a, b) and op(b, c) are defined,
+                   op(op(a, b), c) and op(a, op(b, c)) are defined
+                   and are equal
