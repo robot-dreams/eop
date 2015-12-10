@@ -546,3 +546,15 @@ w is called the **Euclidean function** [Euclidean norm?]
       ^ quotient: T x T -> S
       ^ (forall a, b in T) b != 0 implies a = quotient(a, b) * b + remainder(a, b)
       ^ (forall a, b in T) (a != 0 v b != 0) implies gcd(a, b) terminates
+
+An Archimedean group must also satisfy the following properties (b != 0):
+
+    a = quotient(a, b) * b + remainder(a, b)
+    |remainder(a, b)| < |b|
+    remainder(a + b, b) = remainder(a - b, b) = remainder(a, b)
+
+Dirichlet: If two numbers a and b have the same remainder r relative to the same modulus k they will be called **congruent** relative to the modulus k (following Gauss)
+
+    ArchimedeanGroup(T) :=
+        ArchimedeanMonoid(T)
+      ^ AdditiveGroup(T)

@@ -156,9 +156,203 @@ T gcd_esm(T a, T b)
     }
 }
 
+template<typename T>
+    requires(HalvableMonoid(T))
+pair<QuotientType(T), T> largest_doubling_2(T a, T b)
+{
+    // Precondition:
+    //     a >= b > 0
+    typedef QuotientType(T) N;
+    N n(1);
+    while (b <= a - b) {
+        n = n + n;
+        b = b + b;
+    }
+    return pair<N, T>(n, b);
+    // Postcondition:
+    //     b <= a < b + b
+}
+
+template<typename T>
+    requires(ArchimedeanMonoid(T))
+pair<QuotientType(T), T> quo_rem_nonnegative(T a, T b)
+{
+    // Precondition:
+    //     a >= 0 && b > 0
+    typedef QuotientType(T) N;
+    if (a < b) return     pair<N, T>(N(0), a);
+    if (a - b < b) return pair<N, T>(N(1), a - b);
+    pair<N, T> q = quo_rem_nonnegative(a, b + b);
+    N m = twice(q.first);
+    a = q.second;
+    if (a < b) return pair<N, T>(m, a);
+    return            pair<N, T>(successor(m), a - b);
+}
+
+template<typename T>
+    requires(HalvableMonoid(T))
+pair<QuotientType(T), T> quo_rem_nonnegative_iter(T a, T b)
+{
+    // Precondition:
+    //     a >= 0 && b > 0
+    typedef QuotientType(T) N;
+    if (a < b) return pair<N, T>(N(0), a);
+    T c = largest_doubling(a, b);
+    a = a - c;
+    N n(1);
+    while (c != b) {
+        n = twice(n);
+        c = half(c);
+        if (a >= c) {
+            a = a - c;
+            n = successor(n);
+        }
+    }
+    return pair<N, T>(n, a);
+}
+
+template<typename T>
+    requires(HalvableMonoid(T))
+pair<QuotientType(T), T> quo_rem_nonnegative_iter_2(T a, T b)
+{
+    // Precondition:
+    //     a >= 0 && b > 0
+    typedef QuotientType(T) N;
+    if (a < b) return pair<N, T>(N(0), a);
+    pair<N, T> p = largest_doubling_2<T>(a, b);
+    N m = p.first;
+    T c = p.second;
+    N n = m;
+    a = a - c;
+    do {
+        m = half(m);
+        c = half(c);
+        if (a >= c) {
+            n = n + m;
+            a = a - c;
+        }
+    } while (a >= b);
+    return pair<N, T>(n, a);
+}
+
+template<typename Op>
+    requires(BinaryOperation(Op) &&
+        ArchimedeanGroup(Domain(Op)))
+Domain(Op) remainder(Domain(Op) a, Domain(Op) b, Op rem)
+{
+    // Precondition:
+    //     b != 0
+    typedef Domain(Op) T;
+    T r;
+    if (a < T(0))
+        if (b < T(0)) {
+            r = -rem(-a, -b);
+        } else {
+            r = rem(-a, b);
+            if (r != T(0)) r = b - r;
+        }
+        else
+            if (b < T(0)) {
+                r = rem(a, -b);
+                if (r != T(0)) r = b + r;
+            } else {
+                r = rem(a, b);
+            }
+    return r;
+}
+
+template<typename Op>
+    requires(BinaryOperation(Op) &&
+        ArchimedeanGroup(Domain(Op)))
+Domain(Op) remainder_2(Domain(Op) a, Domain(Op) b, Op rem)
+{
+    // Precondition:
+    //     b != 0
+    typedef Domain(Op) T;
+    if (b < T(0)) b = -b;
+    if (a < 0) {
+        T c = largest_doubling(-a, b);
+        a = a + c;
+        a = a + c;
+    }
+    return rem(a, b);
+}
+
+template<typename F>
+    requires(HomogeneousFunction(F) && Arity(F) == 2 &&
+        ArchimedeanGroup(Domain(F)) &&
+        Codomain(F) == pair<QuotientType(Domain(F)),
+                            Domain(F)>)
+pair<QuotientType(Domain(F)), Domain(F)>
+quotient_remainder(Domain(F) a, Domain(F) b, F quo_rem)
+{
+    // Precondition:
+    //     b != 0
+    typedef Domain(F) T;
+    pair<QuotientType(T), T> q_r;
+    if (a < T(0)) {
+        if (b < T(0)) {
+            q_r = quo_rem(-a, -b); q_r.second = -q_r.second;
+        } else {
+            q_r = quo_rem(-a, b);
+            if (q_r.second != T(0)) {
+                q_r.second = b - q_r.second; q_r.first = successor(q_r.first);
+            }
+            q_r.first = -q_r.first;
+        }
+    } else {
+        if (b < T(0)) {
+            q_r = quo_rem(a, -b);
+            if (q_r.second != T(0)) {
+                q_r.second = b + q_r.second; q_r.first = successor(q_r.first);
+            }
+            q_r.first = -q_r.first;
+        } else
+            q_r = quo_rem(a, b);
+    }
+    return q_r;
+}
+
+template<typename F>
+    requires(HomogeneousFunction(F) && Arity(F) == 2 &&
+        ArchimedeanGroup(Domain(F)) &&
+        Codomain(F) == pair<QuotientType(Domain(F)),
+                            Domain(F)>)
+pair<QuotientType(Domain(F)), Domain(F)>
+quotient_remainder_2(Domain(F) a, Domain(F) b, F quo_rem)
+{
+    // Preconditions:
+    //     b != 0
+    //     quo_rem makes Domain(F) an Archimedean monoid
+    typedef Domain(F) T;
+    typedef QuotientType(T) N;
+    pair<N, T> q_r;
+    if (a < T(0))
+        if (b < T(0)) {
+            q_r = quo_rem(-a, -b);
+            q_r.second = -q_r.second;
+        } else {
+            q_r = quo_rem(-a, b);
+            q_r.first = -q_r.first;
+            if (q_r.second != T(0)) {
+                q_r.first = predecessor(q_r.first);
+                q_r.second = b - q_r.second;
+            }
+        }
+    else
+        if (b < T(0)) {
+            q_r = quo_rem(a, -b);
+            q_r.first = -q_r.first;
+            if (q_r.second != T(0)) {
+                q_r.first = predecessor(q_r.first);
+                q_r.second = b + q_r.second;
+            }
+        } else {
+            q_r = quo_rem(a, b);
+        }
+    return q_r;
+}
+
 int main() {
-    cout << gcd_esm<int, int>(5, 0) << endl;
-    cout << gcd_esm<int, int>(5, 12592) << endl;
-    cout << gcd_esm<int, int>(5055, 1593415) << endl;
-    cout << gcd_esm<int, int>(0, 5) << endl;
+
 }

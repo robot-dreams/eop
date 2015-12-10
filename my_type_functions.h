@@ -148,6 +148,19 @@ struct quotient_type<int> {
 };
 
 #define QuotientType(T) typename quotient_type< T >::type
+
+// quotient_remainder
+
+template<typename T>
+struct input_type<pair<QuotientType(T), T> (*)(T, T), 0> {
+    typedef T type;
+};
+
+template<typename T>
+struct input_type<pair<QuotientType(T), T> (*)(const T&, const T&), 0> {
+    typedef T type;
+};
+
 template<typename T0, typename T1, typename T2>
     requires(Regular(T0), Regular(T1), Regular(T2))
 struct triple

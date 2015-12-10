@@ -381,3 +381,35 @@ Next, we consider the rational case.  Note that multiplication by a positive int
 
 **Lemma 5.20** gcd terminates on a Euclidean semiring.
 **Proof.** At every iteration, w(max(a, b)) must decrease.  But max(a, b) is always positive; thus w(max(a, b)) is also positive.  If the procedure executes more than w(max(a0, b0)) iterations (where a0 and b0 are the initial values of the arguments), then w(max(a, b)) would become zero or negative, which is a contradiction.  We conclude that the procedure terminates after at most w(max(a0, b0)) iterations of the loop.
+
+**Lemma 5.C** If remainder(a, b, rem) returns r, then there exists some q such that a = bq + r.
+**Proof.** If a and b are both positive, then the claim follows immediately from the correctness of rem.  If a is positive and b is negative, then rem(a, -b) returns r' such that a = q(-b) + r'.  If r' = 0 then remainder returns 0, and a = (-q)b shows that the claim holds.  Otherwise, remainder returns b + r', and a = (-q - 1)b + (b + r') shows that the claim holds.  If a is negative and b is positive, then rem(-a, b) returns r' such that -a = qb + r'.  If r' = 0 then remainder returns 0, and a = (-q) b shows that the claim holds.  Otherwise, remainder returns b - r', and a = (-q - 1)b + (b - r') shows that the claim holds.  Finally, if a and b are both negative, then rem(-a, -b) returns r' such that -a = q(-b) + r', and remainder returns -r'; since a = qb + -r', the claim holds, and the proof is complete.
+
+**Lemma 5.D** If remainder(a, b, rem) returns r, then |r| < |b|.
+**Proof.** Since we assume that b is nonzero, if r = 0 there is nothing to prove; thus we only consider the case of nonzero r.  Suppose a and b are both positive; then by the correctness of rem, r = rem(a, b) < b, and |r| < |b| follows.  If a is positive and b is negative, then r = rem(a, -b) + b; since 0 < rem(a, -b) < -b, b < r < 0, so 0 < -r < -b, and |r| < |b|.  If a is negative and b is positive, then r = -rem(-a, b) + b; since 0 < rem(-a, b) < b, -b < -rem(-a, b) < 0, and 0 < r < b ,and |r| < |b| follows.  Finally, if a and b are both negative, then r = -rem(-a, -b); since 0 < rem(-a, -b) < -b, b < r < 0, and |r| < |b| follows.
+
+**Lemma 5.E** If a is not divisible by b, then remainder(a, b, rem) will have the same sign as b.
+**Proof.** If a and b are both positive, then remainder(a, b, rem) = rem(a, b), which returns a value 0 <= r < b; by our assumption that a is not divisible by b, r is positive.  (We will use this fact in subsequent cases as well.)
+
+If a is negative and b is positive, then rem(-a, b) returns a positive value r' such that -a = qb + r', and 0 < r' < b.  Thus -b < -r' < 0, and 0 < b - r' < b, and remainder(a, b, rem) returns the positive value b - r'.
+
+If a is positive and b is negative, then rem(a, -b) returns a positive value r' such that 0 < r' < -b.  Then b < b + r' < 0, and remainder(a, b, rem) returns the negative value b - r'.
+
+Finally, if a is negative and b is negative, then rem(-a, -b) returns the positive value r' such that 0 < r' < -b.  Then 0 > -r' > b, and remainder(a, b, rem) returns the negative value -r'.
+
+**Lemma 5.F** If a is divisible by b, then remainder(a, b, rem) always returns 0.
+**Proof.** This follows immediately from the definition of remainder together with the assumed correctness of rem.
+
+**Lemma 5.G** a is congruent to remainder(a, b, rem) mod b.
+**Proof.** If a is divisible by b, then the claim follows from Lemma 5.F, so we only need to consider the case where remainder(a, b, rem) is nonzero.  If a and b are both positive, then the claim follows from the correctness of rem.  If a is positive and b is negative, then remainder(a, b, rem) = b + r', where a = q(-b) + r'.  Thus a is congruent to r' mod b, so a is congruent to b + r' mod b.  If a is negative and b is positive, then remainder(a, b, rem) = b - r', where -a = qb + r'.  Thus a = (-q)b - r', and a is congruent to -r' mod b, so a is also congruent to b - r' mod b.  Finally, if a and b are both negative, then remainder(a, b, rem) = -r', where -a = q(-b) + r'.  Thus a = qb - r', which shows that a is congruent to r' mod b.
+
+**Lemma 5.21A** remainder is correct whenever rem is correct.
+**Proof.** Lemma 5.D shows that the second property, |remainder(a, b)| < |b|, holds.  If b < 0, then Lemmas 5.D, 5.E, and 5.G show that remainder(a, b) is the unique element in the range (b, 0] congruent to a mod b; since a + b and a - b are both also congruent to a, transitivity of congruence shows that remainder(a + b, b, rem) = remainder(a - b, b, rem) = remainder(a, b, rem).  Similarly, if b > 0, then Lemmas 5.D, 5.E, and 5.G show that remainer(a, b) is the unique element in the range [0, b) congruent to a mod b; since a + b and a - b are also congruent to a, again we have remainder(a + b, b, rem) = remainder(a - b, b, rem) = remainder(a, b, rem); thus the third property holds.  The first property depends also on quotient; we will prove its correctness when we prove that quotient_remainer is correct.
+
+**Lemma 5.H** If qr(a, b, op) returns (q, r), then a = qb + r.
+**Proof.** We begin with the case where b divides a.  If a and b are both positive, then the claim follows from the assumed correctness of op.  If a is positive and b is negative, then op(a, -b) returns the pair (q', 0), where a = q'(-b), qr returns the pair (-q', 0), and a = (-q')b + 0 holds.  If a is negative and b is positive, then op(-a, b) returns the pair (q', 0), where -a = q'b, qr returns the pair (-q', 0), and a = (-q')b + 0 holds.  If a and b are both negative, then op(-a, -b) returns the pair (q', 0) where -a = -q'b, qr returns the pair (q', 0), and a = q'b holds.
+
+Next, we consider the case where b does not divide a.  If a and b are both positive, then the claim follows from the assumed correctness of op.  If a is positive and b is negative, then op(a, -b) returns the pair (q', r') where a = q'(-b) + r', qr returns the pair (-q' - 1, b + r'), and a = (-q' - 1)b + (b + r') holds.  If a is negative and b is positive, then op(-a, b) returns the pair (q', r') where -a = q'b + r', qr returns the pair (-q' - 1, b - r'), and a = (-q' - 1)b + b - r' holds.  Finally, if a and b are both negative, then op(-a, -b) returns the pair (q', r') where -a = q'(-b) + r', qr returns the pair (q', -r'), and a = q'b + -r' holds.
+
+**Lemma 5.21B** quotient_remainder is correct whenever op is correct.
+**Proof.** Lemma 5.H shows that the first property (a = qb + r) holds.  Since the remainder part of quotient_remainder is implemented identically to the 'remainder' procedure, Lemma 5.21A implies that the second and third properties (|r| < |b| and congruence) also hold.
