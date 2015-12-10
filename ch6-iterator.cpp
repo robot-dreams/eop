@@ -664,6 +664,127 @@ pair<Domain(Op), I> my_reduce_nonzeros_n(I f,
     return pair<Domain(Op), I>(x, f);
 }
 
+template<typename I, typename P>
+    requires(Iterator(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+I find_if_guarded(I f, P p)
+{
+    // Preconditions:
+    //     there exists some l such that:
+    //         bounded_range(f, l)
+    //         p(l)
+    while (!p(source(f))) f = successor(f);
+    return f;
+    // Postcondition: p(source(f))
+}
+
+template<typename I, typename P>
+    requires(Iterator(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+I find_if_not_guarded(I f, P p)
+{
+    // Preconditions:
+    //     there exists some l such that:
+    //         bounded_range(f, l)
+    //         !p(l)
+    while (p(source(f))) f = successor(f);
+    return f;
+    // Postcondition: !p(source(f))
+}
+
+template<typename I0, typename I1, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+        Readable(I1) && Iterator(I1) && Relation(R) &&
+        ValueType(I0) == ValueType(I1) &&
+        ValueType(I0) == Domain(r))
+pair<I0, I1> find_mismatch(I0 f0, I0 l0, I1 f1, I1 l1, R r)
+{
+    // Preconditions:
+    //     readable_bounded_range(f0, l0)
+    //     readable_bounded_range(f1, l1)
+    while (f0 != l0 && f1 != l1 && r(source(f0), source(f1))) {
+        f0 = successor(f0);
+        f1 = successor(f1);
+    }
+    // Note: we return the final values of both iterators so that
+    // (a) we can determine whether a mismatch was found
+    //     (a mismatch was found if the lhs doesn't match the original value
+    //     of l0 and the rhs doesn't match the original value of l1)
+    // (b) in the case where either a mismatch was found, we can continue
+    //     the search with the same ranges
+    // (c) in the case where a mismatch was not found but one range was shorter
+    //     than the other, we can determine where in the longer range the
+    //     search terminated
+    return pair<I0, I1>(f0, f1);
+    // Postcondition:
+    //     f0 == l0 || f1 == l1 || !r(source(f0), source(f1))
+}
+
+template<typename I0, typename I1, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+        Readable(I1) && Iterator(I1) && Relation(R) &&
+        ValueType(I0) == ValueType(I1) &&
+        ValueType(I0) == Domain(r))
+pair<I0, I1> find_mismatch_n0(I0 f0, DistanceType(I0) n0, I1 f1, I1 l1, R r)
+{
+    // Preconditions:
+    //     readable_weak_range(f0, n0)
+    //     readable_bounded_range(f1, l1)
+    while (!zero(n0) && f1 != l1 && r(source(f0), source(f1))) {
+        n0 = predecessor(n0);
+        f0 = successor(f0);
+        f1 = successor(f1);
+    }
+    return pair<I0, I1>(f0, f1);
+    // Postcondition:
+    //     zero(n0) || f1 == l1 || !r(source(f0), source(f1))
+}
+
+template<typename I0, typename I1, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+        Readable(I1) && Iterator(I1) && Relation(R) &&
+        ValueType(I0) == ValueType(I1) &&
+        ValueType(I0) == Domain(r))
+pair<I0, I1> find_mismatch_n1(I0 f0, I0 l0, I1 f1, DistanceType(I1) n1, R r)
+{
+    // Preconditions:
+    //     readable_bounded_range(f0, l0)
+    //     readable_weak_range(f1, n1)
+    while (f0 != l0 && !zero(n1) && r(source(f0), source(f1))) {
+        f0 = successor(f0);
+        n1 = predecessor(n1);
+        f1 = successor(f1);
+    }
+    return pair<I0, I1>(f0, f1);
+    // Postcondition:
+    //     f0 == l0 || zero(n1) || !r(source(f0), source(f1))
+}
+
+template<typename I0, typename I1, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+        Readable(I1) && Iterator(I1) && Relation(R) &&
+        ValueType(I0) == ValueType(I1) &&
+        ValueType(I0) == Domain(r))
+pair<I0, I1> find_mismatch_n0_n1(I0 f0,
+                                 DistanceType(I0) n0,
+                                 I1 f1,
+                                 DistanceType(I1) n1,
+                                 R r)
+{
+    // Preconditions:
+    //     readable_weak_range(f0, n0)
+    //     readable_weak_range(f1, n1)
+    while (!zero(n0) && !zero(n1) && r(source(f0), source(f1))) {
+        n0 = predecessor(n0);
+        f0 = successor(f0);
+        n1 = predecessor(n1);
+        f1 = successor(f1);
+    }
+    return pair<I0, I1>(f0, f1);
+    // Postcondition:
+    //     zero(n0) || zero(n1) || !r(source(f0), source(f1))
+}
+
 template<typename T>
 struct input_type<plus<T>, 0> {
     typedef T type;
@@ -677,13 +798,10 @@ struct input_type<multiplies<T>, 0> {
 int main() {
     int* x = new int[10];
     for (int i = 0; i < 5; i++) {
-        x[i] = i + 1;
-        x[5 + i] = i + 1;
+        x[i] = i;
+        x[5 + i] = i;
     }
-    int (*fun)(int*) = source<int>;
-    pair<int, int*> q =  my_reduce_nonzeros_n(x, 10, multiplies<int>(), fun, 1);
-    cout << "result: " << q.first << ", pos: " << (q.second - x) << endl;
-    // pair<int, int*> q = my_count_if_not_n(x, 10, bind2nd(less<int>(), 3));
-    // cout << "count: " << q.first << ", pos: " << (q.second - x) << endl;
+    pair<int*, int*> q = find_mismatch_n0_n1(x, 5, x, 10, equal_to<int>());
+    cout << (q.first - x) << ", " << (q.second - x) << endl;
     delete[] x;
 }
