@@ -131,7 +131,9 @@ struct codomain_type<bool (*)(T, T)> {
 
 template<typename F>
     requires(Transformation(F))
-struct distance_type;
+struct distance_type {
+    typedef Domain(F) type;
+};
 
 template<>
 struct distance_type<int> {
@@ -148,7 +150,7 @@ struct distance_type<T*> {
     typedef unsigned long type;
 };
 
-#define DistanceType(T) typename distance_type< Domain(T) >::type
+#define DistanceType(T) typename distance_type< T >::type
 
 template<typename T>
     requires(ArchimedeanMonoid(T))
