@@ -457,3 +457,14 @@ Next, we consider the case where b does not divide a.  If a and b are both posit
     (2) [[f, n]] is the sequence of iterators {successor^k(f) | 0 <= k <= n}; since there are n + 1 values of k such that 0 <= k <= n, the sequence has n + 1 terms.
     (3) This follows from the fact that [f, l) is the same sequence as [[f, l - f)).
     (4) This follows from the fact that [f, l] is the same sequence as [[f, l - f]].
+
+**Lemma 6.8** If p is a predicate and [f, l) is a p-partitioned range:
+
+    (1) (forall m in [f, l)) !p(source(m)) implies (forall j in [f, m]) !p(source(j))
+    (2) (forall m in [f, l)) p(source(m)) implies (forall j in [m, l) p(source(j))
+
+**Proof.**
+
+(1) We will prove the contrapositive.  Suppose p(source(j)) for some j in [f, m].  Then by definition of a p-partitioned range, p(source(k)) for each k in [j, l).  In particular, p(source(m)).
+
+(2) This follows directly from the definition of a p-partitioned range.
