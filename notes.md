@@ -6,6 +6,8 @@ Footnote 4.4 (page 55)
 Exercise 4.5: Prove that my solution performs 5 2/3 comparisons on average
 Exercise 4.6: My solution is really sloppy
 Footnotes 5.9-5.11 (page 81)
+Draw out the hierarchy of algebraic types
+Prove that NonnegativeDiscreteArchimedeanSemiring and DiscreteArchimedeanRing are univalent
 
 ## Questions
 
@@ -18,6 +20,7 @@ Footnote 3.6 (page 42): How would you write such an identity_element function?
 What's an example of an optimization that can be made for non-regular functions / types?
 Is the difficulty of order-selection with order 5 somehow related to the insolubility of quintics?
 What's the motivation for the axiom w(a * b) >= w(a) in the definition of a EuclideanSemiring?
+Chapter 5 Conclusion: What's a case of "adjusting theories to fit algorithmic requirements"?
 
 ## Definitions
 
@@ -558,3 +561,29 @@ Dirichlet: If two numbers a and b have the same remainder r relative to the same
     ArchimedeanGroup(T) :=
         ArchimedeanMonoid(T)
       ^ AdditiveGroup(T)
+
+    DiscreteArchimedeanSemiring(T) :=
+        CommutativeSemiring(T)
+      ^ ArchimedeanMonoid(T)
+      ^ (forall a, b, c in T) a < b ^ 0 < c implies a * c < b * c
+      ^ !(exists a in T) 0 < a < 1
+
+**Discreteness** refers to the property that there is no element between 0 and 1
+
+    NonnegativeDiscreteArchimedeanSemiring(T) :=
+        DiscreteArchimedeanSemiring(T)
+      ^ (forall a in T) 0 <= a
+
+    DiscreteArchimedeanRing(T) :=
+        DiscreteArchimedeanSemiring(T)
+      ^ AdditiveGroup(T)
+
+Two types T and T' are **isomorphic** if it is possible to write conversion functions from T to T' and from T' to T that preserve the procedures and their axioms
+A concept is **univalent** if any types satisfying it are isomorphic.
+A proposition is **independent** from a set of axioms if there is a model in which all of the axioms are true, but the proposition is false
+A proposition is **dependent** or **provable** from a set of axioms if it can be derived from them [in which case for every model where the axioms are true, the proposition is also true]
+A concept is **consistent** if it has a model
+A concept is **inconsistent** if both a proposition and its negation can be derived from its axioms [in which case no model exists for that concept]
+A concept is **useful** if there are useful algorithms for which this is the most abstract setting
+A **bounded unsigned binary integer type** U_n, where n = 8, 16, 32, 64, ..., is an unsigned integer type capable of representing a value in the interval [0, 2^n)
+A **bounded signed binary integer type** S_n, where n = 8, 16, 32, 64, ..., is a signed integer type capable of representing a value in the interval [-2^{n-1}, 2^{n-1})
