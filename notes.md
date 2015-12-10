@@ -23,6 +23,8 @@ What's the motivation for the axiom w(a * b) >= w(a) in the definition of a Eucl
 Chapter 5 Conclusion: What's a case of "adjusting theories to fit algorithmic requirements"?
 What are some sample implementations of "source" for a readable type, and how can we verify that the implementation is about as fast as an ordinary pointer dereference?
 How should we define equality for iterators?
+What's the motivation for having count_if accept (and return) an iterator, as opposed to an integer?
+What sort of copy semantics do we need to ensure for iterators?
 
 ## Definitions
 

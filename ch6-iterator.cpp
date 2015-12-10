@@ -128,31 +128,51 @@ bool my_some(I f, I l, P p)
     return my_find_if(f, l, p) != l;
 }
 
-template<typename T>
-class PrintAndAccumulate {
-public:
-    PrintAndAccumulate() : accumulator(T()) {}
+template<typename I, typename P, typename J>
+    requires(Iterator(I) && Readable(I) &&
+        UnaryPredicate(P) && Iterator(J) &&
+        ValueType(I) == Domain(P))
+J my_count_if(I f, I l, P p, J j)
+{
+    while (f != l) {
+        if (p(source(f))) j = successor(j);
+        f = successor(f);
+    }
+    return j;
+}
 
-    void operator()(T input) {
-        accumulator += input;
-        cout << input << endl;
+template<typename I, typename P, typename J>
+    requires(Iterator(I) && Readable(I) &&
+        UnaryPredicate(P) && Iterator(J) &&
+        ValueType(I) == Domain(P))
+class my_count_if_accumulator
+{
+public:
+    my_count_if_accumulator(P p, J j) : p(p), j(j) {}
+
+    void operator()(const ValueType(I)& x)
+    {
+        if (p(x)) j = successor(j);
     }
 
-    T get() {
-        return accumulator;
+    J count() const {
+        return j;
     }
 
 private:
-    T accumulator;
+    P p;
+    J j;
 };
 
-template<typename T>
-struct input_type<PrintAndAccumulate<T>, 0> {
-    typedef T type;
-};
-
-void my_print(int x) {
-    cout << x << endl;
+template<typename I, typename P, typename J>
+    requires(Iterator(I) && Readable(I) &&
+        UnaryPredicate(P) && Iterator(J) &&
+        ValueType(I) == Domain(P))
+J my_count_if_2(I f, I l, P p, J j)
+{
+    return for_each(f,
+                    l,
+                    my_count_if_accumulator<I, P, J>(p, j)).count();
 }
 
 int main() {
@@ -161,10 +181,8 @@ int main() {
         x[i] = i;
         x[5 + i] = i;
     }
-    PrintAndAccumulate<int> p = my_for_each(x, x + 5, PrintAndAccumulate<int>());
-    cout << "accumulated: " << p.get() << endl;
     cout << boolalpha;
-    cout << my_some(x, x + 5, bind2nd(equal_to<int>(), -1)) << endl;
-    cout << my_some(x, x + 5, bind2nd(less<int>(), 5)) << endl;
+    cout << my_count_if(x, x + 5, bind2nd(less<int>(), 3), 0) << endl;
+    cout << my_count_if_2(x, x + 5, bind2nd(less<int>(), 3), 0) << endl;
     delete[] x;
 }
