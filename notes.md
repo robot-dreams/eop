@@ -667,3 +667,8 @@ A range of iterators from a type modeling Readable and Iterator is **readable** 
                    if op(a, b) and op(b, c) are defined,
                    op(op(a, b), c) and op(a, op(b, c)) are defined
                    and are equal
+
+Given a weak ordering r, we say that a range is **r-increasing** if it is relation preserving with respect to the complement of the converse of r (i.e. adjacent elements i, j of the range satisfy !r(j, i))
+Given a weak ordering r, we say that a range is **strictly r-increasing** if it is relation preserving with respect to r (i.e. adjacent elements i, j of the range satisfy r(i, j))
+Given a predicate p on the value type of some iterator, a range over that iterator type is called **p-partitioned** if any values of the range satisfying the predicate follow every value of the range not satisfying the predicate
+    The first iterator in the range whose value satisfies the predicate is called the **partition point**

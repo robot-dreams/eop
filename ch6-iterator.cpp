@@ -667,7 +667,7 @@ pair<Domain(Op), I> my_reduce_nonzeros_n(I f,
 template<typename I, typename P>
     requires(Iterator(I) && UnaryPredicate(P) &&
         ValueType(I) == Domain(P))
-I find_if_guarded(I f, P p)
+I my_find_if_guarded(I f, P p)
 {
     // Preconditions:
     //     there exists some l such that:
@@ -681,7 +681,7 @@ I find_if_guarded(I f, P p)
 template<typename I, typename P>
     requires(Iterator(I) && UnaryPredicate(P) &&
         ValueType(I) == Domain(P))
-I find_if_not_guarded(I f, P p)
+I my_find_if_not_guarded(I f, P p)
 {
     // Preconditions:
     //     there exists some l such that:
@@ -697,7 +697,7 @@ template<typename I0, typename I1, typename R>
         Readable(I1) && Iterator(I1) && Relation(R) &&
         ValueType(I0) == ValueType(I1) &&
         ValueType(I0) == Domain(r))
-pair<I0, I1> find_mismatch(I0 f0, I0 l0, I1 f1, I1 l1, R r)
+pair<I0, I1> my_find_mismatch(I0 f0, I0 l0, I1 f1, I1 l1, R r)
 {
     // Preconditions:
     //     readable_bounded_range(f0, l0)
@@ -725,7 +725,7 @@ template<typename I0, typename I1, typename R>
         Readable(I1) && Iterator(I1) && Relation(R) &&
         ValueType(I0) == ValueType(I1) &&
         ValueType(I0) == Domain(r))
-pair<I0, I1> find_mismatch_n0(I0 f0, DistanceType(I0) n0, I1 f1, I1 l1, R r)
+pair<I0, I1> my_find_mismatch_n0(I0 f0, DistanceType(I0) n0, I1 f1, I1 l1, R r)
 {
     // Preconditions:
     //     readable_weak_range(f0, n0)
@@ -745,7 +745,7 @@ template<typename I0, typename I1, typename R>
         Readable(I1) && Iterator(I1) && Relation(R) &&
         ValueType(I0) == ValueType(I1) &&
         ValueType(I0) == Domain(r))
-pair<I0, I1> find_mismatch_n1(I0 f0, I0 l0, I1 f1, DistanceType(I1) n1, R r)
+pair<I0, I1> my_find_mismatch_n1(I0 f0, I0 l0, I1 f1, DistanceType(I1) n1, R r)
 {
     // Preconditions:
     //     readable_bounded_range(f0, l0)
@@ -765,11 +765,11 @@ template<typename I0, typename I1, typename R>
         Readable(I1) && Iterator(I1) && Relation(R) &&
         ValueType(I0) == ValueType(I1) &&
         ValueType(I0) == Domain(r))
-pair<I0, I1> find_mismatch_n0_n1(I0 f0,
-                                 DistanceType(I0) n0,
-                                 I1 f1,
-                                 DistanceType(I1) n1,
-                                 R r)
+pair<I0, I1> my_find_mismatch_n0_n1(I0 f0,
+                                    DistanceType(I0) n0,
+                                    I1 f1,
+                                    DistanceType(I1) n1,
+                                    R r)
 {
     // Preconditions:
     //     readable_weak_range(f0, n0)
@@ -788,7 +788,7 @@ pair<I0, I1> find_mismatch_n0_n1(I0 f0,
 template<typename I, typename R>
     requires(Readable(I) && Iterator(I) && Relation(R) &&
         ValueType(I) == Domain(R))
-I find_adjacent_mismatch(I f, I l, R r)
+I my_find_adjacent_mismatch(I f, I l, R r)
 {
     // Precondition: readable_bounded_range(f, l)
     if (f == l) return f;
@@ -807,11 +807,12 @@ I find_adjacent_mismatch(I f, I l, R r)
 template<typename I, typename R>
     requires(Readable(I) && Iterator(I) && Relation(R) &&
         ValueType(I) == Domain(R))
-I find_adjacent_mismatch_n(I f, DistanceType(I) n, R r)
+pair<DistanceType(I), I> my_find_adjacent_mismatch_n(I f, DistanceType(I) n, R r)
 {
     // Precondition: readable_weak_range(f, n)
-    if (zero(n)) return f;
+    if (zero(n)) return pair<DistanceType(I), I>(n, f);
     ValueType(I) x = source(f);
+    n = predecessor(n);
     f = successor(f);
     while (!zero(n) && r(x, source(f))) {
         // This is ok because source must be regular
@@ -820,9 +821,118 @@ I find_adjacent_mismatch_n(I f, DistanceType(I) n, R r)
         n = predecessor(n);
         f = successor(f);
     }
-    return f;
+    return pair<DistanceType(I), I>(n, f);
     // Postcondition: zero(n) || !r(x, source(f))
 }
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+bool my_relation_preserving(I f, I l, R r)
+{
+    // Precondition: readable_bounded_range(f, l)
+    return my_find_adjacent_mismatch(f, l, r) == l;
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+pair<bool, I> my_relation_preserving_n(I f, DistanceType(I) n, R r)
+{
+    // Precondition: readable_weak_range(f, n)
+    pair<DistanceType(I), I> q = my_find_adjacent_mismatch_n(f, n, r);
+    return pair<bool, I>(q.first == DistanceType(I)(0), q.second);
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+bool my_strictly_increasing_range(I f, I l, R r)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, l)
+    //     weak_ordering(r)
+    return my_relation_preserving(f, l, r);
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+pair<bool, I> my_strictly_increasing_range_n(I f, DistanceType(I) n, R r)
+{
+    // Preconditions:
+    //     readable_weak_range(f, n)
+    //     weak_ordering(r)
+    return my_relation_preserving_n(f, n, r);
+}
+
+template<typename R>
+    requires(Relation(R))
+struct complement_of_converse
+{
+    typedef Domain(R) T;
+    R r;
+    complement_of_converse(const R& r) : r(r) {}
+    bool operator()(const T& a, const T& b)
+    {
+        return !r(b, a);
+    }
+};
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+bool my_increasing_range(I f, I l, R r)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, l)
+    //     weak_ordering(r)
+    return my_relation_preserving(f, l, complement_of_converse<R>(r));
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && Iterator(I) && Relation(R) &&
+        ValueType(I) == Domain(R))
+pair<bool, I> my_increasing_range_n(I f, DistanceType(I) n, R r)
+{
+    // Preconditions:
+    //     readable_weak_range(f, n)
+    //     weak_ordering(r)
+    return my_relation_preserving_n(f, n, complement_of_converse<R>(r));
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && Iterator(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+bool my_partitioned(I f, I l, P p)
+{
+    // Preconditions:
+    //    readable_bounded_range(f, l)
+    return l == my_find_if_not(my_find_if(f, l, p), l, p);
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && Iterator(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+pair<bool, I> my_partitioned_n(I f, DistanceType(I) n, P p)
+{
+    // Preconditions:
+    //    readable_bounded_range(f, l)
+    pair<I, DistanceType(I)> q;
+    q = my_find_if_n(f, n, p);
+    q = my_find_if_not_n(q.first, q.second, p);
+    return pair<bool, I>(zero(q.second), q.first);
+}
+
+template<typename R>
+struct input_type<complement_of_converse<R>, 0> {
+    typedef Domain(R) type;
+};
+
+template<typename T>
+struct input_type<less<T>, 0> {
+    typedef T type;
+};
 
 template<typename T>
 struct input_type<plus<T>, 0> {
@@ -840,7 +950,7 @@ int main() {
         x[i] = i;
         x[5 + i] = i;
     }
-    int* y = find_adjacent_mismatch_n(x, 10, less_equal<int>());
-    cout << y - x << endl;
+    cout << boolalpha;
+    cout << my_partitioned_n(1, 10, bind2nd(equal_to<int>(), 4)).first << endl;
     delete[] x;
 }
