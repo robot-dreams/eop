@@ -924,6 +924,125 @@ pair<bool, I> my_partitioned_n(I f, DistanceType(I) n, P p)
     return pair<bool, I>(zero(q.second), q.first);
 }
 
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+I my_find_adjacent_mismatch_forward(I f, I l, R r)
+{
+    // Precondition: readable_bounded_range(f, l)
+    if (f == l) return f;
+    I t;
+    do {
+        t = f;
+        f = successor(f);
+    } while (f != l && r(source(t), source(f)));
+    return f;
+    // Postcondition: f == l || !r(t, f)
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair<DistanceType(I), I> my_find_adjacent_mismatch_forward_n(I f, DistanceType(I) n, R r)
+{
+    // Precondition: readable_weak_range(f, n)
+    if (zero(n)) return pair<DistanceType(I), I>(n, f);
+    I t;
+    do {
+        t = f;
+        n = predecessor(n);
+        f = successor(f);
+    } while (!zero(n) && r(source(t), source(f)));
+    return pair<DistanceType(I), I>(n, f);
+    // Postcondition: zero(n) || !r(source(t), source(f))
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_point_n(I f, DistanceType(I) n, P p)
+{
+    // Preconditions:
+    //     readable_counted_range(f, l)
+    //     my_partitioned_n(f, n, p)
+    //
+    // Claims:
+    //
+    // 1. If n > 0 at the beginning of the loop, then
+    //    n >= 0 at the end of the loop.
+    //
+    //   Proof. Let m = half(n).  If n > 0, then m > 0 and
+    //          n - m > 0, i.e. predecessor(n - m) >= 0. Since
+    //          we only update the value of n to either m or
+    //          predecessor(n - m), it follows that n >= 0
+    //          holds at the end of the loop.
+    //
+    // 2. If [[f, n]] contains the partition point at the
+    //    beginning of the loop, then [[f, n]] contains the
+    //    partition point at the end of the loop.
+    //
+    //   Proof. Let m = half(n), and let i = f + m.  If p(source(i)),
+    //          then none of the iterators that follow i can
+    //          be the partition point; thus [[f, m]] contains
+    //          the partition point, and updating n to m keeps
+    //          the invariant that [[f, n]] contains the
+    //          partition point.  Otherwise, if !p(source(i)), then
+    //          none of the iterators in [f, i] can be the
+    //          partition point; thus setting f to successor(i)
+    //          again preserves the invariant that [[f, n]]
+    //          contains the partition point.
+    //
+    // 3. If my_partition_point_n terminates, then f is the
+    //    partition point of the original (p-partitioned) input
+    //    range.
+    //
+    //   Proof. By (2), after the while loop terminates,
+    //          [[f, n]] contains the partition point.  But
+    //          n = 0 holds after the while loop terminates;
+    //          thus [[f, n]] = [[f, 0]] contains the single
+    //          iterator f, which must be the partition point.
+    //
+    // 4. my_partition_point_n terminates.
+    //
+    //   Proof. Let m = half(n).  Since m < n and
+    //          predecessor(n - m) < n, it follows that n
+    //          decreases after every iteration of the while
+    //          loop.  By (1), n is always nonnegative, and
+    //          since n is an integer, n can only decrease
+    //          a finite number of times before zero(n) holds.
+    //          We conclude that my_partition_point_n performs
+    //          only finitely many iterations of the while
+    //          loop, ie. my_partition_point_n must terminate.
+    //
+    // Lemma 6.9. my_partition_point_n returns the partition
+    // point of the original (p-partitioned) input range.
+    //
+    //   Proof. This follows immediately from (3) and (4).
+    I i;
+    while (!zero(n)) {
+        DistanceType(I) m = half(n);
+        I i = f + m;
+        if (p(source(i))) {
+            n = m;
+        } else {
+            n = n - successor(m);
+            f = successor(i);
+        }
+    }
+    return f;
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_point(I f, I l, P p)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, l)
+    //     my_partitioned(f, l, p)
+    return my_partition_point_n(f, l - f, p);
+}
+
 template<typename R>
 struct input_type<complement_of_converse<R>, 0> {
     typedef Domain(R) type;
@@ -946,11 +1065,9 @@ struct input_type<multiplies<T>, 0> {
 
 int main() {
     int* x = new int[10];
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 10; i++) {
         x[i] = i;
-        x[5 + i] = i;
     }
-    cout << boolalpha;
-    cout << my_partitioned_n(1, 10, bind2nd(equal_to<int>(), 4)).first << endl;
+    cout << my_partition_point(x, x + 10, bind2nd(greater_equal<int>(), 6)) - x << endl;
     delete[] x;
 }
