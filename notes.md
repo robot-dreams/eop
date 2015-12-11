@@ -676,3 +676,6 @@ Given a predicate p on the value type of some iterator, a range over that iterat
     ForwardIterator(T) :=
         Iterator(T)
       ^ regular_unary_function(successor)
+
+The **lower bound** of an r-increasing range with respect to a given value a is the first iterator in that range whose value x satisfies !r(x, a)
+The **upper bound** of an r-increasing range with respect to a given value a is the first iterator in that range whose value x satisfies r(a, x)

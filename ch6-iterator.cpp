@@ -879,6 +879,12 @@ struct complement_of_converse
     }
 };
 
+template<typename R>
+    requires(Relation(R))
+struct input_type<complement_of_converse<R>, 0> {
+    typedef Domain(R) type;
+};
+
 template<typename I, typename R>
     requires(Readable(I) && Iterator(I) && Relation(R) &&
         ValueType(I) == Domain(R))
@@ -971,24 +977,24 @@ I my_partition_point_n(I f, DistanceType(I) n, P p)
     // 1. If n > 0 at the beginning of the loop, then
     //    n >= 0 at the end of the loop.
     //
-    //   Proof. Let m = half(n).  If n > 0, then m > 0 and
-    //          n - m > 0, i.e. predecessor(n - m) >= 0. Since
-    //          we only update the value of n to either m or
-    //          predecessor(n - m), it follows that n >= 0
-    //          holds at the end of the loop.
+    //   Proof. Let h = half_nonnegative(n).  If n > 0, then
+    //          h > 0 and n - h > 0, i.e. predecessor(n - h) >= 0.
+    //          Since we only update the value of n to either h or
+    //          predecessor(n - h), it follows that n >= 0 holds
+    //          at the end of the loop.
     //
     // 2. If [[f, n]] contains the partition point at the
     //    beginning of the loop, then [[f, n]] contains the
     //    partition point at the end of the loop.
     //
-    //   Proof. Let m = half(n), and let i = f + m.  If p(source(i)),
-    //          then none of the iterators that follow i can
-    //          be the partition point; thus [[f, m]] contains
-    //          the partition point, and updating n to m keeps
-    //          the invariant that [[f, n]] contains the
-    //          partition point.  Otherwise, if !p(source(i)), then
-    //          none of the iterators in [f, i] can be the
-    //          partition point; thus setting f to successor(i)
+    //   Proof. Let h = half_nonnegative(n), and let m = f + h.
+    //          If p(source(m)), then none of the iterators that
+    //          follow m can be the partition point; thus [[f, h]]
+    //          contains the partition point, and updating n to h
+    //          keeps the invariant that [[f, n]] contains the
+    //          partition point.  Otherwise, if !p(source(m)), then
+    //          none of the iterators in [f, m] can be the
+    //          partition point; thus setting f to successor(m)
     //          again preserves the invariant that [[f, n]]
     //          contains the partition point.
     //
@@ -1004,29 +1010,28 @@ I my_partition_point_n(I f, DistanceType(I) n, P p)
     //
     // 4. my_partition_point_n terminates.
     //
-    //   Proof. Let m = half(n).  Since m < n and
-    //          predecessor(n - m) < n, it follows that n
+    //   Proof. Let h = half_nonnegative(n).  Since h < n and
+    //          predecessor(n - h) < n, it follows that n
     //          decreases after every iteration of the while
     //          loop.  By (1), n is always nonnegative, and
     //          since n is an integer, n can only decrease
     //          a finite number of times before zero(n) holds.
     //          We conclude that my_partition_point_n performs
     //          only finitely many iterations of the while
-    //          loop, ie. my_partition_point_n must terminate.
+    //          loop, i.e. my_partition_point_n must terminate.
     //
     // Lemma 6.9. my_partition_point_n returns the partition
     // point of the original (p-partitioned) input range.
     //
     //   Proof. This follows immediately from (3) and (4).
-    I i;
     while (!zero(n)) {
-        DistanceType(I) m = half(n);
-        I i = f + m;
-        if (p(source(i))) {
-            n = m;
+        DistanceType(I) h = half_nonnegative(n);
+        I m = f + h;
+        if (p(source(m))) {
+            n = h;
         } else {
-            n = n - successor(m);
-            f = successor(i);
+            n = n - successor(h);
+            f = successor(m);
         }
     }
     return f;
@@ -1044,12 +1049,129 @@ I my_partition_point(I f, I l, P p)
 }
 
 template<typename R>
-struct input_type<complement_of_converse<R>, 0> {
+    requires(Relation(R))
+struct lower_bound_predicate
+{
+    typedef Domain(R) T;
+    const T& a;
+    R r;
+    lower_bound_predicate(const T& a, R r) : a(a), r(r) {}
+    bool operator()(const T& x)
+    {
+        return !r(x, a);
+    }
+};
+
+template<typename R>
+    requires(Relation(R))
+struct input_type<lower_bound_predicate<R>, 0> {
     typedef Domain(R) type;
 };
 
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+I my_lower_bound_n(I f, DistanceType(I) n, const ValueType(I)& a, R r)
+{
+    // Preconditions:
+    //     weak_ordering(r)
+    //     increasing_counted_range(f, n, r)
+    lower_bound_predicate<R> p(a, r);
+    return my_partition_point_n(f, n, p);
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+I my_lower_bound(I f, I l, const ValueType(I)& a, R r)
+{
+    // Preconditions:
+    //     weak_ordering(r)
+    //     increasing_bounded_range(f, l, r)
+    return my_lower_bound_n(f, l - f, a, r);
+}
+
+template<typename R>
+    requires(Relation(R))
+struct upper_bound_predicate
+{
+    typedef Domain(R) T;
+    const T& a;
+    R r;
+    upper_bound_predicate(const T& a, R r) : a(a), r(r) {}
+    bool operator()(const T& x)
+    {
+        return r(a, x);
+    }
+};
+
+template<typename R>
+    requires(Relation(R))
+struct input_type<upper_bound_predicate<R>, 0> {
+    typedef Domain(R) type;
+};
+
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+I my_upper_bound_n(I f, DistanceType(I) n, const ValueType(I)& a, R r)
+{
+    // Preconditions:
+    //     weak_ordering(r)
+    //     increasing_counted_range(f, n, r)
+    upper_bound_predicate<R> p(a, r);
+    return my_partition_point_n(f, n, upper_bound_predicate<R>(a, r));
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+I my_upper_bound(I f, I l, const ValueType(I)& a, R r)
+{
+    // Preconditions:
+    //     weak_ordering(r)
+    //     increasing_bounded_range(f, l, r)
+    return my_upper_bound_n(f, l - f, a, r);
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair<I, I> my_equal_range_n(I f, DistanceType(I) n, const ValueType(I)& a, R r)
+{
+    lower_bound_predicate<R> p0(a, r);
+    upper_bound_predicate<R> p1(a, r);
+    while (!zero(n)) {
+        DistanceType(I) h = half_nonnegative(n);
+        I m = f + h;
+        if (!p0(source(m))) {
+            f = successor(m);
+            n = n - successor(h);
+        } else if (p1(source(m))) {
+            n = h;
+        } else {
+            return pair<I, I>(my_partition_point_n(f, h, p0),
+                              my_partition_point_n(successor(m), n - successor(h), p1));
+        }
+    }
+    return pair<I, I>(f, f);
+}
+
+template<typename I, typename R>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair<I, I> my_equal_range(I f, I l, const ValueType(I)& a, R r)
+{
+    return my_equal_range_n(f, l - f, a, r);
+}
+
 template<typename T>
 struct input_type<less<T>, 0> {
+    typedef T type;
+};
+
+template<typename T>
+struct input_type<greater<T>, 0> {
     typedef T type;
 };
 
@@ -1066,8 +1188,15 @@ struct input_type<multiplies<T>, 0> {
 int main() {
     int* x = new int[10];
     for (int i = 0; i < 10; i++) {
-        x[i] = i;
+        x[i] = i / 3;
     }
-    cout << my_partition_point(x, x + 10, bind2nd(greater_equal<int>(), 6)) - x << endl;
+    int (*fun)(int*) = source;
+    pair<int*, int*> q = my_equal_range(x, x + 10, 2, less<int>());
+    cout << my_reduce(
+                q.first,
+                q.second,
+                plus<int>(),
+                fun,
+                0) << endl;
     delete[] x;
 }

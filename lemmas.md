@@ -468,3 +468,25 @@ Next, we consider the case where b does not divide a.  If a and b are both posit
 (1) We will prove the contrapositive.  Suppose p(source(j)) for some j in [f, m].  Then by definition of a p-partitioned range, p(source(k)) for each k in [j, l).  In particular, p(source(m)).
 
 (2) This follows directly from the definition of a p-partitioned range.
+
+**Lemma 6.A** If i precedes j in an r-increasing range of iterators, then !r(j, i).
+**Proof.** We proceed by induction on j - i.  The case j - i = 1 follows immediately from the definition of an increasing range.  Suppose the claim is true for n - 1, and suppose j - i = n, i.e. j - successor(i) = n - 1.  By definition of an increasing range together with our inductive hypothesis, the following are the only possible cases:
+
+(1) If r(i, successor(i)) and r(successor(i), j), then r(i, j) by transitivity and !r(j, i) by weak-trichotomy.
+(2) If e(i, successor(i)) and r(successor(i), j), then r(j, i) would imply (by transitivity) that r(successor(i), i), which contradicts weak-trichotomy (e(i, successor(i)) implies e(successor(i), i) since equivalence relations are symmetric).
+(3) If r(i, successor(i)) and e(successor(i), j), then r(j, i) would imply (by transitivity) that r(j, successor(i)), which contradicts weak-trichotomy (e(successor(i), j) implies e(j, successor(i)) since equivalence relations are symmetric).
+(4) If e(i, successor(i)) and e(successor(i), j), then e(i, j) by transitivity and !r(j, i) by weak-trichotomy.
+
+In each case, !r(j, i), and the induction is complete.
+
+**Lemma 6.10** In an increasing half-open bounded range (f, l), for any value a of the value type of the range, the range is partitioned by the following two predicates:
+
+    lower_bound_a(x) <=> !r(x, a)
+    upper_bound_a(x) <=> r(a, x)
+
+**Proof.** Suppose !r(x, a) holds for the value x of some iterator i in the range.  Let j be another iterator in the range, where i precedes j, and let y be the corresponding value.  By Lemma 6.A, !r(y, x), so by weak-trichotomy, either r(x, y) or e(x, y).  In the case r(x, y), if r(y, a) holds, then transitivity would imply r(x, a), which contradicts !r(x, a).  In the case e(x, y), note that by weak-trichotomy, !r(x, a) implies either r(a, x) or e(a, x).  If r(a, x), then r(y, a) would imply r(y, x) by transitivitity, which, together with e(x, y), contradicts weak-trichotomy.  If e(a, x), then transitivity of e implies e(a, y), so r(y, a) would again contradict weak-trichotomy.  Thus !r(y, a); in particular, if !r(source(i), a) holds for any iterator i in the range, then !r(source(j), a) must also hold for any iterator j in the range such that i precedes j, and we conclude that the predicate lower_bound_a partitions the range of iterators.
+
+Next, suppose r(a, x) holds for the value x of some iterator i in the range.  Let j be another iterator in the range, where i precedes j, and let y be the corresponding value.  By Lemma 6.A, !r(y, x), so by weak-trichotomy either r(x, y) or e(x, y).  If r(x, y), then transitivity of r implies r(a, y).  If e(x, y), then e(a, y) would imply e(a, x) by transitivity of e, which would contradict trichotomy (we cannot have both r(a, x) and e(a, x)), and r(y, a) would imply r(y, x) by transitivity of r, which would again contradict trichotomy (we cannot have both r(y, x) and e(x, y)).  We conclude that r(a, y) holds; in particular, if r(a, source(i)) holds for any iterator i in the range, then r(a, source(j)) must also hold for any iterator j in the range such that i precedes j, and we conclude that the predicate upper_bound_a partitions the range of iterators.
+
+**Lemma 6.11** The lower bound iterator for a given value a precedes or equals the upper bound iterator.
+**Proof.** Let l be the lower bound iterator for a; then l is the first iterator for which !r(source(l), a) holds.  Next, let u be the upper bound iterator for a; then r(a, source(u)) holds, and by weak-trichotomy, !r(source(u), a).  Since l was defined as the first iterator for which !r(source(l), a) holds, and u is an iterator for which !r(source(u), a) holds, we conclude that l must precede or equal u.
