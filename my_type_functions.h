@@ -203,6 +203,12 @@ ValueType(T*) source(T* x)
     return *x;
 }
 
+template<typename C>
+    requires(BifurcateCoordinate(C))
+struct weight_type;
+
+#define WeightType(C) typename weight_type< C >::type
+
 template<typename T0, typename T1, typename T2>
     requires(Regular(T0), Regular(T1), Regular(T2))
 struct triple

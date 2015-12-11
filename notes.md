@@ -8,6 +8,7 @@ Exercise 4.6: My solution is really sloppy
 Footnotes 5.9-5.11 (page 81)
 Draw out the hierarchy of algebraic types
 Prove that NonnegativeDiscreteArchimedeanSemiring and DiscreteArchimedeanRing are univalent
+Implement an adapter that converts an IndexedIterator into a RandomAccessIterator
 
 ## Questions
 
@@ -27,6 +28,12 @@ What's the motivation for having count_if accept (and return) an iterator, as op
 What sort of copy semantics do we need to ensure for iterators?
 When would operations involving the identity element "be slow or require extra logic to implement"?
 How did floor(lg(n)) + 1 become lg(n) in Lemma 6.13?
+When would we have an IndexedIterator that's not (already) a RandomAccessIterator?
+[DONE] How is WeightType (for a BifurcateCoordinate) used?
+What's a (useful) example where traversing a binary tree would change its shape, i.e. what's a useful example of a WeakBifurcateCoordinate that's not a BifurcateCoordinate?
+[DONE] Is it possible to implement height using traverse and a function object?
+When would it be useful to traverse multiple trees concurrently?
+What does it mean for traversal to be "uniform"?
 
 ## Definitions
 
@@ -594,7 +601,7 @@ A concept is **useful** if there are useful algorithms for which this is the mos
 A **bounded unsigned binary integer type** U_n, where n = 8, 16, 32, 64, ..., is an unsigned integer type capable of representing a value in the interval [0, 2^n)
 A **bounded signed binary integer type** S_n, where n = 8, 16, 32, 64, ..., is a signed integer type capable of representing a value in the interval [-2^{n-1}, 2^{n-1})
 
-### Chapter 6
+## Chapter 6
 
 A type T is **readable** if a unary function "source" defined on it returns an object of type ValueType(T):
 
@@ -696,3 +703,63 @@ The **upper bound** of an r-increasing range with respect to a given value a is 
                             predecessor(successor(i)) is defined and equals i
       ^ (forall i in T) predecessor(i) is defined implies
                             successor(predecessor(i)) is defined and equals i
+
+    RandomAccessIterator(T) :=
+        IndexedIterator(T)
+      ^ BidirectionalIterator(T)
+      ^ TotallyOrdered(T)
+      ^ (forall i, j in T) i < j <=> i precedes j
+      ^ DifferenceType: RandomAccessIterator -> Integer
+      ^ +: T x DifferenceType(T) -> T
+      ^ -: T x DifferenceType(T) -> T
+      ^ -: T x T -> DifferenceType(T)
+      ^ < takes constant time
+      ^ - between an iterator and an integer takes constant time
+
+**Theorem 6.1** For any procedure defined on an explicitly given range of random-access iterators, there is another procedure defined on indexed iterators with the same complexity.
+**Proof.** Suppose we are given a range [f, l).  We will show that each of the operations listed in the definition of RandomAccessIterator can be simulated with an IndexedIterator in constant time.
+
+(1) predecessor: given an iterator i in the range [f, l), predecessor(i) is given by f + ((i - f) - 1), where the latter subtraction is over the integer type DistanceType(T)
+(2) <: given two iterators i and j in the range [f, l), i < j <=> (i - f) < (j - f), where the latter comparison is over the integer type DistanceType(T)
+(3) -: T x DifferenceType(T) -> T: given an iterator i in the range [f, l) and an integer n in DistanceType(T), i - n is the same as f + ((i - f) - n)
+
+Thus we can implement an adapter that, given an IndexedIterator, produces a RandomAccessIterator without any (asymptotic) loss of efficiency.
+
+## Chapter 7
+
+    BifurcateCoordinate(T) :=
+        Regular(T)
+      ^ WeightType: BifurcateCoordinate -> Integer
+      ^ empty: T -> bool
+      ^ has_left_successor: T -> bool
+      ^ has_right_successor: T -> bool
+      ^ left_successor: T -> T
+      ^ right_successor: T -> T
+      ^ (forall i, j in T) (left_successor(i) = j v right_successor(i) = j) implies !empty(j)
+
+A bifurcate coordinate y is a **proper descendent** of another coordinate x if y is the left or right successor of x, or if it is a proper descend of the left or right successor of x
+A bifurcate coordinate y is a **descendent** of a coordinate x if y = x or y is a proper descendent of x
+The descendents of x for a **directed acyclic graph** (DAG) if for all y in the descendents of x, y is not its own proper descendent
+    x is called the **root** of the DAG of its descendents
+    If the descendents of x form a DAG and are finite in number, then they form a **finite** DAG
+    The **height** of a finite DAG is one more than the maximum sequence of successors starting from its root, or zero if it is empty
+A bifurcate coordinate y is **left reachable** from x if it is a descendent of the left successor of x
+A bifurcate coordinate y is **right reachable** if it is a descendent of the right successor of x
+The descendents of x form a **tree** if they form a finite DAG and for all y, z in the descendents of x, z is not both left reaachable and right reachable from y (i.e. there is a unique sequence of successors from a coordinate to any of its descendents)
+Algorithms for traversing DAGs and cyclic structures require **marking**, a way of remembering which coordinates have been previously visited
+There are three primary depth-first tree-traversal orders; all three fully traverse the left descendents and then the right descendents
+    **preorder** visits to a coordinate occur before the traversal of its descendents
+    **inorder** visits to a coordinate occur between the traversals of the left and right descendents
+    **postorder** visits occur after traversing all descendents
+
+    BidirectionalBifurcateCoordinate :=
+        BifurcateCoordinate(T)
+      ^ has_predecessor: T -> bool
+      ^ (forall i in T) !empty(i) implies has_predecessor(i) is defined
+      ^ predecessor: T -> T
+      ^ (forall i in T) has_left_successor(i) implies
+            predecessor(left_successor(i)) is defined and equals i
+      ^ (forall i in T) has_right_successor(i) implies
+            predecessor(right_successor(i)) is defined and equals i
+      ^ (forall i in T) has_predecessor(i) implies
+            is_left_successor(i) v is_right_successor(i)

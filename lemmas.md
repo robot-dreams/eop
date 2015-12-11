@@ -500,3 +500,58 @@ Next, suppose r(a, x) holds for the value x of some iterator i in the range.  Le
 
 **Lemma 6.14** If successor is defined on bidirectional iterators i and j, then successor(i) = successor(j) implies i = j.
 **Proof.** By definition of a bidirectional iterator, if successor(i) is defined, then predecessor(successor(i)) = i.  Similarly, if successor(j) is defined, then predecessor(successor(j)) = j.  Thus by regularity of predecessor and the fact that successor(i) = successor(j) it follows that predecessor(successor(i)) = predecessor(successor(j)), i.e. i = j.
+
+**Lemma 7.1**
+
+    height_recursive(x) <= weight_recursive(x)
+
+**Proof.** We will proceed by induction on the number of descendents of x (which is assumed to be finite, by the precondition that x is a tree).  If x has no proper descendents, then both the height and the weight return 0, and there is nothing to prove.  Otherwise, let hl, wl be the height and weight of the left successor, and let hr, wr be the height and weight of the right successor.  By the inductive hypothesis, hl <= wl and hr <= wr.  Since hl, wl, hr, and wr are all positive, we have wl + wr >= hl + hr >= max(hl, hr); thus successor(wl + wr) >= successor(max(hl, hr)), and since these are precisely the values returned by the weight and height procedures, respectively, the proof is complete.
+
+**Lemma 7.2** If x and y are bidirectional bifurcate coordinates,
+
+    left_successor(x) = left_successor(y) implies x = y
+    left_successor(x) = right_successor(y) implies x = y
+    right_successor(x) = right_successor(y) implies x = y
+
+**Proof.**
+
+     By definition of a bidirectional bifurcate coordinate, whenever right_successor(i) is defined, we have predecessor(right_successor(i)) = i; similarly, whenever left_successor(i) is defined, we have predecessor(left_successor(i)) = i.  Thus the implications above follow immediately from regularity of predecessor.
+
+**Lemma 7.A** If v != post and !empty(x) before executing traverse_step(v, x), and if v = v' and x = x' after executing, then x' is a descendent of x.
+**Proof.** In the cases where v != post, traverse_step either sets x to its left successor, sets x to its right successor, or doesn't change x.  In each case, x' is a descendent of x.
+
+**Lemma 7.B** If the descendents of x form a tree, x = x0, and v = pre initially, then we will have x = x0, v = post after finitely many calls to traverse_step(v, x).
+**Proof.** We will proceed by induction on the height h of the tree rooted at x.  If h = 1, then x has neither a left nor a right successor, so one call will set v = in without changing x, and a second call will set v = post without changing x.  If h > 1, suppose the claim holds for a tree of height h - 1.
+
+If x0 has a left successor, then one call will set x to the left successor xl of x0 without changing v.  By our inductive hypothesis (the tree rooted at xl has height h - 1 because the maximum sequence of successors from xl can be extended to a sequence of successors from x0 with one additional successor), after finitely many more calls, we will have x = xl and v = post.  Since x0 is the predecessor of xl, an additional call will set v = in and x = x0.  Otherwise, if x0 does not have a left successor, then one call will set v = in without changing x.  Either way, x = x0 and v = in after finitely many calls.
+
+Now x = x0 and v = in; if x0 has a right successor, then one call will set x to the right successor xr of x0 and set v = pre.  By our inductive hypothesis, (the tree rooted at height xr has a height h - 1), after finitely many more calls, we will have x = xr and v = post.  Since x0 is the predecessor of xr, an additional call will set x = x0 without changing v.  Otherwise, if x0 does not have a right successor, then one call will set v = post without changing x.  Either way, x = x0 and v = post after finitely many calls, and the proof is complete.
+
+**Lemma 7.C** If the descendents of x0 form a tree, y is a descendent of x0, v = pre, and x = x0 initially, then we will have y == x after finitely many calls to traverse_step(v, x).
+**Proof.** We will proceed by induction on the height h of the tree rooted at x0.  If h = 1, then x0 is the only element of the tree, so y is a descendent of x0 implies y == x without any calls.  Suppose h > 1, and the claim holds for a tree of height h - 1.
+
+If x0 == y then there is nothing to prove, so we can assume x0 != y.
+
+If x0 has a left successor and y is a descendent of its left successor, one call will set x to the left successor xl of x0, and by our inductive hypothesis, finitely many more calls will set x to y.
+
+If x0 does not have a left successor, then a single call will set v = post, x = x0.  If x0 does have a left successor xl but y is not a descendent of xl, then by Lemma 7.B, after finitely many more calls we will have v = post, x = xl, and by definition of the procedure, one more call will set v = in, x = x0.  Either way, v = in and x = x0 after finitely many calls.  Since y is a descendent of x0 and y is neither x0 nor a descendent of xl, we know that x0 has a right successor xr and that y is a descendent of xr, and by our inductive hypothesis, finitely many more calls will set x to y.
+
+**Lemma 7.E** If x = x0 and v = pre initially, then upon repeated calls to traverse_step(v, x), until we have x == x0 && v == post, every intermediate value of x will be a descendent of x0.
+
+**Proof.** If x0 has no left or right successor, then one call will set v = in without changing x, and the second call will set v = post without changing x, and the claim holds.  If x0 has a left successor xl, then one call will set x = xl without changing v; by our inductive hypothesis, subsequent intermediate values of x will be descendents of xl (thus descendents of x0) until x = xl && v == post, and one more call will set x = x0, v = in.  If x0 has no left successor, then one call will set x = x0, v = in.  Next, if x0 has a right successor xr, then one call will set x = xr and v = pre; by our inductive hypothesis, subsequent intermediate values of x will be descendents of xr (thus descendents of x0) until x = xr && v == post, and one more call will set x = x0, v = post.  If x0 has no right successor, then one call will set x = x0, v = post.
+
+**Lemma 7.F** If x = x0 and v = pre initially, then upon repeated calls to traverse_step(v, x), the x will take on the value of every descendent of x0 before x == x0 && v == post holds.
+**Proof.** If x0 has no left or right successors then there is nothing to prove.  If x0 has a left successor xl then Lemma 7.E and our inductive hypothesis imply that x will take on the value of every descendent of xl (and only those values) before x == xl && v == post holds, and one more call will set x = x0, v = in.  If x0 has no left successor then a single call will set x = x0, v = in.  Next, if x0 has a right successor xr then Lemma 7.E and our inductive hypothesis imply that x will take on the value of every descendent of xr (and only those values) before x == xr && v == post holds, and one more call will set x = x0, v = post.  If x0 has no right successor then a single call will set x = x0, v = post.  Since the descendents of x0 are precisely x0, the descendents of its left successor (if it exists), and the descendents of its right successor (if it exists), the proof is complete.
+
+**Lemma 7.G** If the descendents of x0 form a tree and y is a descendent of x0, then reachable(x0, y) will return true.
+**Proof** By Lemma 7.C, and the definition of reachable (which ensures that v = pre initially), finitely many calls to traverse_step(v, x) will set x == y.  By Lemma 7.F, this will occur before x == root && v == post holds.
+
+**Lemma 7.H** If the descendents of x0 form a tree and y is a descendent of x0, and if x = x0, v = pre initially, then repeated calls to traverse_step(v, x) will set x = y, v = pre before x == y, v == in or x == y, v == post hold.
+**Proof.** Lemma 7.F ensures that repeated calls will indeed set x == y.  We will proceed by induction on the height of the tree rooted at x0.  If y == x0 then x == y, v = pre initially, so there is nothing to prove.
+
+Suppose x0 has a left successor xl.  If y is a descendent of xl, then the claim follows by our inductive hypothesis.  Otherwise, by Lemma 7.E, we will have x == xl, v = post before x == y holds, and one more call will set x = x0, v = in.  If x0 has no left successor, then a single call will set x = x0, v = in.
+
+We have already considered the cases where y == x0 or y is a descendent of the left successor of x, thus we can assume neither of these cases hold.  By definition of a descendent, y must be a descendent of the right successor xr of x (which must exist).  In every possible case, repeated calls set x = x0, v = in without ever setting x = y.  One more call will set x = xr and v = in, and the claim follows by our inductive hypothesis.
+
+**Lemma 7.3** If reachable returns true, v = pre right before the return.
+**Proof.** Suppose reachable returns true.  Then by Lemma 7.E, and the definition of reachable (in particular, the fact that v == pre holds before any traversal calls), y must be a descendent of x.  Furthermore, by Lemma 7.H, reachable will set x = y, v = pre before either of x == y, v == in or x == y, v == post holds.
