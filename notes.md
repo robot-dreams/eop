@@ -745,7 +745,7 @@ The descendents of x for a **directed acyclic graph** (DAG) if for all y in the 
     The **height** of a finite DAG is one more than the maximum sequence of successors starting from its root, or zero if it is empty
 A bifurcate coordinate y is **left reachable** from x if it is a descendent of the left successor of x
 A bifurcate coordinate y is **right reachable** if it is a descendent of the right successor of x
-The descendents of x form a **tree** if they form a finite DAG and for all y, z in the descendents of x, z is not both left reaachable and right reachable from y (i.e. there is a unique sequence of successors from a coordinate to any of its descendents)
+The descendents of x form a **tree** if they form a finite DAG and for all y, z in the descendents of x, z is not both left reachable and right reachable from y (i.e. there is a unique sequence of successors from a coordinate to any of its descendents)
 Algorithms for traversing DAGs and cyclic structures require **marking**, a way of remembering which coordinates have been previously visited
 There are three primary depth-first tree-traversal orders; all three fully traverse the left descendents and then the right descendents
     **preorder** visits to a coordinate occur before the traversal of its descendents
@@ -763,3 +763,8 @@ There are three primary depth-first tree-traversal orders; all three fully trave
             predecessor(right_successor(i)) is defined and equals i
       ^ (forall i in T) has_predecessor(i) implies
             is_left_successor(i) v is_right_successor(i)
+
+    property(C: Readable)
+        requires(BifurcateCoordinate(C))
+    readable_tree: C
+        x |-> (forall y in C) reachable(x, y) implies source(y) is defined

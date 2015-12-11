@@ -3,12 +3,63 @@
 #include <stack>
 #include "my_integer.h"
 #include "my_intrinsics.h"
+#include "my_iterator.h"
 #include "my_orbit_structure.h"
 #include "my_type_functions.h"
 
 using namespace std;
 
 enum visit { pre, in, post };
+
+template<typename C>
+    requires(BidirectionalBifurcateCoordinate(C))
+class my_tree_iterator_adapter
+{
+public:
+    my_tree_iterator_adapter(visit v, C c) : v(v), c(c) {}
+    bool operator==(const my_tree_iterator_adapter& other) {
+        return v == other.v && c == other.c;
+    }
+    bool operator!=(const my_tree_iterator_adapter& other) {
+        return v != other.v || c != other.c;
+    }
+    template<typename C0> friend my_tree_iterator_adapter<C0> successor(my_tree_iterator_adapter<C0> x);
+    template<typename C0> friend ValueType(C0) source(const my_tree_iterator_adapter<C0>& x);
+private:
+    visit v;
+    C c;
+};
+
+template<typename C>
+    requires(BidirectionalBifurcateCoordinate(C))
+my_tree_iterator_adapter<C> successor(my_tree_iterator_adapter<C> x)
+{
+    do {
+        traverse_step(x.v, x.c);
+        if (x.v == post && !has_predecessor(x.c)) {
+            x.v = pre;
+            x.c = NULL;
+        }
+    } while (x.v != pre);
+    return x;
+}
+
+template<typename C>
+    requires(BidirectionalBifurcateCoordinate(C))
+ValueType(C) source(const my_tree_iterator_adapter<C>& x)
+{
+    return source(x.c);
+}
+
+template<typename C>
+struct value_type<my_tree_iterator_adapter<C> > {
+    typedef ValueType(C) type;
+};
+
+template<typename C>
+struct distance_type<my_tree_iterator_adapter<C> > {
+    typedef WeightType(C) type;
+};
 
 template<typename T>
     requires(Regular(T))
@@ -33,6 +84,17 @@ struct my_node
         this->right = new my_node(value, left, right, this);
         return this->right;
     }
+    my_tree_iterator_adapter<my_node<T>*> begin()
+    {
+        return my_tree_iterator_adapter<my_node<T>*>(pre, this);
+    }
+    my_tree_iterator_adapter<my_node<T>*> end()
+    {
+        if (has_predecessor(this))
+            return my_tree_iterator_adapter<my_node<T>*>(pre, parent);
+        else
+            return my_tree_iterator_adapter<my_node<T>*>(pre, NULL);
+    }
     T value;
     my_node* left;
     my_node* right;
@@ -41,10 +103,24 @@ struct my_node
 
 template<typename T>
     requires(Regular(T))
+struct value_type<my_node<T>*>
+{
+    typedef T type;
+};
+
+template<typename T>
+    requires(Regular(T))
 struct weight_type<T*>
 {
     typedef unsigned long type;
 };
+
+template<typename T>
+    requires(Regular(T))
+T source(my_node<T>* x)
+{
+    return x->value;
+}
 
 template<typename T>
     requires(Regular(T))
@@ -474,6 +550,13 @@ struct input_type<tree_height_counter<C>, 1>
     typedef C type;
 };
 
+template<typename T>
+    requires(Regular(T))
+struct input_type<plus<T>, 0>
+{
+    typedef T type;
+};
+
 int main() {
     my_node<int>* root = new my_node<int>(5);
     root->new_left(6)->new_left(7);
@@ -482,8 +565,6 @@ int main() {
 
     my_node<int>* isolated = new my_node<int>(-1);
 
-    cout << boolalpha;
-    cout << dag(root) << endl;
-    root->left->right->right = root->left;
-    cout << dag(root) << endl;
+    int (*fun)(const my_tree_iterator_adapter<my_node<int>*>&) = source<my_node<int>*>;
+    cout << my_reduce_nonempty(root->begin(), root->end(), plus<int>(), fun) << endl;
 }
