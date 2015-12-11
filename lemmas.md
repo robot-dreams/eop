@@ -490,3 +490,10 @@ Next, suppose r(a, x) holds for the value x of some iterator i in the range.  Le
 
 **Lemma 6.11** The lower bound iterator for a given value a precedes or equals the upper bound iterator.
 **Proof.** Let l be the lower bound iterator for a; then l is the first iterator for which !r(source(l), a) holds.  Next, let u be the upper bound iterator for a; then r(a, source(u)) holds, and by weak-trichotomy, !r(source(u), a).  Since l was defined as the first iterator for which !r(source(l), a) holds, and u is an iterator for which !r(source(u), a) holds, we conclude that l must precede or equal u.
+
+**Lemma 6.12** For a forward iterator, the total number of successor operations performed by partition_point_n is less than or equal to the size of the range.
+**Proof.** We will show that partition_point_n performs at most n successor operations.  If n = 0, then the procedure returns immediately without performing any successor operations, so the claim trivially holds.  Suppose n > 0, and the claim is true for all values less than n.  In this case, the procedure performs h = floor(n / 2) successor operations to calculate m = f + h, and then branches to one of two possible cases:
+
+(1) If p(source(m)) returns true, then the procedure sets n to h, which reduces the problem to a subproblem of size h.  By our inductive hypothesis, the procedure performs at most h successor operations for the subproblem, for a total of 2h (which is at most n) successor operations.
+
+(2) If p(source(m)) returns false, then the procedure performs one more successor operation and then sets n to n - successor(h), which reduces the problem to a subproblem of size n - successor(h).  By our inductive hypothesis, the procedure performs at most n - successor(h) successor operations for the subproblem, for a total of at most h + 1 + n - successor(h) = n successor operations.

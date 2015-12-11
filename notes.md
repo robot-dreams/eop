@@ -26,6 +26,7 @@ How should we define equality for iterators?
 What's the motivation for having count_if accept (and return) an iterator, as opposed to an integer?
 What sort of copy semantics do we need to ensure for iterators?
 When would operations involving the identity element "be slow or require extra logic to implement"?
+How did floor(lg(n)) + 1 become lg(n) in Lemma 6.13?
 
 ## Definitions
 
@@ -679,3 +680,10 @@ Given a predicate p on the value type of some iterator, a range over that iterat
 
 The **lower bound** of an r-increasing range with respect to a given value a is the first iterator in that range whose value x satisfies !r(x, a)
 The **upper bound** of an r-increasing range with respect to a given value a is the first iterator in that range whose value x satisfies r(a, x)
+
+    IndexedIterator(T) :=
+        ForwardIterator(T)
+      ^ +: T x DistanceType(T) -> T
+      ^ -: T x T -> DistanceType(T)
+      ^ + takes constant time
+      ^ - takes constant time
