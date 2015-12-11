@@ -16,7 +16,7 @@ template<typename C>
 class my_tree_iterator_adapter
 {
 public:
-    my_tree_iterator_adapter(visit v, C c) : v(v), c(c) {}
+    my_tree_iterator_adapter(visit v, C c, visit order = pre) : v(v), c(c), order(order) {}
     bool operator==(const my_tree_iterator_adapter& other) {
         return v == other.v && c == other.c;
     }
@@ -28,19 +28,14 @@ public:
 private:
     visit v;
     C c;
+    visit order;
 };
 
 template<typename C>
     requires(BidirectionalBifurcateCoordinate(C))
 my_tree_iterator_adapter<C> successor(my_tree_iterator_adapter<C> x)
 {
-    do {
-        traverse_step(x.v, x.c);
-        if (x.v == post && !has_predecessor(x.c)) {
-            x.v = pre;
-            x.c = NULL;
-        }
-    } while (x.v != pre);
+    traverse_step(x.v, x.c, x.order);
     return x;
 }
 
@@ -84,16 +79,19 @@ struct my_node
         this->right = new my_node(value, left, right, this);
         return this->right;
     }
-    my_tree_iterator_adapter<my_node<T>*> begin()
+    my_tree_iterator_adapter<my_node<T>*> begin(visit order = pre)
     {
-        return my_tree_iterator_adapter<my_node<T>*>(pre, this);
+        visit v = pre;
+        my_node* c = this;
+        if (order != pre) traverse_step(v, c, order);
+        return my_tree_iterator_adapter<my_node<T>*>(v, c, order);
     }
-    my_tree_iterator_adapter<my_node<T>*> end()
+    my_tree_iterator_adapter<my_node<T>*> end(visit order = pre)
     {
-        if (has_predecessor(this))
-            return my_tree_iterator_adapter<my_node<T>*>(pre, parent);
-        else
-            return my_tree_iterator_adapter<my_node<T>*>(pre, NULL);
+        visit v = post;
+        my_node* c = this;
+        traverse_step(v, c, order);
+        return my_tree_iterator_adapter<my_node<T>*>(v, c, order);
     }
     T value;
     my_node* left;
@@ -311,6 +309,20 @@ int traverse_step(visit& v, C& c)
         c = predecessor(c);
         return -1;
     }
+}
+
+template<typename C>
+    requires(BidirectionalBifurcateCoordinate(C))
+void traverse_step(visit& v, C& c, visit order)
+{
+    do {
+        if (v == post && !has_predecessor(c)) {
+            v = order;
+            c = NULL;
+        } else {
+            traverse_step(v, c);
+        }
+    } while (v != order);
 }
 
 template<typename C, typename Proc>
@@ -557,6 +569,11 @@ struct input_type<plus<T>, 0>
     typedef T type;
 };
 
+void print(int x)
+{
+    cout << x << endl;
+}
+
 int main() {
     my_node<int>* root = new my_node<int>(5);
     root->new_left(6)->new_left(7);
@@ -566,5 +583,5 @@ int main() {
     my_node<int>* isolated = new my_node<int>(-1);
 
     int (*fun)(const my_tree_iterator_adapter<my_node<int>*>&) = source<my_node<int>*>;
-    cout << my_reduce_nonempty(root->begin(), root->end(), plus<int>(), fun) << endl;
+    my_for_each(root->begin(post), root->end(post), print);
 }
