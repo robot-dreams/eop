@@ -497,3 +497,6 @@ Next, suppose r(a, x) holds for the value x of some iterator i in the range.  Le
 (1) If p(source(m)) returns true, then the procedure sets n to h, which reduces the problem to a subproblem of size h.  By our inductive hypothesis, the procedure performs at most h successor operations for the subproblem, for a total of 2h (which is at most n) successor operations.
 
 (2) If p(source(m)) returns false, then the procedure performs one more successor operation and then sets n to n - successor(h), which reduces the problem to a subproblem of size n - successor(h).  By our inductive hypothesis, the procedure performs at most n - successor(h) successor operations for the subproblem, for a total of at most h + 1 + n - successor(h) = n successor operations.
+
+**Lemma 6.14** If successor is defined on bidirectional iterators i and j, then successor(i) = successor(j) implies i = j.
+**Proof.** By definition of a bidirectional iterator, if successor(i) is defined, then predecessor(successor(i)) = i.  Similarly, if successor(j) is defined, then predecessor(successor(j)) = j.  Thus by regularity of predecessor and the fact that successor(i) = successor(j) it follows that predecessor(successor(i)) = predecessor(successor(j)), i.e. i = j.

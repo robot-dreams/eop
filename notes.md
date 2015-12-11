@@ -687,3 +687,12 @@ The **upper bound** of an r-increasing range with respect to a given value a is 
       ^ -: T x T -> DistanceType(T)
       ^ + takes constant time
       ^ - takes constant time
+
+    BidirectionalIterator(T) :=
+        ForwardIterator(T)
+      ^ predecessor: T -> T
+      ^ predecessor takes constant time
+      ^ (forall i in T) successor(i) is defined implies
+                            predecessor(successor(i)) is defined and equals i
+      ^ (forall i in T) predecessor(i) is defined implies
+                            successor(predecessor(i)) is defined and equals i

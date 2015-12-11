@@ -1165,6 +1165,95 @@ pair<I, I> my_equal_range(I f, I l, const ValueType(I)& a, R r)
     return my_equal_range_n(f, l - f, a, r);
 }
 
+template<typename I>
+    requires(BidirectionalIterator(I))
+I operator-(I l, DistanceType(I) n)
+{
+    // Preconditions:
+    //     n >= 0
+    //     (exists f in I) weak_range(f, n) ^ l = f + n
+    while (!zero(n)) {
+        n = predecessor(n);
+        l = predecessor(l);
+    }
+    return l;
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_backward_if(I f, I l, P p)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, l)
+    while (l != f && !p(source(predecessor(l))))
+        l = predecessor(l);
+    return l;
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_backward_if_2(I f, I l, P p)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, l)
+    while (l != f) {
+        l = predecessor(l);
+        if (p(source(l))) return successor(l);
+    }
+    return l;
+}
+
+template<typename I>
+    requires(BidirectionalIterator(I))
+class my_reverse_iterator_adapter
+{
+public:
+    my_reverse_iterator_adapter(I i) : i(i) {}
+    bool operator==(const my_reverse_iterator_adapter& other) {
+        return i == other.i;
+    }
+    bool operator!=(const my_reverse_iterator_adapter& other) {
+        return i != other.i;
+    }
+    template<typename J> friend my_reverse_iterator_adapter<J> successor(const my_reverse_iterator_adapter<J>& x);
+    template<typename J> friend my_reverse_iterator_adapter<J> predecessor(const my_reverse_iterator_adapter<J>& x);
+    template<typename J> friend ValueType(J) source(const my_reverse_iterator_adapter<J>& x);
+private:
+    I i;
+};
+
+template<typename I>
+    requires(BidirectionalIterator(I))
+my_reverse_iterator_adapter<I> successor(const my_reverse_iterator_adapter<I>& x)
+{
+    return my_reverse_iterator_adapter<I>(predecessor(x.i));
+}
+
+template<typename I>
+    requires(BidirectionalIterator(I))
+my_reverse_iterator_adapter<I> predecessor(const my_reverse_iterator_adapter<I>& x)
+{
+    return my_reverse_iterator_adapter<I>(successor(x.i));
+}
+
+template<typename I>
+ValueType(I) source(const my_reverse_iterator_adapter<I>& x)
+{
+    return source(predecessor(x.i));
+}
+
+template<typename I>
+struct value_type<my_reverse_iterator_adapter<I> > {
+    typedef ValueType(I) type;
+};
+
+template<typename I>
+struct distance_type<my_reverse_iterator_adapter<I> > {
+    typedef DistanceType(I) type;
+};
+
 template<typename T>
 struct input_type<less<T>, 0> {
     typedef T type;
@@ -1185,18 +1274,33 @@ struct input_type<multiplies<T>, 0> {
     typedef T type;
 };
 
+template<typename I>
+    requires(Readable(I) && BidirectionalIterator(I))
+bool palindrome(I f, I l)
+{
+    if (f == l) return true;
+    l = predecessor(l);
+    while (f != l) {
+        if (source(f) != source(l)) return false;
+        f = successor(f);
+        if (f == l) return true;
+        l = predecessor(l);
+    }
+    return true;
+}
+
 int main() {
     int* x = new int[10];
     for (int i = 0; i < 10; i++) {
-        x[i] = i / 3;
+        x[i] = 0;
     }
-    int (*fun)(int*) = source;
-    pair<int*, int*> q = my_equal_range(x, x + 10, 2, less<int>());
-    cout << my_reduce(
-                q.first,
-                q.second,
-                plus<int>(),
-                fun,
-                0) << endl;
+    const char* s = string("asgardragsa").c_str();
+    my_reverse_iterator_adapter<const char*> f(s + strlen(s));
+    my_reverse_iterator_adapter<const char*> l(s);
+    while (f != l) {
+        cout << source(f) << endl;
+        f = successor(f);
+    }
+    cout << boolalpha << palindrome(s, s + strlen(s)) << endl;
     delete[] x;
 }
