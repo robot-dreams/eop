@@ -9,6 +9,9 @@ Footnotes 5.9-5.11 (page 81)
 Draw out the hierarchy of algebraic types
 Prove that NonnegativeDiscreteArchimedeanSemiring and DiscreteArchimedeanRing are univalent
 Implement an adapter that converts an IndexedIterator into a RandomAccessIterator
+Exhaustive test cases for bifurcate_compare
+    Generating random trees?
+[DONE] traverse that can terminate early
 
 ## Questions
 
@@ -34,6 +37,8 @@ What's a (useful) example where traversing a binary tree would change its shape,
 [DONE] Is it possible to implement height using traverse and a function object?
 When would it be useful to traverse multiple trees concurrently?
 What does it mean for traversal to be "uniform"?
+What do we gain by thinking about "concept schemas"?
+Why doesn't the book make more use of optional parameters?
 
 ## Definitions
 
@@ -768,3 +773,9 @@ There are three primary depth-first tree-traversal orders; all three fully trave
         requires(BifurcateCoordinate(C))
     readable_tree: C
         x |-> (forall y in C) reachable(x, y) implies source(y) is defined
+
+A **concept schema** is a way of describing some common properties of a family of concepts
+A concept is a **coordinate structure** if it consists of one or more coordinate types, zero or more value types, one or more traversal functions, and zero or more access functions
+Let c = {c1, ..., cn} be a collection of coordinates of a type C, and let d = {d1, ..., dm} be a collection of coordinates of a type D, where C and D belong to the same coordinate structure concept.  We say c and d are **isomorphic** if there is a bijection f from c to d such that for any traversal function t and any element ci, t(ci) is defined if and only if t(f(ci)) is defined, and if whenever both are defined, they are equal
+Let c = {c1, ..., cn} and d = {d1, ..., dn} be isomorphic collections of coordinates that have the same value types, and let f be an isomorphism between c and d.  We say that c and d are **equivalent** under given equivalence relations (one per value type) if for any access function a and any element ci, a(ci) is defined if and only if a(f(c)), and if whenever both are defined, they are equivalent under the corresponding equivalence relation
+Replacing the equivalence relations on the value types with equality on the value types leads to a definition of equality for collections of coordinates

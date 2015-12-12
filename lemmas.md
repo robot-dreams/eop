@@ -555,3 +555,22 @@ We have already considered the cases where y == x0 or y is a descendent of the l
 
 **Lemma 7.3** If reachable returns true, v = pre right before the return.
 **Proof.** Suppose reachable returns true.  Then by Lemma 7.E, and the definition of reachable (in particular, the fact that v == pre holds before any traversal calls), y must be a descendent of x.  Furthermore, by Lemma 7.H, reachable will set x = y, v = pre before either of x == y, v == in or x == y, v == post holds.
+
+**Lemma 7.4** For bidirectional bifurcate coordinates, trees are isomorphic when simultaneous traversals take the same sequence of visits.
+**Proof.** We will show by induction that if simultaneous traversals on two trees of height h take the same sequence of visits, then there exists an isomorphism f between the two trees.  Two trees of height 1 (consisting of just a root) are always isomorphic, so the base case is trivial.
+
+Suppose h > 1, the claim is true for h - 1, and simultaneous traversals on two trees of height h take the same sequence of visits.  Let v0 and v1 (whose initial values are both pre) be the visits maintained by the two simultaneous traversals, let x0 and x1 be the coordinates maintained by the two simultaneous traversals, and consider the following cases:
+
+(1) If after one traversal step, v0 = v1 = pre, then both trees' roots had a left successor.  By Lemmas 7.E and 7.F, the two simultaneous traversals will traverse precisely the elements of the two left subtrees before setting v0 = v1 = in and x0 and x1 back to their initial values.  Thus by our inductive hypothesis, there exists an isomorphism fl between the two left subtrees.
+
+(2) If after one traversal step, v0 = v1 = in, then both trees' roots had no left successor.
+
+In either case, we now have v0 = v1 = in and x0, x1 equal to their original values.  We next consider the following cases:
+
+(1) If after one more traversal step, v0 = v1 = pre, then both trees' roots had a right successor.  By Lemmas 7.E and 7.F, the two simultaneous traversals will traverse precisely the elements of the two right subtrees before setting v0 = v1 = post and x0 and x1 back to their initial values.  Thus by our inductive hypothesis, there exists an isomorphism fr between the two right subtrees.
+
+(2) If after one more traversal step, v0 = v1 = post, then both trees' roots had no right successor.
+
+In either case, we now have v0 = v1 = post and x0, x1 equal to their original values.
+
+Since the x0 and x1 are the roots of two trees, for each tree, the left and right subtrees are disjoint, and the root does not appear in either subtree.  Thus we can define a function f that maps x0 to x1, and maps the values of the left and right subtrees (if one or both exists) via fl and fr, respectively.  Whenever x0 and f(x0) have a left successor, f maps the left successor of x0 to the left successor of f(x0), since fl is an isomorphism between the two left subtrees that maps the root of the first (i.e. the left successor of x0) to the root of the second (i.e. the left successor of f(x0)).  Similarly, whenever x0 and f(x0) have a right successor, f maps the right successor of x0 to the right successor of f(x0).  For any proper descendents of x, the fact that f preserves left and right descendents follows from the fact that fl and fr are isomorphisms.  Thus we conclude that f is an isomorphism between the two trees.
