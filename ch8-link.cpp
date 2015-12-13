@@ -411,6 +411,47 @@ pair<I, I> sort_linked_nonempty_n(I f, DistanceType(I) n, R r, S set_link)
                                  set_link);
 }
 
+template<typename R>
+    requires(BinaryRelation(R))
+struct equivalent_to_prev
+{
+    R r;
+    Domain(R) prev;
+    bool has_prev;
+    equivalent_to_prev(const R& r) :
+        r(r), prev(Domain(R)()), has_prev(false) {}
+    bool operator()(const Domain(R)& curr)
+    {
+        bool result = false;
+        if (has_prev) result = r(curr, prev);
+        else has_prev = true;
+        prev = curr;
+        return result;
+    }
+};
+
+template<typename R>
+    requires(BinaryRelation(R))
+struct input_type<equivalent_to_prev<R>, 0>
+{
+    typedef Domain(R) type;
+};
+
+template<typename I, typename S, typename R>
+    requires(Readable(I) &&
+        ForwardLinker(S) && I == IteratorType(S) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair< pair<I, I>, pair<I, I> >
+unique(I f, I l, R r, S set_link)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //     equivalence(r)
+    equivalent_to_prev<R> e(r);
+    predicate_source<I, equivalent_to_prev<R> > ps(e);
+    return split_linked(f, l, ps, set_link);
+}
+
 template<typename I, typename S, typename Pred>
     requires(ForwardIterator(I) && ForwardLinker(S) &&
         IteratorType(S) == I &&
@@ -543,6 +584,12 @@ bool less_than(T a, T b)
     return a < b;
 }
 
+template<typename T>
+struct input_type<equal_to<T>, 0>
+{
+    typedef T type;
+};
+
 int main()
 {
     typedef link_node<int>* I;
@@ -554,14 +601,14 @@ int main()
     S0 forward_linker;
     S1 backward_linker;
     S2 bidirectional_linker;
-    I f0 = new link_node<int>(-15);
-    I f1 = new link_node<int>(1);
-    I f2 = new link_node<int>(23);
-    I f3 = new link_node<int>(101);
-    I f4 = new link_node<int>(-5);
-    I f5 = new link_node<int>(12);
-    I f6 = new link_node<int>(-17);
-    I f7 = new link_node<int>(8);
+    I f0 = new link_node<int>(0);
+    I f1 = new link_node<int>(0);
+    I f2 = new link_node<int>(0);
+    I f3 = new link_node<int>(0);
+    I f4 = new link_node<int>(2);
+    I f5 = new link_node<int>(2);
+    I f6 = new link_node<int>(3);
+    I f7 = new link_node<int>(3);
     I sentinel = new link_node<int>(0);
 
     bidirectional_linker(f0, f1);
@@ -573,14 +620,12 @@ int main()
     bidirectional_linker(f6, f7);
     bidirectional_linker(f7, sentinel);
 
-    P q = sort_linked_nonempty_n(f0, 8, relation_source<I, I, bool (*)(int, int)>(less_than<int>), forward_linker);
-    I f = q.first;
-    while (f != q.second) {
-        backward_linker(f, successor(f));
-        f = successor(f);
-    }
-    my_for_each(my_reverse_iterator_adapter<I>(q.second),
-                my_reverse_iterator_adapter<I>(q.first),
+    pair<P, P> p = unique(f0, sentinel, equal_to<int>(), forward_linker);
+    my_for_each(p.first.first,
+                p.first.second->next,
                 print<int>);
-
+    cout << endl;
+    my_for_each(p.second.first,
+                p.second.second->next,
+                print<int>);
 }
