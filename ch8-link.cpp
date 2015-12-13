@@ -548,8 +548,12 @@ int main()
     typedef link_node<int>* I;
     typedef pair<I, I> P;
     typedef triple<I, I, I> T;
-    typedef link_node_forward_linker<int> S;
-    S set_link;
+    typedef link_node_forward_linker<int> S0;
+    typedef link_node_backward_linker<int> S1;
+    typedef link_node_bidirectional_linker<int> S2;
+    S0 forward_linker;
+    S1 backward_linker;
+    S2 bidirectional_linker;
     I f0 = new link_node<int>(-15);
     I f1 = new link_node<int>(1);
     I f2 = new link_node<int>(23);
@@ -558,21 +562,25 @@ int main()
     I f5 = new link_node<int>(12);
     I f6 = new link_node<int>(-17);
     I f7 = new link_node<int>(8);
+    I sentinel = new link_node<int>(0);
 
-    set_link(f0, f1);
-    set_link(f1, f2);
-    set_link(f2, f3);
-    set_link(f3, f4);
-    set_link(f4, f5);
-    set_link(f5, f6);
-    set_link(f6, f7);
+    bidirectional_linker(f0, f1);
+    bidirectional_linker(f1, f2);
+    bidirectional_linker(f2, f3);
+    bidirectional_linker(f3, f4);
+    bidirectional_linker(f4, f5);
+    bidirectional_linker(f5, f6);
+    bidirectional_linker(f6, f7);
+    bidirectional_linker(f7, sentinel);
 
-    // pair<P, P> p = partition_linked(f0, f7->next, positive<int>, set_link);
-    // my_for_each(p.first.first, p.first.second->next, print<int>);
-    // my_for_each(p.second.first, p.second.second->next, print<int>);
+    P q = sort_linked_nonempty_n(f0, 8, relation_source<I, I, bool (*)(int, int)>(less_than<int>), forward_linker);
+    I f = q.first;
+    while (f != q.second) {
+        backward_linker(f, successor(f));
+        f = successor(f);
+    }
+    my_for_each(my_reverse_iterator_adapter<I>(q.second),
+                my_reverse_iterator_adapter<I>(q.first),
+                print<int>);
 
-    P q = sort_linked_nonempty_n(f0, 8, relation_source<I, I, bool (*)(int, int)>(less_than<int>), set_link);
-    my_for_each(q.first, q.second, print<int>);
-
-    cout << endl;
 }
