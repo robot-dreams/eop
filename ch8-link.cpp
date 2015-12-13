@@ -159,7 +159,7 @@ template<typename I, typename S, typename Pred>
     requires(ForwardIterator(I) && ForwardLinker(S) &&
         IteratorType(S) == I &&
         UnaryPseudoPredicate(Pred) &&
-        ValueType(I) == Domain(Pred))
+        I == Domain(Pred))
 pair< pair<I, I>, pair<I, I> >
 split_linked(I f, I l, Pred p, S set_link)
 {
@@ -190,23 +190,23 @@ split_linked(I f, I l, Pred p, S set_link)
     I h0 = l; I t0 = l;
     I h1 = l; I t1 = l;
     if (f == l)                                      goto s4;
-    if (p(source(f))) { h1 = f; advance_tail(t1, f); goto s1; }
+    if (p(f))         { h1 = f; advance_tail(t1, f); goto s1; }
     else              { h0 = f; advance_tail(t0, f); goto s0; }
 s0:
     if (f == l)                                      goto s4;
-    if (p(source(f))) { h1 = f; advance_tail(t1, f); goto s3; }
+    if (p(f))         { h1 = f; advance_tail(t1, f); goto s3; }
     else              {         advance_tail(t0, f); goto s0; }
 s1:
     if (f == l)                                      goto s4;
-    if (p(source(f))) {         advance_tail(t1, f); goto s1; }
+    if (p(f))         {         advance_tail(t1, f); goto s1; }
     else              { h0 = f; advance_tail(t0, f); goto s2; }
 s2:
     if (f == l)                                      goto s4;
-    if (p(source(f))) {         link_to_tail(t1, f); goto s3; }
+    if (p(f))         {         link_to_tail(t1, f); goto s3; }
     else              {         advance_tail(t0, f); goto s2; }
 s3:
     if (f == l)                                      goto s4;
-    if (p(source(f))) {         advance_tail(t1, f); goto s3; }
+    if (p(f))         {         advance_tail(t1, f); goto s3; }
     else              {         link_to_tail(t0, f); goto s2; }
 s4:
     // Exercise 8.1
@@ -313,6 +313,104 @@ I my_reverse_append(I f, I l, I h, S set_link)
     return h;
 }
 
+template<typename I, typename P>
+    requires(Readable(I) && Predicate(P) &&
+        ValueType(I) == Domain(P))
+struct predicate_source
+{
+    P p;
+    predicate_source(const P& p) : p(p) {}
+    bool operator()(I i)
+    {
+        return p(source(i));
+    }
+};
+
+template<typename I, typename P>
+struct input_type<predicate_source<I, P>, 0>
+{
+    typedef I type;
+};
+
+template<typename I, typename S, typename P>
+    requires(ForwardLinker(S) && I == IteratorType(S) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair< pair<I, I>, pair<I, I> >
+partition_linked(I f, I l, P p, S set_link)
+{
+    predicate_source<I, P> ps(p);
+    return split_linked(f, l, ps, set_link);
+}
+
+template<typename I0, typename I1, typename R>
+    requires(Readable(I0) && Readable(I1) &&
+        ValueType(I0) == ValueType(I1) &&
+        Relation(R) && ValueType(I0) == Domain(R))
+struct relation_source
+{
+    R r;
+    relation_source(const R& r) : r(r) {}
+    bool operator()(const I0& i0, const I1& i1)
+    {
+        return r(source(i0), source(i1));
+    }
+};
+
+template<typename I0, typename I1, typename R>
+struct input_type<relation_source<I0, I1, R>, 0>
+{
+    typedef I0 type;
+};
+
+template<typename I0, typename I1, typename R>
+struct input_type<relation_source<I0, I1, R>, 1>
+{
+    typedef I1 type;
+};
+
+template<typename I, typename S, typename R>
+    requires(Readable(I) &&
+        ForwardLinker(S) && I == IteratorType(S) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair<I, I> merge_linked_nonempty(I f0, I l0, I f1, I l1,
+                                 R r, S set_link)
+{
+    // Preconditions:
+    //     f0 != l0
+    //     f1 != l1
+    //     increasing_range(f0, l0, r)
+    //     increasing_range(f1, l1, r)
+    //     disjoint(f0, l0, f1, l1)
+    relation_source<I, I, R> rs(r);
+    triple<I, I, I> t = combine_linked_nonempty(f0, l0, f1, l1, r, set_link);
+    set_link(my_find_last(t.m1, t.m2), l1);
+    return pair<I, I>(t.m0, l1);
+}
+
+template<typename I, typename S, typename R>
+    requires(Readable(I) &&
+        ForwardLinker(S) && I == IteratorType(S) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair<I, I> sort_linked_nonempty_n(I f, DistanceType(I) n, R r, S set_link)
+{
+    // Preconditions:
+    //     counted_range(f, n)
+    //     n > 0
+    //     weak_ordering(r)
+    typedef DistanceType(I) N;
+    typedef pair<I, I> P;
+    if (n == N(1)) return P(f, successor(f));
+    N h = half_nonnegative(n);
+    P p0 = sort_linked_nonempty_n(f, h, r, set_link);
+    P p1 = sort_linked_nonempty_n(p0.second, n - h, r, set_link);
+    return merge_linked_nonempty(p0.first,
+                                 p0.second,
+                                 p1.first,
+                                 p1.second,
+                                 r,
+                                 set_link);
+}
+
 template<typename I, typename S, typename Pred>
     requires(ForwardIterator(I) && ForwardLinker(S) &&
         IteratorType(S) == I &&
@@ -363,28 +461,118 @@ struct source_less
     }
 };
 
+template<typename I>
+struct input_type<source_less<I>, 0>
+{
+    typedef I type;
+};
+
+template<typename I>
+    requires(Readable(I))
+struct source_less_than
+{
+    typedef ValueType(I) T;
+    T x;
+    source_less_than(const T& x) : x(x) {}
+    bool operator()(const I& i)
+    {
+        return source(i) < x;
+    }
+};
+
+template<typename I>
+struct input_type<source_less_than<I>, 0>
+{
+    typedef I type;
+};
+
+template<typename I>
+struct alternating
+{
+    bool last;
+    alternating(bool last = false) : last(last) {}
+    bool operator()(const I& i)
+    {
+        last = !last;
+        return last;
+    }
+};
+
+template<typename I>
+struct input_type<alternating<I>, 0>
+{
+    typedef I type;
+};
+
+template<typename I, typename R, typename S>
+    requires(Readable(I) && ForwardIterator(I) &&
+        Relation(R) && I == Domain(R) &&
+        ForwardLinker(S))
+pair<I, I> my_merge_sort_nonempty(I f, I l, R r, S set_link)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //     f != l
+    //     total_ordering(r)
+    typedef pair<I, I> P;
+    typedef triple<I, I, I> T;
+    if (successor(f) == l) return pair<I, I>(f, f);
+    pair<P, P> p = split_linked(f, l, alternating<I>(), set_link);
+    P p0 = my_merge_sort_nonempty(p.first.first,
+                                  p.first.second->next,
+                                  r,
+                                  set_link);
+    p0.second->next = NULL;
+    P p1 = my_merge_sort_nonempty(p.second.first,
+                                  p.second.second->next,
+                                  r,
+                                  set_link);
+    p1.second->next = NULL;
+    T t = combine_linked_nonempty(p0.first,
+                                  p0.second->next,
+                                  p1.first,
+                                  p1.second->next,
+                                  r,
+                                  set_link);
+    return P(t.m0, my_find_last(t.m1, t.m2));
+}
+
+template<typename T>
+bool less_than(T a, T b)
+{
+    return a < b;
+}
+
 int main()
 {
     typedef link_node<int>* I;
-    I f0 = new link_node<int>(0);
+    typedef pair<I, I> P;
+    typedef triple<I, I, I> T;
+    typedef link_node_forward_linker<int> S;
+    S set_link;
+    I f0 = new link_node<int>(-15);
     I f1 = new link_node<int>(1);
-    I f2 = new link_node<int>(2);
-    I f3 = new link_node<int>(3);
+    I f2 = new link_node<int>(23);
+    I f3 = new link_node<int>(101);
+    I f4 = new link_node<int>(-5);
+    I f5 = new link_node<int>(12);
+    I f6 = new link_node<int>(-17);
+    I f7 = new link_node<int>(8);
 
-    I f4 = new link_node<int>(4);
-    I f5 = new link_node<int>(5);
-    I f6 = new link_node<int>(6);
-    I f7 = new link_node<int>(7);
-    link_node_forward_linker<int>()(f0, f1);
-    link_node_forward_linker<int>()(f1, f2);
-    link_node_forward_linker<int>()(f2, f3);
+    set_link(f0, f1);
+    set_link(f1, f2);
+    set_link(f2, f3);
+    set_link(f3, f4);
+    set_link(f4, f5);
+    set_link(f5, f6);
+    set_link(f6, f7);
 
-    link_node_forward_linker<int>()(f4, f5);
-    link_node_forward_linker<int>()(f5, f6);
-    link_node_forward_linker<int>()(f6, f7);
+    // pair<P, P> p = partition_linked(f0, f7->next, positive<int>, set_link);
+    // my_for_each(p.first.first, p.first.second->next, print<int>);
+    // my_for_each(p.second.first, p.second.second->next, print<int>);
 
-    I h = my_reverse_append(f0, f0->end(), f6, link_node_forward_linker<int>());
-    my_for_each(f4, f4->end(), print<int>);
-    my_for_each(h, h->end(), print<int>);
+    P q = sort_linked_nonempty_n(f0, 8, relation_source<I, I, bool (*)(int, int)>(less_than<int>), set_link);
+    my_for_each(q.first, q.second, print<int>);
+
     cout << endl;
 }

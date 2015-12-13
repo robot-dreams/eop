@@ -811,11 +811,11 @@ Two ranges are **disjoint** if they include no iterator in common
 
     property(I: Iterator)
     disjoint: I x I x I x I
-        (f0, l0, f1, l1) |-> (forall i in I) !(i in [f0, l0) and i in [f1, l1))
+        (f0, l0, f1, l1) |-> (forall i in I) !(i in [f0, l0] and i in [f1, l1])
 
     property(I: Iterator)
     disjoint: I x DistanceType(I) x I x DistanceType(I)
-        (f0, n0, f1, n1) |-> (forall i in I) !(i in [[f0, n0)) and i in [[f1, n1)))
+        (f0, n0, f1, n1) |-> (forall i in I) !(i in [[f0, n0]] and i in [[f1, n1]])
 
 A **link rearrangement** is an algorithm taking one or more linked ranges, returning one or more linked ranges, and satisfying the following properties:
 
