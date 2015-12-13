@@ -1212,6 +1212,7 @@ template<typename I>
 class my_reverse_iterator_adapter
 {
 public:
+    my_reverse_iterator_adapter() : i(I()) {}
     my_reverse_iterator_adapter(I i) : i(i) {}
     bool operator==(const my_reverse_iterator_adapter& other) {
         return i == other.i;

@@ -1,0 +1,390 @@
+#include <iostream>
+#include "my_integer.h"
+#include "my_intrinsics.h"
+#include "my_iterator.h"
+#include "my_type_functions.h"
+
+using namespace std;
+
+template<typename T>
+    requires(Regular(T))
+struct link_node
+{
+    link_node(const T& value = T(),
+              link_node* next = NULL,
+              link_node* prev = NULL) :
+        value(value), next(next), prev(prev) {}
+    link_node* end()
+    {
+        return NULL;
+    }
+    template<typename U> friend link_node<U>* successor(link_node<U>* x);
+    template<typename U> friend link_node<U>* predecessor(link_node<U>* x);
+    T value;
+    link_node* next;
+    link_node* prev;
+};
+
+template<typename T>
+    requires(Regular(T))
+struct value_type<link_node<T>*>
+{
+    typedef T type;
+};
+
+template<typename T>
+    requires(Regular(T))
+T source(link_node<T>* x)
+{
+    return x->value;
+}
+
+template<typename T>
+    requires(Regular(T))
+link_node<T>* successor(link_node<T>* x)
+{
+    // Precondition: x != NULL
+    return x->next;
+}
+
+template<typename T>
+    requires(Regular(T))
+link_node<T>* predecessor(link_node<T>* x)
+{
+    // Precondition: x != NULL
+    return x->prev;
+}
+
+template<typename T>
+    requires(Regular(T))
+struct link_node_forward_linker
+{
+    void operator()(link_node<T>* i, link_node<T>* j)
+    {
+        // Precondition: i != NULL
+        i->next = j;
+    }
+};
+
+template<typename T>
+    requires(Regular(T))
+struct link_node_backward_linker
+{
+    void operator()(link_node<T>* i, link_node<T>* j)
+    {
+        // Precondition: j != NULL
+        j->prev = i;
+    }
+};
+
+template<typename T>
+    requires(Regular(T))
+struct link_node_bidirectional_linker
+{
+    void operator()(link_node<T>* i, link_node<T>* j)
+    {
+        // Precondition: i != NULL && j != NULL
+        i->next = j;
+        j->prev = i;
+    }
+};
+
+template<typename T>
+    requires(Regular(T))
+struct iterator_type<link_node_forward_linker<T> >
+{
+    typedef link_node<T>* type;
+};
+
+template<typename T>
+    requires(Regular(T))
+struct iterator_type<link_node_backward_linker<T> >
+{
+    typedef link_node<T>* type;
+};
+
+template<typename T>
+    requires(Regular(T))
+struct iterator_type<link_node_bidirectional_linker<T> >
+{
+    typedef link_node<T>* type;
+};
+
+template<typename I>
+    requires(ForwardIterator(I))
+void advance_tail(I& t, I& f)
+{
+    // Precondition: successor(f) is defined
+    t = f;
+    f = successor(f);
+}
+
+template<typename S>
+    requires(ForwardLinker(S))
+struct linker_to_tail
+{
+    typedef IteratorType(S) I;
+    S set_link;
+    linker_to_tail(const S& set_link) : set_link(set_link) {}
+    void operator()(I& t, I& f)
+    {
+        // Precondition: successor(f) is defined
+        set_link(t, f);
+        advance_tail(t, f);
+    }
+};
+
+template<typename S>
+    requires(ForwardLinker(S))
+struct iterator_type<linker_to_tail<S> >
+{
+    typedef IteratorType(S) type;
+};
+
+template<typename I>
+    requires(ForwardIterator(I))
+I my_find_last(I f, I l)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //     f != l
+    I t;
+    do
+        advance_tail(t, f);
+    while (f != l);
+    return t;
+}
+
+template<typename I, typename S, typename Pred>
+    requires(ForwardIterator(I) && ForwardLinker(S) &&
+        IteratorType(S) == I &&
+        UnaryPseudoPredicate(Pred) &&
+        ValueType(I) == Domain(Pred))
+pair< pair<I, I>, pair<I, I> >
+split_linked(I f, I l, Pred p, S set_link)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //
+    // Lemma 8.2.  split_linked is precedence_preserving.
+    //
+    // Consider the condition
+    //     C0 := (hi = l ^ ti = l) v
+    //           (forall i, j in [h0, t0], if i precedes j then
+    //               i also precedes j in the original input range)
+    // as well as the analogous condition C1.  We prove the lemma
+    // by showing that:
+    //     (a) C0, C1 hold initially
+    //     (b) Every block preserves C0, C1
+    //
+    // Note: we use the following facts:
+    //     (1) In the entire body of this procedure, either
+    //         t0 == l or t0 precedes f in the original input
+    //         range (similarly, either t1 == l or t1 precedes f
+    //         in the original input range)
+    //     (2) The states correspond to the following conditions:
+    //           s0, s2: successor(t0) = f
+    //           s1, s3: successor(t1) = f
+    typedef pair<I, I> P;
+    linker_to_tail<S> link_to_tail(set_link);
+    I h0 = l; I t0 = l;
+    I h1 = l; I t1 = l;
+    if (f == l)                                      goto s4;
+    if (p(source(f))) { h1 = f; advance_tail(t1, f); goto s1; }
+    else              { h0 = f; advance_tail(t0, f); goto s0; }
+s0:
+    if (f == l)                                      goto s4;
+    if (p(source(f))) { h1 = f; advance_tail(t1, f); goto s3; }
+    else              {         advance_tail(t0, f); goto s0; }
+s1:
+    if (f == l)                                      goto s4;
+    if (p(source(f))) {         advance_tail(t1, f); goto s1; }
+    else              { h0 = f; advance_tail(t0, f); goto s2; }
+s2:
+    if (f == l)                                      goto s4;
+    if (p(source(f))) {         link_to_tail(t1, f); goto s3; }
+    else              {         advance_tail(t0, f); goto s2; }
+s3:
+    if (f == l)                                      goto s4;
+    if (p(source(f))) {         advance_tail(t1, f); goto s3; }
+    else              {         link_to_tail(t0, f); goto s2; }
+s4:
+    // Exercise 8.1
+    //
+    // Assuming the range [h_i, t_i] is nonempty, t_i points to
+    // the value of the last element of [f, l) that satisfies
+    // the appropriate condition (either !p(f) or p(f), depending
+    // on whether i = 0 or i = 1).  Let m be the iterator in
+    // [f, l) whose value t_i points to.  Then successor(t_i)
+    // is the same as successor(m) in the original input range
+    //
+    // To prove this, note that if we ever call
+    // link_to_tail(t_i, f), then f satisfies the same condition
+    // as t_i, but t_i precedes f in the original input range;
+    // thus if t_i is the last iterator in the original input
+    // range that satisfies the given condition (either p or !p),
+    // then we never call link_to_tail(t_i, f)
+    return pair<P, P>(P(h0, t0), P(h1, t1));
+}
+
+template<typename I, typename S, typename R>
+    requires(ForwardIterator(I) && ForwardLinker(S) &&
+        IteratorType(S) == I && PseudoRelation(R) &&
+        I == Domain(R))
+triple<I, I, I>
+combine_linked_nonempty(I f0, I l0, I f1, I l1, R r, S set_link)
+{
+    // Precondtions:
+    //     bounded_range(f0, l0)
+    //     bounded_range(f1, l1)
+    //     f0 != l0
+    //     f1 != l1
+    //     disjoint(f0, l0, f1, l1)
+    typedef triple<I, I, I> T;
+    linker_to_tail<S> link_to_tail(set_link);
+    I h; I t;
+    if (r(f1, f0))                  { h = f1; advance_tail(t, f1); goto s1; }
+    else                            { h = f0; advance_tail(t, f0); goto s0; }
+s0: // successor(t) == f0 && !r(f1, t)
+    if (f0 == l0)                   {                              goto s2; }
+    if (r(f1, f0))                  {         link_to_tail(t, f1); goto s1; }
+    else                            {         advance_tail(t, f0); goto s0; }
+s1: // successor(t) == f1 && r(t, f0)
+    if (f1 == l1)                   {                              goto s3; }
+    if (r(f1, f0))                  {         advance_tail(t, f1); goto s1; }
+    else                            {         link_to_tail(t, f0); goto s0; }
+s2: // f0 == l0 && successor(t) == f1
+    set_link(t, f1); return T(h, t, l1);
+s3: // f1 == l1 && successor(t) == f0
+    set_link(t, f0); return T(h, t, l0);
+}
+
+template<typename I, typename S, typename R>
+    requires(ForwardIterator(I) && ForwardLinker(S) &&
+        IteratorType(S) == I && PseudoRelation(R) &&
+        I == Domain(R))
+triple<I, I, I>
+combine_linked(I f0, I l0, I f1, I l1, R r, S set_link)
+{
+    // Precondtions:
+    //     bounded_range(f0, l0)
+    //     bounded_range(f1, l1)
+    //     disjoint(f0, l0, f1, l1)
+    typedef triple<I, I, I> T;
+    if (f0 == l0) return T(f1, f1, l1);
+    if (f1 == l1) return T(f0, f0, l0);
+    return combine_linked_nonempty(f0, l0, f1, l1, r, set_link);
+}
+
+template<typename S>
+    requires(ForwardLinker(S))
+struct linker_to_head
+{
+    typedef IteratorType(S) I;
+    S set_link;
+    linker_to_head(const S& set_link) : set_link(set_link) {}
+    void operator()(I& h, I& f)
+    {
+        // Precondition: successor(f) is defined
+        I t = successor(f);
+        set_link(f, h);
+        h = f;
+        f = t;
+    }
+};
+
+template<typename S>
+    requires(ForwardLinker(S))
+struct iterator_type<linker_to_head<S> >
+{
+    typedef IteratorType(S) type;
+};
+
+template<typename I, typename S>
+    requires(ForwardIterator(I) && ForwardLinker(S) &&
+        IteratorType(S) == I)
+I my_reverse_append(I f, I l, I h, S set_link)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //     h is not in the half-open bounded range between f and l
+    linker_to_head<S> link_to_head(set_link);
+    while (f != l) link_to_head(h, f);
+    return h;
+}
+
+template<typename I, typename S, typename Pred>
+    requires(ForwardIterator(I) && ForwardLinker(S) &&
+        IteratorType(S) == I &&
+        UnaryPseudoPredicate(Pred) &&
+        ValueType(I) == Domain(Pred))
+pair< pair<I, I>, pair<I, I> >
+split_linked_2(I f, I l, Pred p, S set_link)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    I h0 = l, t0 = l;
+    I h1 = l, t1 = l;
+    linker_to_tail<S> link_to_tail(set_link);
+    while (f != l) {
+        if (p(source(f))) {
+            if (h1 == l) {
+                h1 = f;
+                advance_tail(t1, f);
+            } else {
+                link_to_tail(t1, f);
+            }
+        } else {
+            if (h0 == l) {
+                h0 = f;
+                advance_tail(t0, f);
+            } else {
+                link_to_tail(t0, f);
+            }
+        }
+    }
+    return make_pair(make_pair(h0, t0), make_pair(h1, t1));
+}
+
+template<typename T>
+    requires(Regular(T))
+void print(const T& x)
+{
+    cout << x << endl;
+}
+
+template<typename I>
+    requires(Readable(I))
+struct source_less
+{
+    bool operator()(const I& i, const I& j)
+    {
+        return source(i) < source(j);
+    }
+};
+
+int main()
+{
+    typedef link_node<int>* I;
+    I f0 = new link_node<int>(0);
+    I f1 = new link_node<int>(1);
+    I f2 = new link_node<int>(2);
+    I f3 = new link_node<int>(3);
+
+    I f4 = new link_node<int>(4);
+    I f5 = new link_node<int>(5);
+    I f6 = new link_node<int>(6);
+    I f7 = new link_node<int>(7);
+    link_node_forward_linker<int>()(f0, f1);
+    link_node_forward_linker<int>()(f1, f2);
+    link_node_forward_linker<int>()(f2, f3);
+
+    link_node_forward_linker<int>()(f4, f5);
+    link_node_forward_linker<int>()(f5, f6);
+    link_node_forward_linker<int>()(f6, f7);
+
+    I h = my_reverse_append(f0, f0->end(), f6, link_node_forward_linker<int>());
+    my_for_each(f4, f4->end(), print<int>);
+    my_for_each(h, h->end(), print<int>);
+    cout << endl;
+}

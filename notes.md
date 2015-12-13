@@ -12,6 +12,8 @@ Implement an adapter that converts an IndexedIterator into a RandomAccessIterato
 Exhaustive test cases for bifurcate_compare
     Generating random trees?
 [DONE] traverse that can terminate early
+Revisit Exercise 8.1 more rigorously
+Rewrite the proof of Lemma 8.2 more concisely
 
 ## Questions
 
@@ -39,6 +41,9 @@ When would it be useful to traverse multiple trees concurrently?
 What does it mean for traversal to be "uniform"?
 What do we gain by thinking about "concept schemas"?
 Why doesn't the book make more use of optional parameters?
+In linker_to_tail, why don't we need the precondition that successor(t) is defined?
+[DONE] What's meant by "to avoid sharing of proper tails"?
+    Sharing proper tails can save memory, but would also lead to strange behavior (i.e. changing one iterator's source value can change the outcome of seemingly unrelated traversals)
 
 ## Definitions
 
@@ -779,3 +784,46 @@ A concept is a **coordinate structure** if it consists of one or more coordinate
 Let c = {c1, ..., cn} be a collection of coordinates of a type C, and let d = {d1, ..., dm} be a collection of coordinates of a type D, where C and D belong to the same coordinate structure concept.  We say c and d are **isomorphic** if there is a bijection f from c to d such that for any traversal function t and any element ci, t(ci) is defined if and only if t(f(ci)) is defined, and if whenever both are defined, they are equal
 Let c = {c1, ..., cn} and d = {d1, ..., dn} be isomorphic collections of coordinates that have the same value types, and let f be an isomorphism between c and d.  We say that c and d are **equivalent** under given equivalence relations (one per value type) if for any access function a and any element ci, a(ci) is defined if and only if a(f(c)), and if whenever both are defined, they are equivalent under the corresponding equivalence relation
 Replacing the equivalence relations on the value types with equality on the value types leads to a definition of equality for collections of coordinates
+
+## Chapter 8
+
+A **linked iterator** type is a forward iterator type for which a **linker object** (an object that, when applied to an iterator, allows the successor of that iterator to be changed)
+
+    ForwardLinker(S) :=
+        IteratorType: ForwardLinker -> ForwardIterator
+      ^ Let I = IteratorType(S) in:
+            (forall s in S) (s: I x I -> void)
+          ^ (forall i, j in I) if successor(i) is defined, then
+                s(i, j) establishes successor(i) = j
+
+    BackwardLinker(S) :=
+        IteratorType: BackwardLinker -> BidirectionalIterator
+      ^ Let I = IteratorType(S) in:
+            (forall s in S) (s: I x I -> void)
+          ^ (forall i, j in I) if predecessor(j) is defined, then
+                s(i, j) establishes i = predecessor(j)
+
+    BidirectionalLinker :=
+        ForwardLinker(S)
+      ^ BackwardLinker(S)
+
+Two ranges are **disjoint** if they include no iterator in common
+
+    property(I: Iterator)
+    disjoint: I x I x I x I
+        (f0, l0, f1, l1) |-> (forall i in I) !(i in [f0, l0) and i in [f1, l1))
+
+    property(I: Iterator)
+    disjoint: I x DistanceType(I) x I x DistanceType(I)
+        (f0, n0, f1, n1) |-> (forall i in I) !(i in [[f0, n0)) and i in [[f1, n1)))
+
+A **link rearrangement** is an algorithm taking one or more linked ranges, returning one or more linked ranges, and satisfying the following properties:
+
+    * Input ranges (either counted or bounded) are pairwise disjoint
+    * Output ranges (either counted or bounded) are pairwise disjoint
+    * Every iterator in an input range appears in an output range
+    * Every iterator in an output range appeared in an input range
+    * Every iterator in each output range designates the same object as before the rearrangement, and this object has the same value
+
+Note that successor and predecessor relationships that held in the input range might not hold in the output ranges
+A link rearrangement is **precedence preserving** if, whenever two iterators i, j in an output range, with i preceding j, came from the same input range, the same precedence relation held in the input range

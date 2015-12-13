@@ -209,6 +209,12 @@ struct weight_type;
 
 #define WeightType(C) typename weight_type< C >::type
 
+template<typename S>
+    requires(ForwardLinker(S))
+struct iterator_type;
+
+#define IteratorType(S) typename iterator_type< S >::type
+
 template<typename T0, typename T1, typename T2>
     requires(Regular(T0), Regular(T1), Regular(T2))
 struct triple
