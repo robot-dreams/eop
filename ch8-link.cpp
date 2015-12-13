@@ -1,4 +1,5 @@
 #include <iostream>
+#include "my_bifurcate.h"
 #include "my_integer.h"
 #include "my_intrinsics.h"
 #include "my_iterator.h"
@@ -452,6 +453,41 @@ unique(I f, I l, R r, S set_link)
     return split_linked(f, l, ps, set_link);
 }
 
+template<typename C>
+    requires(EmptyLinkedBifurcateCoordinate(C))
+void my_rotate(C& curr, C& prev)
+{
+    // Precondition: !empty(curr)
+    C tmp = left_successor(curr);
+    set_left_successor(curr, right_successor(curr));
+    set_right_successor(curr, prev);
+    if (empty(tmp)) { prev = tmp; return; }
+    prev = curr;
+    curr = tmp;
+}
+
+template<typename C, typename Proc>
+    requires(EmptyLinkedBifurcateCoordinate(C) &&
+        Procedure(Proc) && Arity(Proc) == 1 &&
+        C == InputType(Proc, 0))
+Proc traverse_rotating(C c, Proc proc)
+{
+    // Precondition: tree(c)
+    C curr = c;
+    C prev;
+    do {
+        proc(curr);
+        my_rotate(curr, prev);
+    } while (curr != c);
+    do {
+        proc(curr);
+        my_rotate(curr, prev);
+    } while (curr != c);
+    proc(curr);
+    my_rotate(curr, prev);
+    return proc;
+}
+
 template<typename I, typename S, typename Pred>
     requires(ForwardIterator(I) && ForwardLinker(S) &&
         IteratorType(S) == I &&
@@ -590,42 +626,20 @@ struct input_type<equal_to<T>, 0>
     typedef T type;
 };
 
+template<typename T>
+    requires(Readable(T))
+void print_source(T x)
+{
+    cout << source(x) << endl;
+}
+
 int main()
 {
-    typedef link_node<int>* I;
-    typedef pair<I, I> P;
-    typedef triple<I, I, I> T;
-    typedef link_node_forward_linker<int> S0;
-    typedef link_node_backward_linker<int> S1;
-    typedef link_node_bidirectional_linker<int> S2;
-    S0 forward_linker;
-    S1 backward_linker;
-    S2 bidirectional_linker;
-    I f0 = new link_node<int>(0);
-    I f1 = new link_node<int>(0);
-    I f2 = new link_node<int>(0);
-    I f3 = new link_node<int>(0);
-    I f4 = new link_node<int>(2);
-    I f5 = new link_node<int>(2);
-    I f6 = new link_node<int>(3);
-    I f7 = new link_node<int>(3);
-    I sentinel = new link_node<int>(0);
-
-    bidirectional_linker(f0, f1);
-    bidirectional_linker(f1, f2);
-    bidirectional_linker(f2, f3);
-    bidirectional_linker(f3, f4);
-    bidirectional_linker(f4, f5);
-    bidirectional_linker(f5, f6);
-    bidirectional_linker(f6, f7);
-    bidirectional_linker(f7, sentinel);
-
-    pair<P, P> p = unique(f0, sentinel, equal_to<int>(), forward_linker);
-    my_for_each(p.first.first,
-                p.first.second->next,
-                print<int>);
-    cout << endl;
-    my_for_each(p.second.first,
-                p.second.second->next,
-                print<int>);
+    typedef my_node<int>* C;
+    C r0 = new my_node<int>(4);
+    r0->new_left(2)->new_left(1);
+    r0->left->new_right(3);
+    r0->new_right(6)->new_left(5);
+    r0->right->new_right(7);
+    traverse_rotating(r0, print_source<C>);
 }

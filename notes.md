@@ -831,3 +831,17 @@ A **link rearrangement** is an algorithm taking one or more linked ranges, retur
 Note that successor and predecessor relationships that held in the input range might not hold in the output ranges
 A link rearrangement is **precedence preserving** if, whenever two iterators i, j in an output range, with i preceding j, came from the same input range, the same precedence relation held in the input range
 A sort on a linked range is **stable** with respect to a weak ordering r if, whenever i and j have equivalent values with respect to r but i precedes j in the input range, i precedes j in the output range.
+
+    LinkedBifurcateCoordinate(T) :=
+        BifurcateCoordinate(T)
+      ^ set_left_successor: T x T -> void
+            (i, j) |-> establishes left_successor(i) = j
+      ^ set_right_successor: T x T -> void
+            (i, j) |-> establishes right_successor(i) = j
+
+    EmptyLinkedBifurcateCoordinate(T) :=
+        LinkedBifurcateCoordinate(T)
+      ^ empty(T())
+      ^ !empty(i) implies left_successor(i) and right_successor(i) are defined
+      ^ !empty(i) implies (!has_left_successor(i) <=> empty(left_successor(i)))
+      ^ !empty(i) implies (!has_right_successor(i) <=> empty(right_successor(i)))

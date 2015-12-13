@@ -505,7 +505,7 @@ Next, suppose r(a, x) holds for the value x of some iterator i in the range.  Le
 
     height_recursive(x) <= weight_recursive(x)
 
-**Proof.** We will proceed by induction on the number of descendents of x (which is assumed to be finite, by the precondition that x is a tree).  If x has no proper descendents, then both the height and the weight return 0, and there is nothing to prove.  Otherwise, let hl, wl be the height and weight of the left successor, and let hr, wr be the height and weight of the right successor.  By the inductive hypothesis, hl <= wl and hr <= wr.  Since hl, wl, hr, and wr are all positive, we have wl + wr >= hl + hr >= max(hl, hr); thus successor(wl + wr) >= successor(max(hl, hr)), and since these are precisely the values returned by the weight and height procedures, respectively, the proof is complete.
+**Proof.** We will proceed by induction on the number of descendants of x (which is assumed to be finite, by the precondition that x is a tree).  If x has no proper descendants, then both the height and the weight return 0, and there is nothing to prove.  Otherwise, let hl, wl be the height and weight of the left successor, and let hr, wr be the height and weight of the right successor.  By the inductive hypothesis, hl <= wl and hr <= wr.  Since hl, wl, hr, and wr are all positive, we have wl + wr >= hl + hr >= max(hl, hr); thus successor(wl + wr) >= successor(max(hl, hr)), and since these are precisely the values returned by the weight and height procedures, respectively, the proof is complete.
 
 **Lemma 7.2** If x and y are bidirectional bifurcate coordinates,
 
@@ -517,44 +517,44 @@ Next, suppose r(a, x) holds for the value x of some iterator i in the range.  Le
 
      By definition of a bidirectional bifurcate coordinate, whenever right_successor(i) is defined, we have predecessor(right_successor(i)) = i; similarly, whenever left_successor(i) is defined, we have predecessor(left_successor(i)) = i.  Thus the implications above follow immediately from regularity of predecessor.
 
-**Lemma 7.A** If v != post and !empty(x) before executing traverse_step(v, x), and if v = v' and x = x' after executing, then x' is a descendent of x.
-**Proof.** In the cases where v != post, traverse_step either sets x to its left successor, sets x to its right successor, or doesn't change x.  In each case, x' is a descendent of x.
+**Lemma 7.A** If v != post and !empty(x) before executing traverse_step(v, x), and if v = v' and x = x' after executing, then x' is a descendant of x.
+**Proof.** In the cases where v != post, traverse_step either sets x to its left successor, sets x to its right successor, or doesn't change x.  In each case, x' is a descendant of x.
 
-**Lemma 7.B** If the descendents of x form a tree, x = x0, and v = pre initially, then we will have x = x0, v = post after finitely many calls to traverse_step(v, x).
+**Lemma 7.B** If the descendants of x form a tree, x = x0, and v = pre initially, then we will have x = x0, v = post after finitely many calls to traverse_step(v, x).
 **Proof.** We will proceed by induction on the height h of the tree rooted at x.  If h = 1, then x has neither a left nor a right successor, so one call will set v = in without changing x, and a second call will set v = post without changing x.  If h > 1, suppose the claim holds for a tree of height h - 1.
 
 If x0 has a left successor, then one call will set x to the left successor xl of x0 without changing v.  By our inductive hypothesis (the tree rooted at xl has height h - 1 because the maximum sequence of successors from xl can be extended to a sequence of successors from x0 with one additional successor), after finitely many more calls, we will have x = xl and v = post.  Since x0 is the predecessor of xl, an additional call will set v = in and x = x0.  Otherwise, if x0 does not have a left successor, then one call will set v = in without changing x.  Either way, x = x0 and v = in after finitely many calls.
 
 Now x = x0 and v = in; if x0 has a right successor, then one call will set x to the right successor xr of x0 and set v = pre.  By our inductive hypothesis, (the tree rooted at height xr has a height h - 1), after finitely many more calls, we will have x = xr and v = post.  Since x0 is the predecessor of xr, an additional call will set x = x0 without changing v.  Otherwise, if x0 does not have a right successor, then one call will set v = post without changing x.  Either way, x = x0 and v = post after finitely many calls, and the proof is complete.
 
-**Lemma 7.C** If the descendents of x0 form a tree, y is a descendent of x0, v = pre, and x = x0 initially, then we will have y == x after finitely many calls to traverse_step(v, x).
-**Proof.** We will proceed by induction on the height h of the tree rooted at x0.  If h = 1, then x0 is the only element of the tree, so y is a descendent of x0 implies y == x without any calls.  Suppose h > 1, and the claim holds for a tree of height h - 1.
+**Lemma 7.C** If the descendants of x0 form a tree, y is a descendant of x0, v = pre, and x = x0 initially, then we will have y == x after finitely many calls to traverse_step(v, x).
+**Proof.** We will proceed by induction on the height h of the tree rooted at x0.  If h = 1, then x0 is the only element of the tree, so y is a descendant of x0 implies y == x without any calls.  Suppose h > 1, and the claim holds for a tree of height h - 1.
 
 If x0 == y then there is nothing to prove, so we can assume x0 != y.
 
-If x0 has a left successor and y is a descendent of its left successor, one call will set x to the left successor xl of x0, and by our inductive hypothesis, finitely many more calls will set x to y.
+If x0 has a left successor and y is a descendant of its left successor, one call will set x to the left successor xl of x0, and by our inductive hypothesis, finitely many more calls will set x to y.
 
-If x0 does not have a left successor, then a single call will set v = post, x = x0.  If x0 does have a left successor xl but y is not a descendent of xl, then by Lemma 7.B, after finitely many more calls we will have v = post, x = xl, and by definition of the procedure, one more call will set v = in, x = x0.  Either way, v = in and x = x0 after finitely many calls.  Since y is a descendent of x0 and y is neither x0 nor a descendent of xl, we know that x0 has a right successor xr and that y is a descendent of xr, and by our inductive hypothesis, finitely many more calls will set x to y.
+If x0 does not have a left successor, then a single call will set v = post, x = x0.  If x0 does have a left successor xl but y is not a descendant of xl, then by Lemma 7.B, after finitely many more calls we will have v = post, x = xl, and by definition of the procedure, one more call will set v = in, x = x0.  Either way, v = in and x = x0 after finitely many calls.  Since y is a descendant of x0 and y is neither x0 nor a descendant of xl, we know that x0 has a right successor xr and that y is a descendant of xr, and by our inductive hypothesis, finitely many more calls will set x to y.
 
-**Lemma 7.E** If x = x0 and v = pre initially, then upon repeated calls to traverse_step(v, x), until we have x == x0 && v == post, every intermediate value of x will be a descendent of x0.
+**Lemma 7.E** If x = x0 and v = pre initially, then upon repeated calls to traverse_step(v, x), until we have x == x0 && v == post, every intermediate value of x will be a descendant of x0.
 
-**Proof.** If x0 has no left or right successor, then one call will set v = in without changing x, and the second call will set v = post without changing x, and the claim holds.  If x0 has a left successor xl, then one call will set x = xl without changing v; by our inductive hypothesis, subsequent intermediate values of x will be descendents of xl (thus descendents of x0) until x = xl && v == post, and one more call will set x = x0, v = in.  If x0 has no left successor, then one call will set x = x0, v = in.  Next, if x0 has a right successor xr, then one call will set x = xr and v = pre; by our inductive hypothesis, subsequent intermediate values of x will be descendents of xr (thus descendents of x0) until x = xr && v == post, and one more call will set x = x0, v = post.  If x0 has no right successor, then one call will set x = x0, v = post.
+**Proof.** If x0 has no left or right successor, then one call will set v = in without changing x, and the second call will set v = post without changing x, and the claim holds.  If x0 has a left successor xl, then one call will set x = xl without changing v; by our inductive hypothesis, subsequent intermediate values of x will be descendants of xl (thus descendants of x0) until x = xl && v == post, and one more call will set x = x0, v = in.  If x0 has no left successor, then one call will set x = x0, v = in.  Next, if x0 has a right successor xr, then one call will set x = xr and v = pre; by our inductive hypothesis, subsequent intermediate values of x will be descendants of xr (thus descendants of x0) until x = xr && v == post, and one more call will set x = x0, v = post.  If x0 has no right successor, then one call will set x = x0, v = post.
 
-**Lemma 7.F** If x = x0 and v = pre initially, then upon repeated calls to traverse_step(v, x), the x will take on the value of every descendent of x0 before x == x0 && v == post holds.
-**Proof.** If x0 has no left or right successors then there is nothing to prove.  If x0 has a left successor xl then Lemma 7.E and our inductive hypothesis imply that x will take on the value of every descendent of xl (and only those values) before x == xl && v == post holds, and one more call will set x = x0, v = in.  If x0 has no left successor then a single call will set x = x0, v = in.  Next, if x0 has a right successor xr then Lemma 7.E and our inductive hypothesis imply that x will take on the value of every descendent of xr (and only those values) before x == xr && v == post holds, and one more call will set x = x0, v = post.  If x0 has no right successor then a single call will set x = x0, v = post.  Since the descendents of x0 are precisely x0, the descendents of its left successor (if it exists), and the descendents of its right successor (if it exists), the proof is complete.
+**Lemma 7.F** If x = x0 and v = pre initially, then upon repeated calls to traverse_step(v, x), the x will take on the value of every descendant of x0 before x == x0 && v == post holds.
+**Proof.** If x0 has no left or right successors then there is nothing to prove.  If x0 has a left successor xl then Lemma 7.E and our inductive hypothesis imply that x will take on the value of every descendant of xl (and only those values) before x == xl && v == post holds, and one more call will set x = x0, v = in.  If x0 has no left successor then a single call will set x = x0, v = in.  Next, if x0 has a right successor xr then Lemma 7.E and our inductive hypothesis imply that x will take on the value of every descendant of xr (and only those values) before x == xr && v == post holds, and one more call will set x = x0, v = post.  If x0 has no right successor then a single call will set x = x0, v = post.  Since the descendants of x0 are precisely x0, the descendants of its left successor (if it exists), and the descendants of its right successor (if it exists), the proof is complete.
 
-**Lemma 7.G** If the descendents of x0 form a tree and y is a descendent of x0, then reachable(x0, y) will return true.
+**Lemma 7.G** If the descendants of x0 form a tree and y is a descendant of x0, then reachable(x0, y) will return true.
 **Proof** By Lemma 7.C, and the definition of reachable (which ensures that v = pre initially), finitely many calls to traverse_step(v, x) will set x == y.  By Lemma 7.F, this will occur before x == root && v == post holds.
 
-**Lemma 7.H** If the descendents of x0 form a tree and y is a descendent of x0, and if x = x0, v = pre initially, then repeated calls to traverse_step(v, x) will set x = y, v = pre before x == y, v == in or x == y, v == post hold.
+**Lemma 7.H** If the descendants of x0 form a tree and y is a descendant of x0, and if x = x0, v = pre initially, then repeated calls to traverse_step(v, x) will set x = y, v = pre before x == y, v == in or x == y, v == post hold.
 **Proof.** Lemma 7.F ensures that repeated calls will indeed set x == y.  We will proceed by induction on the height of the tree rooted at x0.  If y == x0 then x == y, v = pre initially, so there is nothing to prove.
 
-Suppose x0 has a left successor xl.  If y is a descendent of xl, then the claim follows by our inductive hypothesis.  Otherwise, by Lemma 7.E, we will have x == xl, v = post before x == y holds, and one more call will set x = x0, v = in.  If x0 has no left successor, then a single call will set x = x0, v = in.
+Suppose x0 has a left successor xl.  If y is a descendant of xl, then the claim follows by our inductive hypothesis.  Otherwise, by Lemma 7.E, we will have x == xl, v = post before x == y holds, and one more call will set x = x0, v = in.  If x0 has no left successor, then a single call will set x = x0, v = in.
 
-We have already considered the cases where y == x0 or y is a descendent of the left successor of x, thus we can assume neither of these cases hold.  By definition of a descendent, y must be a descendent of the right successor xr of x (which must exist).  In every possible case, repeated calls set x = x0, v = in without ever setting x = y.  One more call will set x = xr and v = in, and the claim follows by our inductive hypothesis.
+We have already considered the cases where y == x0 or y is a descendant of the left successor of x, thus we can assume neither of these cases hold.  By definition of a descendant, y must be a descendant of the right successor xr of x (which must exist).  In every possible case, repeated calls set x = x0, v = in without ever setting x = y.  One more call will set x = xr and v = in, and the claim follows by our inductive hypothesis.
 
 **Lemma 7.3** If reachable returns true, v = pre right before the return.
-**Proof.** Suppose reachable returns true.  Then by Lemma 7.E, and the definition of reachable (in particular, the fact that v == pre holds before any traversal calls), y must be a descendent of x.  Furthermore, by Lemma 7.H, reachable will set x = y, v = pre before either of x == y, v == in or x == y, v == post holds.
+**Proof.** Suppose reachable returns true.  Then by Lemma 7.E, and the definition of reachable (in particular, the fact that v == pre holds before any traversal calls), y must be a descendant of x.  Furthermore, by Lemma 7.H, reachable will set x = y, v = pre before either of x == y, v == in or x == y, v == post holds.
 
 **Lemma 7.4** For bidirectional bifurcate coordinates, trees are isomorphic when simultaneous traversals take the same sequence of visits.
 **Proof.** We will show by induction that if simultaneous traversals on two trees of height h take the same sequence of visits, then there exists an isomorphism f between the two trees.  Two trees of height 1 (consisting of just a root) are always isomorphic, so the base case is trivial.
@@ -710,3 +710,62 @@ Finally, since neither of the two recursive calls nor the call to merge_linked_n
   **Proof.** The proof of Lemma 8.8.1 shows that after the statement set_link(find_last(t.m1, t.m2), l1), [t.m0, l1) is identical to the range returned by combine_linked_nonempty.  Thus the fact that merge_linked_nonempty is precedence-preserving follows immediately from the fact that combine_linked_nonempty is precedence-preserving, and we established the latter in Lemma 8.5.
 
 For Lemma 8.10, we will proceed by induction on n.  If n == 1 then there are no precedence relations in the input and output ranges, and thus nothing to prove.  Suppose n > 1 and the claim holds for all m < n.  Suppose i and j have equivalent values under r, and that i precedes j in the input range.  If i and j are both in [[f, h|) or both in [[p.m1, n - h|)  then the claim follows from the inductive hypothesis, which implies that i precedes j in the output range of the recursive call to sort_linked_nonempty_n, and from Lemma 8.10.1, which implies that i precedes j in the output range of merge_linked_nonempty, which is the same as the output range of the entire procedure.  If i appears in [[f, h|) and j appears in [[p.m1, n - h|) (the other way around is impossible since every element in the former range precedes every element in the latter range), then since sort_linked_nonempty_n is a link rearrangement, i appears in [p0.m0, p0.m1), j appears in [p1.m0, p1.m1), and Lemma 8.7 implies that i precedes j in the output of merge_linked_nonempty, i.e. the output of the entire procedure.
+
+**Lemma 8.A** Suppose the trees rooted at curr and prev are disjoint.  Let n = weight(curr) and let c, p be the original values of curr, prev.  Then:
+    (a) The next 3n calls to tree_rotate will not modify the tree rooted at p
+    (b) After 3n calls, we will have prev = c, curr = p
+    (c) At no point before 3n calls will we have curr equal to any descendants of p
+**Proof.** We proceed by induction.
+
+If n = 1, then the claim follows immediately from the definition of tree_rotate.
+
+If n > 1, we will use the notation (a, c, b) to denote a coordinate c whose left successor is a and whose right successor is b.  Let c and p be the original values of curr and prev, and let l and r be the original left and right successors of c.
+
+After one call to tree_rotate, curr = l and prev = (r, c, p).  Let n_l = weight(l).  Since the tree rooted at l is disjoint from the tree rooted at (r, c, p), by the inductive hypothesis the next 3n_l calls to tree_rotate will not modify the tree rooted at (r, c, p) (in particular, it will not modify the tree rooted at p), and after 3n_l calls to tree_rotate we will have curr = (r, c, p) and prev = l.  Furthermore, at no point before 3n_l calls will we have curr equal to any descendants of c (in particular, at no point before 3n_l calls will we have curr equal to p).
+
+After one more call to tree_rotate, we will have curr = r and prev = (p, c, l).  Let n_r = weight(r).  Since the tree rooted at r is disjoint from the tree rooted at (p, c, l), by the inductive hypothesis the next 3n_r calls to tree_rotate will not modify the tree rooted at (p, c, l) (in particular, it will not modify the tree rooted at p), and after 3n_r calls to tree_rotate we will have curr = (p, c, l) and prev = r.  Furthermore, at no point before 3n_r calls will we have curr equal to any descendants of c (in particular, at no point before 3n_r calls will we have curr equal to p).
+
+Finally, one more call will set curr = p and prev = (l, c, r); thus after 1 + 3n_l + 1 + 3n_r + 1 = 3(1 + n_l + n_r) = 3n calls to tree_rotate, the tree rooted at p was not modified at any point, curr is equal to the original value of prev and prev is equal to the original value of curr.
+
+**Lemma 8.B** Let c and p be the initial values of curr and prev, let l and r be the initial left and right successors of c, and let n, n_l, n_r be the weights of the trees rooted at c, l, r.  Then:
+
+(a) Upon repeated calls to tree_rotate(curr, prev), the left and right successors of c will go through three transitions: (l, r) -> (r, p) -> (p, l) -> (l, r)
+(b) The second and third transitions take 3n_l + 1 and 3n_r + 1 calls, respectively
+(c) If p was empty, then 3n calls will restore the original values of curr and prev
+
+**Proof.** Let n be the weight of c; we will proceed by induction on n.
+
+If n = 1, the claim follows immediately by the definition of tree_rotate.
+
+Suppose n > 1 and the claim is true for m < n.  One call will set curr = l, prev = (r, c, p), which completes the first transition.
+
+By Lemma 8.A, 3n_l more calls will set curr = (r, c, p), prev = l without modifying the tree rooted at (r, c, p), and one more call will set curr = r and prev = (p, c, l), which completes the second transition after 3n_l + 1 calls.  Note that Lemma 8.A(c) implies that no fewer than 3n_l calls after curr = l, prev = (r, c, p) holds, will cause curr == c to hold.
+
+Again by Lemma 8.3, 3n_r more calls will set curr = (p, c, l), prev = r without modifying the tree rooted at (p, c, l).  Note that Lemma 8.A(c) implies that no fewer than 3n_r calls after curr = r, prev = (p, c, l) holds, will cause curr == c to hold.  If p is empty, then one more call will set curr = (l, c, r) and prev = p.  Otherwise, one more call will set curr = p and prev = (l, c, r).  Either way, this completes the third transition after 3n_r + 1 calls, which proves (a) and (b).  In the case where p was empty, the original values of curr and prev were restored after a total of 3(n_l + n_r + 1) = 3n calls, which proves (c).
+
+**Lemma 8.C** Let c and p be the initial values of curr and prev, and let n = weight(c).  If i is a non-empty descendant of c with weight n_i, then repeated calls to tree_rotate(curr, prev) will set curr = i within 3(n - n_i) calls.
+**Proof.** We proceed by induction on n.
+
+If n = 1, then c is its only non-empty descendant, and the claim trivially holds.
+
+Suppose n > 1 and the claim holds for m < n.  If i = c there is nothing to prove.  Let l and r be the left and right successors of c, and let n_l, n_r be the weights of the corresponding subtrees.
+
+If i != c and i is reachable from l, then one call to tree_rotate will set curr to l, and by the inductive hypothesis, fewer than 3n_l additional calls will set curr to i, for a total of at most 1 + 3(n_l - n_i) calls (which is less than 3(n - n_i)).
+
+If i != c and i is reachable from r, then one call to tree_rotate will set curr to l and prev to (r, c, p).  By Lemma 8.A(b), 3n_l additional calls to tree_rotate will set curr to (r, c, p) and prev to l.  One more call will set curr to r and prev to (p, c, l).  By the inductive hypothesis, fewer than 3(n_r - n_i) additional calls will result in curr = i, for a total of at most 2 + 3n_l + 3n_r - 3n_i calls (which is less than 3(n - n_i)).
+
+**Theorem 8.1** Consider a call of traverse_rotating(c, proc) and any non-empty descendant i of c, where i has initial left and right successors l and r and predecessor p.  Then:
+
+(1) The left and right successors of i go through three transitions (l, r) -> (r, p) -> (p, l) -> (l, r).
+**Proof.** If i = c then claim follows from Lemma 8.B(a), which shows that the transitions will occur after sufficiently many calls to tree_rotate, from the definition of tree_rotate, which shows that the first transition will occur after a single call to tree_rotate, and from Lemmas 8.A(c) and 8.B(b), which shows that last two transitions will occur before before traverse_rotating terminates.
+
+If i != c, then let n = weight(c) and n_i = weight(i).  Lemma 8.C implies that curr = i will hold within 3(n - n_i) calls to tree_rotate, Lemmas 8.A(c) and 8.B(b) together imply that traverse_rotating will not terminate until 3n calls to tree_rotate, and another application of Lemma 8.B(b) together with the definition of tree_rotate (which shows that the first transition occurs after a single call) shows that the three transitions on the left and right successors of i will occur within 3n_i calls of curr becoming i.  Thus we conclude that the three transitions will occur within 3(n - n_i) + 3n_i = 3n calls, i.e. they will occur before traverse_rotating terminates.
+
+(2) If n_l and n_r are the weights of l and r, the transitions (r, p) -> (p, l) and (p, l) -> (l, r) take 3n_l + 1 and 3n_r + 1 calls of tree_rotate, respectively.
+**Proof.** Note that tree_rotate only modifies successors of curr, thus no transitions can occur for i before curr becomes i.  As soon as curr becomes i within traverse_rotating (which must happen by Lemma 8.C), we can apply Lemma 8.B(b) to show that the transitions take precisely 3n_l + 1 and 3n_r + 1 calls to tree_rotate.
+
+(3) If k is a running count of the calls of tree_rotate, the value of k mod 3 is distinct for each of the three transitions of the successors of i.
+**Proof.** Let j be the count when curr = i first occurs.  The first transition will occur at count j + 1 (this follows immediately from the definition of tree_rotate), the second transition will occur at count j + 3n_i + 2, and the third transition will occur at count j + 3n_i + 3 (these follow immediately from (2) above).  Thus the counts are congruent to j, j + 1, and j + 2 (mod 3), which are distinct mod 3 (none of their differences are divisible by 3).
+
+(4) During the call of traverse_rotating(c, proc), the total number of calls of tree_rotate is 3n, where n is the weight of c.
+**Proof.** The proof of Lemma 8.B(b) shows that curr == c will not hold after 1, ..., 3n_l calls, will hold after 3n_l + 1 calls (at which point the first do... while loop will terminate) , will not hold after 3n_l + 2, ..., 3n_l + 3n_r + 1 calls, and will hold and after 3n_l + 3n_r + 2 calls (at which point the second do... while loop will terminate).  Finally, the procedure makes one more call, for a total of 3n_l + 3n_r + 3 = 3n calls.
