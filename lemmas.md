@@ -769,3 +769,39 @@ If i != c, then let n = weight(c) and n_i = weight(i).  Lemma 8.C implies that c
 
 (4) During the call of traverse_rotating(c, proc), the total number of calls of tree_rotate is 3n, where n is the weight of c.
 **Proof.** The proof of Lemma 8.B(b) shows that curr == c will not hold after 1, ..., 3n_l calls, will hold after 3n_l + 1 calls (at which point the first do... while loop will terminate) , will not hold after 3n_l + 2, ..., 3n_l + 3n_r + 1 calls, and will hold and after 3n_l + 3n_r + 2 calls (at which point the second do... while loop will terminate).  Finally, the procedure makes one more call, for a total of 3n_l + 3n_r + 3 = 3n calls.
+
+**Lemma 9.1** If the sizes of the input ranges are n_0 and n_1, my_merge_copy and my_merge_copy_backward perform n_0 + n_1 assignments and, in the worst case, n_0 + n_1 - 1 comparisons.
+**Proof.**
+  **Lemma 9.1.1** If l_i - f_i == n when my_copy is about to enter an iteration of the while loop, then my_copy performs n more assignments before returning.
+  **Proof.** We proceed by induction.  If n == 0, then f_i == l_i, so my_copy returns immediately.  If n > 0 then f_i != l_i, so my_copy calls my_copy_step, performs one assignment, and sets f_i to successor(f_i).  At this point, my_copy is about to enter another iteration of the while loop, but the new value of f_i satisfies l_i - f_i == n - 1; thus the claim holds by our inductive hypothesis.
+  **Lemma 9.1.2** If l_i - f_i == n for a given call to my_copy, then my_copy performs n assignments before returning.
+  **Proof.** This follows from Lemma 9.1.1 and the fact that my_copy starts with the while loop.
+  **Lemma 9.1.3** If l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1 when my_combine_copy is about to enter an iteration of the while loop, then my_combine_copy performs n0 + n1 assignments before returning.
+  **Proof.** We proceed by induction on n0 + n1.
+  If n0 + n1 == 0, then n0 == n1 == 0 and f_i0 != l_i0 and f_i1 != l_i1 both fail, so the body of the while loop does not executed.  Lemma 9.1.2 implies that both calls to my_copy perform no assignments,  so in the case n0 + n1 == 0, my_combine_copy returns without performing any assignments.
+  Suppose n0 + n1 > 0 and n0 == 0.  Then f_i0 != l_i0 fails, so the body of the while loop does not get executed.  Lemma 9.1.2 implies that the first call to my_copy, with [f_i0, l_i0) as the input range, performs no assignments, and the second call to my_copy, with [f_i1, l_i1) as the input range, performs n1 assignments, so our claim holds in this case.
+  Similarly, if n0 + n1 > 0 and n1 == 0, then my_combine_copy returns after performing n0 assignments, as claimed.
+  Finally, suppose n0 + n1 > 0, n0 > 0, and n1 > 0 all hold.  Whether or not r(f_i1, f_i0) holds, my_combine_copy calls my_copy_step, which performs one assignment and sets either f_i0 or f_i1 to its successor.  At this point, my_combine_copy is about to enter another iteration of the while loop, with the quantity n0 + n1 decreased by one (as compared to the previious iteration); thus by our inductive hypothesis, my_combine_copy performs a total of 1 + (n0 + n1 - 1) = n0 + n1 assignments.
+  **Lemma 9.1.4** If [f_i0, l_i0) and [f_i1, l_i1) are the input ranges to my_combine_copy, where l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1, then my_combine_copy performs n0 + n1 assignments before returning.
+  **Proof.** This follows from Lemma 9.1.3 and the fact that my_combine_copy starts with the while loop.
+  **Lemma 9.1.5** If l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1 when my_combine_copy is about to enter an iteration of the while loop, then my_combine_copy performs at most n0 + n1 - 1 comparisons before returning.
+  **Proof.** We will proceed by induction on n0 + n1.
+  If n0 + n1 == 0, then the body the while loop does not get executed, and since my_copy does not perform any comparisons, my_combine_copy returns without performing any comparisons.
+  If n0 + n1 > 0 and n0 == 0, then again the body of the while loop does not get executed, so my_combine_copy returns without performing any comparisons, i.e. the claim holds in this case (note that n0 + n1 > 0 implies n0 + n1 - 1 >= 0).  Similarly, the claim also holds in the case where n0 + n1 > 0 and n1 == 0.
+  Now suppose n0 + n1 > 0, n0 > 0, and n1 > 0.  Then my_combine_copy will perform one comparison and then call my_copy_step, which performs no comparisons but sets either f_l0 or f_l1 to its successor.  At this point, my_combine_copy is about to enter another iteration of the while loop, with the quantity n0 + n1 decreased by one since the previous iteration; thus by our inductive hypothesis, my_combine_copy performs at most 1 + (n0 + n1 - 1) - 1 = n0 + n1 - 1 comparisons.
+  **Lemma 9.1.6** If [f_i0, l_i0) and [f_i1, l_i1) are the input ranges to my_combine_copy, where l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1, then my_combine_copy performs at most n0 + n1 - 1 comparisons before returning.
+  **Proof.** This follows from Lemma 9.1.5 and the fact that my_combine_copy starts with the while loop.
+
+Finally, to prove Lemma 9.1, note that the only step in my_merge_copy is to call my_combine_copy with the same input and output ranges; thus Lemma 9.1.4 and Lemma 9.1.6 imply Lemma 9.1 for my_merge_copy.  The case of my_merge_copy_backward is handled analogously.
+
+Note that given n0 > 0 and n1 > 0, there always exists input ranges that produce this worst-case behavior.  Consider the ranges [f_i0, l_i0) and [f_i1, l_i1), let t_i0 be the final elements of the first range, and suppose the following conditions hold:
+
+    (1) !r(f_i1, k_i0) holds for every element k_i0 of [f_i0, l_i0) except t_i0
+    (2) r(k_i1, t_i0) holds for every element k_i1 of [f_i1, l_i1)
+
+Each of the first n0 - 1 iterations of the while loop will perform a comparison and then set f_i0 to its successor, at which point f_i0 will have advanced to t_i0.  Each of the next n1 iterations of the while loop will perform a comparison and then set f_i1 to its successor, at which point f_i1 will have advanced to l_i1; my_combine_copy will then make two calls to my_copy (neither of which perform any comparisons) and then return, after having made a total of n0 + n1 - 1 comparisons.
+
+**Lemma 9.A** my_combine_copy performs at least min(n0, n1) comparisons.
+**Proof.** Each iteration of the while loop decreases min(n0, n1) by at most one, and since the termination condition of the while loop is equivalent to the condition min(n0, n1) == 0, my_combine_copy must perform at least min(n0, n1) iterations of the while loop.  Furthermore, each iteration of the while loop perform one comparison, so the claim follows.
+
+Note that there always exist input ranges of size n0, n1 that produce this best-case behavior.  If either n0 == 0 or n1 == 0, then every input range causes my_combine_copy to return without any comparisons.  If n0 > 0 and n1 > 0 and n0 < n1, then take any input ranges such that for any k_i0 in [f_i0, l_i0) and k_i1 in [f_i1, l_i1), !r(k_i1, k_i0) holds.  Then the first n0 iterations of the while loop will increment f_i0, at which point f_i0 == l_i0 will hold, and my_combine_copy will return having performed n0 comparisons.  Similarly, if n1 < n0, then take any ranges such that for any k_i0 in [f_i0, l_i0) and k_i1 in [f_i1, l_i1), r(k_i1, k_i0) holds.

@@ -17,6 +17,10 @@ Rewrite the proof of Lemma 8.2 more concisely
 Exercise 8.3:
     Something more precise than “it’s about n lg n”?
     How to calculate average case?
+How does the Writable concept justify exactly one assignment to sink(x)?
+How do we know that only multipass algorithms both read from and write to the same range?
+Why does the definition of write_aliased use a forall instead of an exists?
+Exercise 9.4
 
 ## Questions
 
@@ -845,3 +849,128 @@ A sort on a linked range is **stable** with respect to a weak ordering r if, whe
       ^ !empty(i) implies left_successor(i) and right_successor(i) are defined
       ^ !empty(i) implies (!has_left_successor(i) <=> empty(left_successor(i)))
       ^ !empty(i) implies (!has_right_successor(i) <=> empty(right_successor(i)))
+
+A type is **writable** if a unary procedure sink is defined on it (sink can only be used on the left side of an assignment whose right side evaluates to the corresponding value type):
+
+    Writable(T) :=
+        ValueType: Writable -> Regular
+      ^ (forall x in T) (forall v in ValueType(T))
+            sink(x) <- v is a well-formed statement
+
+A writable object x and a readable object y are **aliased** if sink(x) and source(y) are both defined and if assigning any value v to sink(x) causes it to appear as the value of source(y)
+
+    property(T: Writable, U: Readable)
+        requires(ValueType(T) = ValueType(U))
+    aliased: T x U
+        (x, y) |-> sink(x) is defined ^
+                   source(y) is defined ^
+                   (forall v in ValueType(T))
+                       sink(x) <- v establishes source(y) = v
+
+    Mutable(T) :=
+        Readable(T)
+      ^ Writable(T)
+      ^ (forall x in T) sink(x) is defined <=> source(x) is defined
+      ^ (forall x in T) sink(x) is defined <=> aliased(x, x)
+      ^ deref: T -> ValueType(T)&
+      ^ (forall x in T) sink(x) is defined <=> deref(x) is defined
+
+    property(I: Writable)
+        requires(Iterator(I))
+    writable_bounded_range: I x I
+        (f, l) |-> bounded_range(f, l) ^ (forall i in [f, l)) sink(i) is defined
+
+(similarly for writable_weak_range and writable_counted_range)
+
+    property(I: Mutable)
+        requires(ForwardIterator(I))
+    mutable_bounded_range: I x I
+        (f, l) |-> bounded_range(f, l) ^ (forall i in [f, l)) sink(i) is defined
+
+(similarly for mutable_weak_range and mutable_counted_range)
+
+    property(I: Readable, O: Writable)
+        requires(Iterator(I) ^ Iterator(O))
+    not_overlapped_forward: I x I x O x O
+        (f_i, l_i, f_o, l_o) |->
+            readable_bounded_range(f_i, l_i) ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i), k_o in [f_o, l_o))
+                aliased(k_o, k_i) implies k_i - f_i <= k_o - f_o
+
+    property(I: Readable, O: Writable)
+        requires(Iterator(I) ^ Iterator(O))
+    not_overlapped_backward: I x I x O x O
+        (f_i, l_i, f_o, l_o) |->
+            readable_bounded_range(f_i, l_i) ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i), k_o in [f_o, l_o))
+                aliased(k_o, k_i) implies l_i - k_i <= l_o - k_o
+
+    property(I: Readable, O: Writable)
+        requires(Iterator(I) ^ Iterator(O))
+    not_overlapped: I x I x O x O
+        (f_i, l_i, f_o, l_o) |->
+            readable_bounded_range(f_i, l_i) ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i), k_o in [f_o, l_o))
+                !aliased(k_o, k_i)
+
+    property(I: Readable, O: Writable)
+        requires(Iterator(I) ^ Iterator(O))
+    not_overlapped_reverse_forward: I x I x O x O
+        (f_i, l_i, f_o, l_o) |->
+            readable_bounded_range(f_i, l_i) ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i), k_o in [f_o, l_o))
+                aliased(k_o, k_i) implies l_i - k_i <= k_0 - f_o
+
+    property(I: Readable, O: Writable)
+        requires(Iterator(I) ^ Iterator(O))
+    not_overlapped_reverse_backward: I x I x O x O
+        (f_i, l_i, f_o, l_o) |->
+            readable_bounded_range(f_i, l_i) ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i), k_o in [f_o, l_o))
+                aliased(k_o, k_i) implies k_i - f_i <= l_o - k_o
+
+    property(T: Writable, U: Writable)
+        requires(ValueType(T) = ValueType(U))
+    write_aliased: T x U
+        (x, y) |-> sink(x) is defined ^ sink(y) is defined ^
+                   (forall V in Readable) (forall v in V)
+                     aliased(x, v) <=> aliased(y, v)
+
+    property(O_0: Writable, O_1: Writable)
+        requires(Iterator(O_0) ^ Iterator(O_1))
+    not_write_overlapped: O_0 x O_0 x O_1 x O_1
+        (f_0, l_0, f_1, l_1) |->
+            writable_bounded_range(f_0, l_0) ^
+            writable_bounded_range(f_1, l_1) ^
+            (forall k_0 in [f_0, l_0))
+            (forall k_1 in [f_1, l_1))
+                !write_aliased(k_0, k_1)
+
+    property(I: Readable, O: Writable, N: Integer)
+        requires(Iterator(I) ^ Iterator(O))
+    backward_offset: I x I x O x O x N
+        (f_i, l_i, f_o, l_o, n) |->
+            readable_bounded_range(f_i, l_i) ^
+            n >= 0 ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i))
+            (forall k_o in [f_o, l_o))
+                aliased(k_o, k_i) implies
+                    k_i - f_i + n <= k_o - f_o
+
+    property(I: Readable, O: Writable, N: Integer)
+        requires(Iterator(I) ^ Iterator(O))
+    forward_offset: I x I x O x O x N
+        (f_i, l_i, f_o, l_o, n) |->
+            readable_bounded_range(f_i, l_i) ^
+            n >= 0 ^
+            writable_bounded_range(f_o, l_o) ^
+            (forall k_i in [f_i, l_i))
+            (forall k_o in [f_o, l_o))
+                aliased(k_o, k_i) implies
+                    l_i - k_i + n <= l_o - k_o

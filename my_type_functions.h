@@ -203,6 +203,20 @@ ValueType(T*) source(T* x)
     return *x;
 }
 
+template<typename T>
+    requires(Regular(T))
+ValueType(T)& sink(T& x)
+{
+    return x;
+}
+
+template<typename T>
+    requires(Regular(T))
+ValueType(T)& sink(T* x)
+{
+    return *x;
+}
+
 template<typename C>
     requires(BifurcateCoordinate(C))
 struct weight_type;
