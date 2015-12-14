@@ -805,3 +805,42 @@ Each of the first n0 - 1 iterations of the while loop will perform a comparison 
 **Proof.** Each iteration of the while loop decreases min(n0, n1) by at most one, and since the termination condition of the while loop is equivalent to the condition min(n0, n1) == 0, my_combine_copy must perform at least min(n0, n1) iterations of the while loop.  Furthermore, each iteration of the while loop perform one comparison, so the claim follows.
 
 Note that there always exist input ranges of size n0, n1 that produce this best-case behavior.  If either n0 == 0 or n1 == 0, then every input range causes my_combine_copy to return without any comparisons.  If n0 > 0 and n1 > 0 and n0 < n1, then take any input ranges such that for any k_i0 in [f_i0, l_i0) and k_i1 in [f_i1, l_i1), !r(k_i1, k_i0) holds.  Then the first n0 iterations of the while loop will increment f_i0, at which point f_i0 == l_i0 will hold, and my_combine_copy will return having performed n0 comparisons.  Similarly, if n1 < n0, then take any ranges such that for any k_i0 in [f_i0, l_i0) and k_i1 in [f_i1, l_i1), r(k_i1, k_i0) holds.
+
+**Lemma 9.B** The stated postconditions of exchange_values(x, y) hold.
+**Proof.** Suppose z0 == source(i) and z1 == source(j) before exchange_values was called.  Regularity of ValueType(I0) implies that after the assignment ValueType(I0) t = source(x), z0 and t are equal.  Next, regularity of ValueType(I0) and the definition of Mutable, i.e. the fact that aliased(x, x) holds, shows that the assignment sink(x) = source(y) establishes z1 == source(i).  Finally, another application of regularity and the definition of Mutable implies that after the assignment sink(y) = t, z0 == source(j) holds.
+
+**Lemma 9.2** The effects of exchange_values(i, j) and exchange_values(j, i) are equivalent.
+**Proof.** We begin by swapping x and y in the body of exchange_values:
+
+    ValueType(I0) t = source(y);
+            sink(y) = source(x);
+            sink(x) = t;
+
+We introduce another temporary variable (regularity implies that this does not change the result):
+
+    ValueType(I0) t = source(y);
+    ValueType(I0) u = source(x);
+             sink(y) = u;
+             sink(x) = t;
+
+Since the first line does not affect u or x and the second line does not affect t or y, we can swap them without affecting the result.  By a similar argument, we can swap the third and fourth lines:
+
+    ValueType(I0) u = source(x);
+    ValueType(I0) t = source(y);
+            sink(x) = t;
+            sink(y) = u;
+
+Renaming the temporary variables u and t have no effect on the result:
+
+    ValueType(I0) t = source(x);
+    ValueType(I0) u = source(y);
+            sink(x) = u;
+            sink(y) = t;
+
+Finally, again by regularity, we can remove the temporary variable u without changing the result:
+
+    ValueType(I0) t = source(x);
+            sink(x) = source(y);
+            sink(y) = t;
+
+But this is precisely the original definition of exchange_values, before we swapped x and y; thus we conclude that swapping x and y in the body of exchange_values does not affect the result.

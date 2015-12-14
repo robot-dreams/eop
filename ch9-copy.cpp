@@ -532,6 +532,132 @@ triple<I0, I1, O> my_merge_copy_backward_n(I0 l_i0, N n0, I1 l_i1, N n1, O l_o, 
     return my_combine_copy_backward_n(l_i0, n0, l_i1, n1, l_o, rs);
 }
 
+template<typename I0, typename I1>
+    requires(Mutable(I0) && Mutable(I1) &&
+        ValueType(I0) == ValueType(I1))
+void exchange_values(I0 x, I1 y)
+{
+    // Precondition: deref(x) and deref(y) are defined
+    ValueType(I0) t = source(x);
+            sink(x) = source(y);
+            sink(y) = t;
+    // Postconditions (Exercise 9.7):
+    //   (forall z in ValueType(I0))
+    //       z == source(x) before exchange_values was called
+    //           implies z == source(y) after exchange_values was called
+    //   (forall z in ValueType(I0))
+    //       z == source(y) before exchange_values was called
+    //           implies z == source(x) after exchange_values was called
+}
+
+template<typename I0, typename I1>
+    requires(Mutable(I0) && ForwardIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1))
+void my_swap_step(I0& f0, I1& f1)
+{
+    // Preconditions:
+    //     deref(f0) is defined
+    //     deref(f1) is defined
+    exchange_values(f0, f1);
+    f0 = successor(f0);
+    f1 = successor(f1);
+}
+
+template<typename I0, typename I1>
+    requires(Mutable(I0) && ForwardIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1))
+I1 my_swap_ranges(I0 f0, I0 l0, I1 f1)
+{
+    // Preconditions:
+    //     mutable_bounded_range(f0, l0)
+    //     mutable_counted_range(f1, l0 - f0)
+    while (f0 != l0) my_swap_step(f0, f1);
+    return f1;
+}
+
+template<typename I0, typename I1>
+    requires(Mutable(I0) && ForwardIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1))
+pair<I0, I1> my_swap_ranges_bounded(I0 f0, I0 l0, I1 f1, I1 l1)
+{
+    // Preconditions:
+    //     mutable_bounded_range(f0, l0)
+    //     mutable_bounded_range(f1, l1)
+    while (f0 != l0 && f1 != l1) my_swap_step(f0, f1);
+    return pair<I0, I1>(f0, f1);
+}
+
+template<typename I0, typename I1, typename N>
+    requires(Mutable(I0) && ForwardIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1) &&
+        Integer(N))
+pair<I0, I1> my_swap_ranges_n(I0 f0, I1 f1, N n)
+{
+    // Preconditions:
+    //     mutable_counted_range(f0, n)
+    //     mutable_counted_range(f1, n)
+    while (count_down(n)) my_swap_step(f0, f1);
+    return pair<I0, I1>(f0, f1);
+}
+
+template<typename I0, typename I1>
+    requires(Mutable(I0) && BidirectionalIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1))
+void my_reverse_swap_step(I0& l0, I1& f1)
+{
+    // Precondtions:
+    //     deref(predecessor(l0)) is defined
+    //     deref(f1) is defined
+    l0 = predecessor(l0);
+    exchange_values(l0, f1);
+    f1 = successor(f1);
+}
+
+template<typename I0, typename I1>
+    requires(Mutable(I0) && BidirectionalIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1))
+I1 my_reverse_swap_ranges(I0 f0, I0 l0, I1 f1)
+{
+    // Precondtions:
+    //     mutable_bounded_range(f0, l0)
+    //     mutable_counted_range(f1, l0 - f0)
+    while (f0 != l0) my_reverse_swap_step(l0, f1);
+    return f1;
+}
+
+template<typename I0, typename I1>
+    requires(Mutable(I0) && BidirectionalIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1))
+pair<I0, I1> my_reverse_swap_ranges_bounded(I0 f0, I0 l0, I1 f1, I1 l1)
+{
+    // Precondtions:
+    //     mutable_bounded_range(f0, l0)
+    //     mutable_bounded_range(f1, l0)
+    while (f0 != l0 && f1 != l1) my_reverse_swap_step(l0, f1);
+    return pair<I0, I1>(l0, f1);
+}
+
+template<typename I0, typename I1, typename N>
+    requires(Mutable(I0) && BidirectionalIterator(I0) &&
+        Mutable(I1) && ForwardIterator(I1) &&
+        ValueType(I0) == ValueType(I1) &&
+        Integer(N))
+pair<I0, I1> my_reverse_swap_ranges_n(I0 l0, I1 f1, N n)
+{
+    // Precondtions:
+    //     mutable_counted_range(l0 - n, n)
+    //     mutable_counted_range(f1, n)
+    while (count_down(n)) my_reverse_swap_step(l0, f1);
+    return pair<I0, I1>(l0, f1);
+}
+
 template<typename R, typename T>
     requires(BinaryRelation(R) &&
         Domain(R) == T)
@@ -606,5 +732,17 @@ double merge_copy_average_comparisons(int n0, int n1, int upper, int trials)
 int main() {
     srand(clock());
     rand();
-    cout << merge_copy_average_comparisons(100, 100, 5, 1000) << endl;
+
+    int n = 10;
+    int* x = sorted_random_array(n, 10);
+    int* y = sorted_random_array(n, 10);
+
+    copy(x, x + n, ostream_iterator<int>(cout, " ")); cout << endl;
+    copy(y, y + n, ostream_iterator<int>(cout, " ")); cout << endl;
+
+    cout << endl;
+    my_reverse_swap_ranges_n(x + n, y, 5);
+
+    copy(x, x + n, ostream_iterator<int>(cout, " ")); cout << endl;
+    copy(y, y + n, ostream_iterator<int>(cout, " ")); cout << endl;
 }
