@@ -253,7 +253,7 @@ The **collision point** of a transformation f and a starting point x is the uniq
 
 An **action** is a procedure that changes the state of an object
 
-### Chapter 3
+## Chapter 3
 
     BinaryOperation(Op) :=
         Operation(Op)
@@ -850,6 +850,8 @@ A sort on a linked range is **stable** with respect to a weak ordering r if, whe
       ^ !empty(i) implies (!has_left_successor(i) <=> empty(left_successor(i)))
       ^ !empty(i) implies (!has_right_successor(i) <=> empty(right_successor(i)))
 
+## Chapter 9
+
 A type is **writable** if a unary procedure sink is defined on it (sink can only be used on the left side of an assignment whose right side evaluates to the corresponding value type):
 
     Writable(T) :=
@@ -974,3 +976,17 @@ A writable object x and a readable object y are **aliased** if sink(x) and sourc
             (forall k_o in [f_o, l_o))
                 aliased(k_o, k_i) implies
                     l_i - k_i + n <= l_o - k_o
+
+##  Chapter 10
+
+A transformation f is an **into** transformation if, for all x in its definition space, there exists a y in its definition space such that y = f(x)
+A transformation f is an **onto** transformation if, for all y in its definition space, there exists an x in its definition space such that y = f(x)
+A transformation f is a **one-to-one** transformation if, for all x, x’ in its definition space, f(x) = f(x’) implies x = x’
+A **fixed point** of a transformation is an element x such that f(x) = x
+An **identity transformation** is one that has every element of its definition space as a fixed point
+    We denote the identity transformation on a set S as identity_S
+A **permutation** is an onto transformation on a finite definition space
+A **cycle** is a circular orbit within a permutation
+A **trivial cycle** is a cycle with one element (the element in a trivial cycle is a fixed point)
+A permutation containing a single nontrivial cycle is called a **cyclic permutation**
+A **transposition** is a cyclic permutation with a cycle size of 2
