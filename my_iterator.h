@@ -1112,6 +1112,20 @@ I my_find_backward_if(I f, I l, P p)
     return l;
 }
 
+template<typename I, typename P>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_backward_if_not(I f, I l, P p)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, l)
+    while (l != f) {
+        l = predecessor(l);
+        if (!p(source(l))) return successor(l);
+    }
+    return l;
+}
+
 template<typename I>
     requires(BidirectionalIterator(I))
 class my_reverse_iterator_adapter

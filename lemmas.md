@@ -1106,6 +1106,44 @@ Combining [1] and [2] gives the desired result:
     [3] count_if(f, m, p) = count_if_not(m, l, p)
 
 **Lemma 11.2** There are u!v! permutations that partition a range with u false values and v true values.
-**Proof.** We will count the number of index permutations.  There are u choices of an index that maps to 0; for each of these u choices there are u - 1 choices of an index that maps to 1; and so on.  Furthermore, there are v choices of an index that maps to u; for each of these v choices there are v - 1 choices of an index that maps to u + 1; and so on.  This gives a total of u!v! choices.
+**Proof.** We will count the number of index permutations.  If u = 0 then any of the v! permutations of the all true input values is a valid partition.  Similarly, if v = 0 then any of the u! permutations of the all false input values is a valid partition.
+
+Now consider the case where u > 0 and v > 0.  There are u choices of an index that maps to 0; for each of these u choices there are u - 1 choices of an index that maps to 1; and so on.  Furthermore, there are v choices of an index that maps to u; for each of these v choices there are v - 1 choices of an index that maps to u + 1; and so on.  This gives a total of u!v! choices.
 
 Note that these are all the choices (for i = 0, 1, ..., u - 1 we must choose one of the u - i remaining positions with a false value, and likewise for i = u, u + 1, ..., u + v - 1 we must choose one of the u + v - i remaining positions with a true value).  Furthermore, we did not double count any choices (making a different choice at any step results in a different permutation).
+
+**Lemma 11.3** The result of a stable partition is unique.
+**Proof.** We will count the number of index permutations.  If there are no false values, then a stable partition must return its input (any other result would change the relative order between the all true values of the input).  Similarly, if there are no true values, then a stable partition must return its input.
+
+Now consider the case where u > 0 and v > 0.  The index that maps to 0 must be the smallest index containing a false value, the index that maps to 1 must be the second smallest, and so forth.  Similarly, the index that maps to u must be the smallest index containing a true value, the index that maps to 1 must be the second smallest, and so forth.
+
+At each step i there was exactly one possible choice for an index that maps to i (without violating stability), so we conclude that the permutation is uniquely determined.
+
+**Lemma 11.A** partition_semistable does in fact partition its input.
+**Proof.** We will first show that any point in the while loop, i is the first element of [f, l) that satisfies p, and that every element of [i, j) satisfies p.  Initially, this is true by the definition of find_if (and the fact that [i, successor(i)) only contains i).
+
+Suppose the condition holds at the beginning of the loop.
+
+The statement j = find_if_not(i, l, p) leaves i unchanged and sets j to the first element of [j, l) not satisfying p (or l if no such element exists); in particular, every element of [i, j) still satisfies p (this gives us Lemma 11.4).
+
+After the exit test, we already know that p(source(i)) holds, and since j != l, we also know that !p(source(j)) holds (this gives us Lemma 11.5).
+
+Finally, after the call of my_swap_step(i, j), the old element i no longer satisfies p, so the new element i (the successor of the old element i) is still the first element of [f, l) that satisfies p.  Furthermore, the old element j does satisfy p, so every element of [i, j) (the j in the range denotes the new element j, i.e. the successor of the old element j) still satisfies p (this gives us Lemma 11.6).
+
+In particular, we have shown that at any point in the while loop, none(f, i, p) ^ all(i, j, p) holds; thus it holds when partition_semistable returns, at which point j == l so none(f, i, p) ^ all(i, l, p) holds, the range has been p-partitioned, and i is the partition point.
+
+**Lemma 11.B** partition_semistable is in fact semistable.
+**Proof.** The only statement that changes any elements is the call of swap_step.  The proof of Lemma 11.A shows that before this call, every element of [i, j) satisfies p; thus performing the swap does not affect the relative ordering of any elements not satisfying p.
+
+**Lemma 11.7** A partition rearrangement that returns the partition point requres n applications of the predicate.
+**Proof.** Upon applying fewer than n applications of the predicate, there is an element in the range for which the predicate has not been applied.  However, whether that element's value satisfies the predicate or not affects the partition point; thus a procedure that applies fewer than n applications of the predicate cannot return the correct partition point for every input range.
+
+**Lemma 11.8** A partition rearrangement of a nonempty range that does not return the partition point requires n - 1 applications of the predicate.
+**Proof.** If n = 1 then it suffices to return the input range without any applications of the predicate.  Suppose n >= 2 and some procedure applies the predicate fewer at most n - 2 times; then there are at least two elements i and j for which the predicate has not been applied.  If i does not satisfy the predicate and j does, then i must precede j in the output range, but if i satisfies the predicate and j does not, then j must precede i in the output range.  The procedure has no way of distinguishing between these two cases, and thus cannot return a correctly partitioned range in every case.
+
+**Lemma 11.9** The number of times exchange_value is performed, v, equals the number of misplaced elements not satisfying the predicate.
+**Proof.** If all or none of the elements satisfy the predicate, then the claim trivially holds, so we will only consider the case where v > 0.
+
+By Lemma 11.1, the number of misplaced elements not satisfying the predicate is equal to the number of misplaced elements satisfying the predicate.  Since each iteration will swap one misplaced element satisfying the predicate and one misplaced element not satisfying the predicate, no elements will be misplaced after v iterations.
+
+After v iterations, the next call to find_if(f, l, p) will return the partition point (if there were v misplaced elements in the original range that satisfy the predicate, then the v+1-st element in the original range that satisfies the predicate, counting forward is the partition point).  By similar reasoning (but counting backward rather than forward), the next call to find_backward_if_not(f, l, p) will also return the partition point (note that find_backward_if_not returns the successor of the element found), so f == l will hold, and the procedure will terminate.

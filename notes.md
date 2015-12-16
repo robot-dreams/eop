@@ -1020,3 +1020,6 @@ A **memory-adaptive** algorithm uses as much additional space as it can acquire 
 The permutation p of n elements defined by an index permutation p(i) = (i + k) mod n, where we define (i + k) mod n to be the unique integer in [0, n) that is congruent to i + k (mod n), is called the **k-rotation**
 
 ## Chapter 11
+
+A partition rearrangement is **stable** if the relative order of elements not satisfying the predicate is preserved, as is the relative order of elements satisfying the predicate
+A partition rearrangement is **semistable** if the relative order of elements not satisfying the predicate is preserved
