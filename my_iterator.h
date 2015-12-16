@@ -136,61 +136,6 @@ bool my_some(I f, I l, P p)
 // End of Exercise 6.1
 /////
 
-//
-// Start Exercise 6.2
-/////
-
-template<typename I, typename P, typename J>
-    requires(Iterator(I) && Readable(I) &&
-        UnaryPredicate(P) && Iterator(J) &&
-        ValueType(I) == Domain(P))
-class my_count_if_accumulator
-{
-public:
-    my_count_if_accumulator(P p, J j) : p(p), j(j) {}
-
-    void operator()(const ValueType(I)& x)
-    {
-        if (p(x)) j = successor(j);
-    }
-
-    J count() const {
-        return j;
-    }
-
-private:
-    P p;
-    J j;
-};
-
-template<typename I, typename P, typename J>
-    requires(Iterator(I) && Readable(I) &&
-        UnaryPredicate(P) && Iterator(J) &&
-        ValueType(I) == Domain(P))
-J my_count_if_2(I f, I l, P p, J j)
-{
-    // Precondition: readable_bounded_range(f, l)
-    return my_for_each(f,
-                       l,
-                       my_count_if_accumulator<I, P, J>(p, j)).count();
-}
-
-template<typename I, typename P>
-    requires(Iterator(I) && Readable(I) &&
-        UnaryPredicate(P) && ValueType(I) == Domain(P))
-DistanceType(I) my_count_if_2(I f, I l, P p)
-{
-    // Precondition: readable_bounded_range(f, l)
-    typedef DistanceType(I) N;
-    return my_for_each(f,
-                       l,
-                       my_count_if_accumulator<I, P, N>(p, N(0))).count();
-}
-
-//
-// End Exercise 6.2
-/////
-
 template<typename I, typename J>
     requires(Iterator(I) && Readable(I) && Iterator(J))
 J my_count(I f, I l, const ValueType(I)& x, J j)
@@ -470,34 +415,6 @@ pair<bool, I> my_some_n(I f, DistanceType(I) n, P p)
     // Precondition: readable_weak_range(f, n)
     pair<I, DistanceType(I)> q = my_find_if_n(f, n, p);
     return pair<bool, I>(!zero(q.second), q.first);
-}
-
-template<typename I, typename P, typename J>
-    requires(Iterator(I) && Readable(I) &&
-        UnaryPredicate(P) && Iterator(J) &&
-        ValueType(I) == Domain(P))
-pair<J, I> my_count_if_n_2(I f, DistanceType(I) n, P p, J j)
-{
-    // Precondition: readable_weak_range(f, n)
-    pair<my_count_if_accumulator<I, P, J>, I> q =
-        my_for_each_n(f,
-                      n,
-                      my_count_if_accumulator<I, P, J>(p, j));
-    return pair<J, I>(q.first.count(), q.second);
-}
-
-template<typename I, typename P>
-    requires(Iterator(I) && Readable(I) &&
-        UnaryPredicate(P) && ValueType(I) == Domain(P))
-pair<DistanceType(I), I> my_count_if_n_2(I f, DistanceType(I) n, P p)
-{
-    // Precondition: readable_weak_range(f, n)
-    typedef DistanceType(I) N;
-    pair<my_count_if_accumulator<I, P, N>, I> q =
-        my_for_each_n(f,
-                      n,
-                      my_count_if_accumulator<I, P, N>(p, N(0)));
-    return pair<N, I>(q.first.count(), q.second);
 }
 
 template<typename I, typename J>
@@ -1185,18 +1102,6 @@ template<typename I, typename P>
     requires(Readable(I) && BidirectionalIterator(I) &&
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_find_backward_if(I f, I l, P p)
-{
-    // Preconditions:
-    //     readable_bounded_range(f, l)
-    while (l != f && !p(source(predecessor(l))))
-        l = predecessor(l);
-    return l;
-}
-
-template<typename I, typename P>
-    requires(Readable(I) && BidirectionalIterator(I) &&
-        UnaryPredicate(P) && ValueType(I) == Domain(P))
-I my_find_backward_if_2(I f, I l, P p)
 {
     // Preconditions:
     //     readable_bounded_range(f, l)
