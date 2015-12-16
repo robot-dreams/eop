@@ -390,48 +390,6 @@ WeightType(C) weight(C c)
     return n;
 }
 
-//
-// Exercise 7.2
-/////
-
-template<typename C>
-    requires(BidirectionalBifurcateCoordinate(C))
-WeightType(C) weight_in(C c)
-{
-    // Precondition: tree(x)
-    typedef WeightType(C) N;
-    if (empty(c)) return N(0);
-    N n(0);
-    C root = c;
-    visit v = pre;
-    do {
-        traverse_step(v, c);
-        if (v == in) n = successor(n);
-    } while (c != root || v != post);
-    return n;
-}
-
-template<typename C>
-    requires(BidirectionalBifurcateCoordinate(C))
-WeightType(C) weight_post(C c)
-{
-    // Precondition: tree(x)
-    typedef WeightType(C) N;
-    if (empty(c)) return N(0);
-    N n(0);
-    C root = c;
-    visit v = pre;
-    do {
-        traverse_step(v, c);
-        if (v == post) n = successor(n);
-    } while (c != root || v != post);
-    return n;
-}
-
-//
-// End Exercise 7.2
-/////
-
 template<typename C>
     requires(BifurcateCoordinate(C))
 WeightType(C) height(C c)
@@ -740,82 +698,6 @@ bool my_lexicographical_less(I0 f0, I0 l0, I1 f1, I1 l1)
                                       f1,
                                       l1,
                                       my_less< ValueType(I0) >());
-}
-
-template<typename C0, typename C1, typename R>
-    requires(Readable(C0) && BifurcateCoordinate(C0) &&
-        Readable(C1) && BifurcateCoordinate(C1) &&
-        ValueType(C0) == ValueType(C1) &&
-        Relation(R) && ValueType(C0) == Domain(R))
-bool my_bifurcate_compare_nonempty(C0 c0, C1 c1, R r, visit order)
-{
-    bool l0, l1, r0, r1;
-    switch(order) {
-    case pre:
-        if (r(source(c0), source(c1))) return true;
-        if (r(source(c1), source(c0))) return false;
-        if (!has_left_successor(c1)) return false;
-        if (!has_left_successor(c0)) return true;
-        if (my_bifurcate_compare_nonempty(left_successor(c0), left_successor(c1), r, order)) return true;
-        if (my_bifurcate_compare_nonempty(left_successor(c1), left_successor(c0), r, order)) return false;
-        if (!has_right_successor(c1)) return false;
-        if (!has_right_successor(c0)) return true;
-        if (my_bifurcate_compare_nonempty(right_successor(c0), right_successor(c1), r, order)) return true;
-        return false;
-    case in:
-        l0 = has_left_successor(c0);
-        l1 = has_left_successor(c1);
-        if (l0 && !l1) return false;
-        if (!l0 && l1) return true;
-        if (l0 && l1) {
-            if (my_bifurcate_compare_nonempty(left_successor(c0), left_successor(c1), r, order)) return true;
-            if (my_bifurcate_compare_nonempty(left_successor(c1), left_successor(c0), r, order)) return false;
-        }
-        if (r(source(c0), source(c1))) return true;
-        if (r(source(c1), source(c0))) return false;
-        if (!has_right_successor(c1)) return false;
-        if (!has_right_successor(c0)) return true;
-        if (my_bifurcate_compare_nonempty(right_successor(c0), right_successor(c1), r, order)) return true;
-        return false;
-    case post:
-        l0 = has_left_successor(c0);
-        l1 = has_left_successor(c1);
-        if (l0 && !l1) return false;
-        if (!l0 && l1) return true;
-        if (l0 && l1) {
-            if (my_bifurcate_compare_nonempty(left_successor(c0), left_successor(c1), r, order)) return true;
-            if (my_bifurcate_compare_nonempty(left_successor(c1), left_successor(c0), r, order)) return false;
-        }
-        r0 = has_right_successor(c0);
-        r1 = has_right_successor(c1);
-        if (r0 && !r1) return false;
-        if (!r0 && r1) return true;
-        if (r0 && r1) {
-            if (my_bifurcate_compare_nonempty(right_successor(c0), right_successor(c1), r, order)) return true;
-            if (my_bifurcate_compare_nonempty(right_successor(c1), right_successor(c0), r, order)) return false;
-        }
-        if (r(source(c0), source(c1))) return true;
-        return false;
-    }
-}
-
-template<typename C0, typename C1, typename R>
-    requires(Readable(C0) && BifurcateCoordinate(C0) &&
-        Readable(C1) && BifurcateCoordinate(C1) &&
-        ValueType(C0) == ValueType(C1) &&
-        Relation(R) && ValueType(C0) == Domain(R))
-bool my_bifurcate_compare_nonempty(C0 c0, C1 c1, R r)
-{
-    return my_bifurcate_compare_nonempty(c0, c1, r, pre);
-}
-
-template<typename C0, typename C1>
-    requires(Readable(C0) && BifurcateCoordinate(C0) &&
-        Readable(C1) && BifurcateCoordinate(C1) &&
-        ValueType(C0) == ValueType(C1))
-bool my_bifurcate_less_nonempty(C0 c0, C1 c1)
-{
-    return my_bifurcate_compare_nonempty(c0, c1, less< ValueType(C0) >());
 }
 
 template<typename C0, typename C1, typename R>
