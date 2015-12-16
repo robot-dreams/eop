@@ -318,8 +318,10 @@ template<typename I>
     requires(Mutable(I) && ForwardIterator(I))
 I my_reverse_n_with_temporary_buffer(I f, DistanceType(I) n)
 {
-    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer<int>(n);
-    return my_reverse_n_adaptive(f, n, b.first, b.second);
+    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer< ValueType(I) >(n);
+    I l = my_reverse_n_adaptive(f, n, b.first, b.second);
+    return_temporary_buffer(b.first);
+    return l;
 }
 
 template<typename I>

@@ -3,6 +3,7 @@
 #include "my_integer.h"
 #include "my_intrinsics.h"
 #include "my_link.h"
+#include "my_rearrangement.h"
 #include "my_type_functions.h"
 #include "my_test_util.h"
 
@@ -270,18 +271,228 @@ I my_partition_forward_single_cycle(I f, I l, P p)
 // End Exercise 11.7
 /////
 
+//
+// Begin Exercise 11.8
+/////
+
+template<typename I, typename P>
+    requires(Mutable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_bidirectional_unguarded(I f, I l, P p)
+{
+    // Preconditions:
+    //     mutable_bounded_range(f, l)
+    f = my_find_if(f, l, p);
+    l = my_find_backward_if_not(f, l, p);
+    if (f == l) return f;
+    while (true) {
+        f = my_find_if_unguarded(f, p);
+        l = my_find_backward_if_not_unguarded(l, p);
+        if (f == l) return f;
+        my_reverse_swap_step(l, f);
+    }
+}
+
+//
+// End Exercise 11.8
+/////
+
+//
+// Begin Exercise 11.9
+/////
+
+template<typename I, typename P>
+    requires(Mutable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_bidirectional_single_cycle_unguarded(I f, I l, P p)
+{
+    // Preconditions:
+    //     mutable_bounded_range(f, l)
+    f = my_find_if(f, l, p);
+    l = my_find_backward_if_not(f, l, p);
+    if (f == l) return f;
+    ValueType(I) tmp = source(f);
+    while (true) {
+        sink(f) = source(predecessor(l));
+        f = my_find_if_unguarded(f, p);
+        if (f == l) { sink(predecessor(l)) = tmp; return f; }
+        else          sink(predecessor(l)) = source(f);
+        l = my_find_backward_if_not_unguarded(l, p);
+    }
+}
+
+//
+// End Exercise 11.9
+/////
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        ValueType(I) == ValueType(B) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_stable_with_buffer(I f, I l, B f_b, P p)
+{
+    // Preconditions:
+    //     mutable_bounded_range(f, l)
+    //     mutable_counted_range(f_b, l - f)
+    pair<I, B> x = my_partition_copy(f, l, f, f_b, p);
+    my_copy(f_b, x.second, x.first);
+    return x.first;
+}
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        ValueType(I) == ValueType(B) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_n_with_buffer(I f, DistanceType(I) n, B f_b, P p)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    //     mutable_counted_range(f_b, n))
+    triple<I, I, B> x = my_partition_copy_n(f, n, f, f_b, p);
+    return pair<I, I>(x.m1, my_copy(f_b, x.m2, x.m1));
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_singleton(I f, P p)
+{
+    // Preconditions:
+    //     readable_bounded_range(f, successor(f))
+    I l = successor(f);
+    if (!p(source(f))) f = l;
+    return pair<I, I>(f, l);
+}
+
+template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+pair<I, I> my_combine_ranges(const pair<I, I>& x,
+                             const pair<I, I>& y)
+{
+    return pair<I, I>(rotate_dispatch(x.first, x.second, y.first),
+                      y.second);
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_n_nonempty(I f, DistanceType(I) n, P p)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    //     n > 0
+    if (one(n)) return my_partition_stable_singleton(f, p);
+    DistanceType(I) h = half_nonnegative(n);
+    pair<I, I> x = my_partition_stable_n_nonempty(f, h, p);
+    pair<I, I> y = my_partition_stable_n_nonempty(x.second, n - h, p);
+    return my_combine_ranges(x, y);
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_n(I f, DistanceType(I) n, P p)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    if (zero(n)) return pair<I, I>(f, f);
+    return my_partition_stable_n_nonempty(f, n, p);
+}
+
+//
+// Begin Exercise 11.10
+/////
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        ValueType(I) == ValueType(B) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_n_nonempty_adaptive(I f_i,
+                                                   DistanceType(I) n_i,
+                                                   B f_b,
+                                                   DistanceType(B) n_b,
+                                                   P p)
+{
+    // Preconditions:
+    //     mutable_counted_range(f_i, n_i)
+    //     mutable_counted_range(f_b, n_b);
+    //     n_i > 0
+    if (one(n_i))
+        return my_partition_stable_singleton(f_i, p);
+    if (n_i <= n_b)
+        return my_partition_stable_n_with_buffer(f_i, n_i, f_b, p);
+    DistanceType(I) h = half_nonnegative(n_i);
+    pair<I, I> x = my_partition_stable_n_nonempty_adaptive(f_i, h, f_b, n_b, p);
+    pair<I, I> y = my_partition_stable_n_nonempty_adaptive(x.second, n_i - h, f_b, n_b, p);
+    return my_combine_ranges(x, y);
+}
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        ValueType(I) == ValueType(B) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_n_adaptive(I f_i,
+                                          DistanceType(I) n_i,
+                                          B f_b,
+                                          DistanceType(B) n_b,
+                                          P p)
+{
+    // Preconditions:
+    //     mutable_counted_range(f_i, n_i)
+    //     mutable_counted_range(f_b, n_b);
+    if (zero(n_i)) return pair<I, I>(f_i, f_i);
+    return my_partition_stable_n_nonempty_adaptive(f_i, n_i, f_b, n_b, p);
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        ValueType(I) == ValueType(B) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_n_with_temporary_buffer(I f, DistanceType(I) n, P p)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    if (zero(n)) return pair<I, I>(f, f);
+    if (one(n))  return my_partition_stable_singleton(f, p);
+    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer< ValueType(I) >(n);
+    pair<I, I> x = my_partition_stable_n_adaptive(f, n, b.first, b.second, p);
+    return_temporary_buffer(b.first);
+    return x;
+}
+
+//
+// End Exercise 11.10
+/////
+
+template<typename T>
+void print(T x)
+{
+    cout << x << " ";
+}
+
 int main() {
-    int n = 20;
+    typedef link_node<int>* I;
+    int n = 100;
+
+    // pair<I, I> p = new_linked_list(n, 1, 1);
+    // I x = p.first;
     int* x = new_array_list(n, 1, 1);
+    int* y = new int[n];
 
     /*
     cout << boolalpha << my_partitioned_at_point_source(x, x + n, x + 5, even<int>) << endl;
     cout << boolalpha << my_partitioned_at_point_source(x, x + n, x + 5, bind2nd(greater<int>(), 5)) << endl;
     */
 
-    copy(x, x + n, ostream_iterator<int>(cout, " ")); cout << endl;
-    my_partition_bidirectional_single_cycle(x, x + n, even<int>);
-    copy(x, x + n, ostream_iterator<int>(cout, " ")); cout << endl;
+    my_for_each_n(x, n, print<int>); cout << endl;
+    my_partition_stable_n_with_temporary_buffer(x, n, even<int>);
+    my_for_each_n(x, n, print<int>); cout << endl;
 
     delete [] x;
+    delete [] y;
 }

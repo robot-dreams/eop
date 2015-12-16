@@ -1147,3 +1147,50 @@ In particular, we have shown that at any point in the while loop, none(f, i, p) 
 By Lemma 11.1, the number of misplaced elements not satisfying the predicate is equal to the number of misplaced elements satisfying the predicate.  Since each iteration will swap one misplaced element satisfying the predicate and one misplaced element not satisfying the predicate, no elements will be misplaced after v iterations.
 
 After v iterations, the next call to find_if(f, l, p) will return the partition point (if there were v misplaced elements in the original range that satisfy the predicate, then the v+1-st element in the original range that satisfies the predicate, counting forward is the partition point).  By similar reasoning (but counting backward rather than forward), the next call to find_backward_if_not(f, l, p) will also return the partition point (note that find_backward_if_not returns the successor of the element found), so f == l will hold, and the procedure will terminate.
+
+**Lemma 11.10** combine_ranges is associative when applied to three nonoverlapping ranges.
+**Proof.** First note that after rotating [f, l) around some m in [f, l], the range will consist of original elements in [m, l) followed by the original elements in [f, m), and the return value m' will be the new position of the original element at f.
+
+Let x, y, z be pairs of iterators such that [x0, x1), [y0, y1), [z0, z1) are bounded ranges, and (x, y) as well as (y, z) satisfy the preconditions of combine_ranges.  Furthermore, let ++ denote concatenation of ranges.  Consider the statement combine_ranges(combine_ranges(x, y), z).  Initially, we have the following range:
+
+    [x0, x1)++[x1, y0)++[y0, y1)++[y1, z0)++[z0, z1)
+
+The inner call of combine_ranges will rotate [x0, y0) around x1, which will return the new position of x0 and result in the following:
+
+    [x1, y0)++[x0, x1)++[y0, y1)++[y1, z0)++[z0, z1)
+
+The outer call of combine ranges will rotate [x0, z0) around y1, which will return the new position of x0 and result in the following (1):
+
+    [x1, y0)++[y1, z0)++[x0, x1)++[y0, y1)++[z0, z1)
+
+Now consider the statement combine_ranges(x, combine_ranges(y, z)).  Initially, we have the following range:
+
+    [x0, x1)++[x1, y0)++[y0, y1)++[y1, z0)++[z0, z1)
+
+The inner call of combine_ranges will rotate [y0, z0) around y1, which will return the new position of y0 and result in the following:
+
+    [x0, x1)++[x1, y0)++[y1, z0)++[y0, y1)++[z0, z1)
+
+The outer call of combine ranges will rotate [x0, y0) around x1, which will return the new position of x0 and result in the following:
+
+    [x1, y0)++[y1, z0)++[x0, x1)++[y0, y1)++[z0, z1)
+
+This is identical to [1], so we conclude that combine_ranges is associative.
+
+**Lemma 11.11** If for some predicate p,
+
+    all(x0, x1, p) ^ none(x1, y0, p) ^ all(y0, y1, p)
+
+then after z = combine_ranges(x, y), the following holds:
+
+    none(x0, z0, p) ^ all(z0, z1, p)
+
+**Proof.** Using the same notation as the proof of the previous lemma, initially we have the following range:
+
+    [x0, x1) ++ [x1, y0) ++ [y0, y1)
+
+Calling combine_ranges will rotate [x0, y0) around x1 and return the new position of x0:
+
+    [x1, y0) ++ [x0, x1) ++ [y0, y1)
+
+Thus z0 is the new position of x1 and z1 is the old position of y1, and the value at x0 is the old value at x1.  Since the values in the new range [x0, z0) are the values in the old range [x1, y0) and none(x1, y0, p) holds for the old range, it follows that none(x0, z0, p) holds for the new range.  Since the values in the new range [z0, z1) are the combined values of the two old ranges [x0, x1) and [y0, y1), and since all(x0, x1, p) and all(y0, y1, p) hold, it follows that all(z0, z1, p) holds for the new range.

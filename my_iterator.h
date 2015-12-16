@@ -85,10 +85,36 @@ I my_find_if(I f, I l, P p)
 template<typename I, typename P>
     requires(Iterator(I) && Readable(I) &&
         UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_if_unguarded(I f, P p)
+{
+    // Precondition:
+    //     (exists l)
+    //         readable_bounded_range(f, l) ^
+    //         some(f, l, p)
+    while (!p(source(f))) f = successor(f);
+    return f;
+}
+
+template<typename I, typename P>
+    requires(Iterator(I) && Readable(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_find_if_not(I f, I l, P p)
 {
     // Precondition: readable_bounded_range(f, l)
     while (f != l && p(source(f))) f = successor(f);
+    return f;
+}
+
+template<typename I, typename P>
+    requires(Iterator(I) && Readable(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_if_not_unguarded(I f, P p)
+{
+    // Precondition:
+    //     (exists l)
+    //         readable_bounded_range(f, l) ^
+    //         not_all(f, l, p)
+    while (p(source(f))) f = successor(f);
     return f;
 }
 
@@ -1115,6 +1141,21 @@ I my_find_backward_if(I f, I l, P p)
 template<typename I, typename P>
     requires(Readable(I) && BidirectionalIterator(I) &&
         UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_backward_if_unguarded(I l, P p)
+{
+    // Preconditions:
+    //     (exists f)
+    //         readable_bounded_range(f, l) ^
+    //         some(f, l, p)
+    while (true) {
+        l = predecessor(l);
+        if (p(source(l))) return successor(l);
+    }
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_find_backward_if_not(I f, I l, P p)
 {
     // Preconditions:
@@ -1124,6 +1165,21 @@ I my_find_backward_if_not(I f, I l, P p)
         if (!p(source(l))) return successor(l);
     }
     return l;
+}
+
+template<typename I, typename P>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_find_backward_if_not_unguarded(I l, P p)
+{
+    // Preconditions:
+    //     (exists f)
+    //         readable_bounded_range(f, l) ^
+    //         not_all(f, l, p)
+    while (true) {
+        l = predecessor(l);
+        if (!p(source(l))) return successor(l);
+    }
 }
 
 template<typename I>

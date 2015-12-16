@@ -169,7 +169,7 @@ int main()
     int* x = new_array_list(n, 1, 1);
     copy(x, x + n, ostream_iterator<int>(cout, " "));
     cout << endl;
-    my_cycle_to_3(x, adjacent_rotator<int*, int>(x, 2, 5));
+    my_reverse_n_with_temporary_buffer(x, n);
     copy(x, x + n, ostream_iterator<int>(cout, " "));
     cout << endl;
     delete[] x;
