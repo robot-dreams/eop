@@ -229,6 +229,27 @@ struct iterator_type;
 
 #define IteratorType(S) typename iterator_type< S >::type
 
+struct my_iterator_tag               {};
+struct my_forward_iterator_tag       {};
+struct my_bidirectional_iterator_tag {};
+struct my_indexed_iterator_tag       {};
+struct my_random_access_iterator_tag {};
+
+template<typename I>
+    requires(Iterator(I))
+struct my_iterator_concept
+{
+    typedef my_iterator_tag type;
+};
+
+template<typename T>
+struct my_iterator_concept<T*>
+{
+    typedef my_random_access_iterator_tag type;
+};
+
+#define IteratorConcept(I) typename my_iterator_concept< I >::type
+
 template<typename T0, typename T1, typename T2>
     requires(Regular(T0), Regular(T1), Regular(T2))
 struct triple

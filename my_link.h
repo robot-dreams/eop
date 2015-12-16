@@ -30,6 +30,13 @@ struct link_node
 
 template<typename T>
     requires(Regular(T))
+struct my_iterator_concept<link_node<T>*>
+{
+    typedef my_bidirectional_iterator_tag type;
+};
+
+template<typename T>
+    requires(Regular(T))
 struct value_type<link_node<T>*>
 {
     typedef T type;

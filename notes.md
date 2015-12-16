@@ -21,6 +21,10 @@ How does the Writable concept justify exactly one assignment to sink(x)?
 How do we know that only multipass algorithms both read from and write to the same range?
 Why does the definition of write_aliased use a forall instead of an exists?
 Exercise 9.4
+What’s an example of an ordering-based arrangement?
+Lemma 10.18
+Clarify axioms for arithmetic between iterators and integers
+[DONE] *Lemma 10.26
 
 ## Questions
 
@@ -51,6 +55,7 @@ Why doesn't the book make more use of optional parameters?
 In linker_to_tail, why don't we need the precondition that successor(t) is defined?
 [DONE] What's meant by "to avoid sharing of proper tails"?
     Sharing proper tails can save memory, but would also lead to strange behavior (i.e. changing one iterator's source value can change the outcome of seemingly unrelated traversals)
+Is there a stable way to partition a range of n elements using 2n + 1 assignments?
 
 ## Definitions
 
@@ -990,3 +995,28 @@ A **cycle** is a circular orbit within a permutation
 A **trivial cycle** is a cycle with one element (the element in a trivial cycle is a fixed point)
 A permutation containing a single nontrivial cycle is called a **cyclic permutation**
 A **transposition** is a cyclic permutation with a cycle size of 2
+A **finite set** S of size n is a set for which there exists a pair of functions
+
+    choose_S: [0, n) -> S
+     index_S: S -> [0, n)
+
+satisfying
+
+    choose_S(index_S(x)) = x
+    index_S(choose_S(i)) = i
+
+If p is a permutation on a finite set S of size n, there is a corresponding **index permutation** p’ on [0, n) defined as:
+
+    p’(i) = index_S(p(choose_S(i)))
+
+A **rearrangement** is an algorithm that copies the objects from an input range to an output range such that the mapping between the indices of the input and output ranges is a permutation
+    In a **position-based rearrangement**, the destination of a value depends only on its original position and not on the value itself
+    In a **predicate-based rearrangement**, the destination of a value depends only on the result of applying a predicate to the value
+    In an **ordering-based arrangement**, the destination of a value depends only on the ordering of values
+A **mutative rearrangement** is a rearrangement in which the input and output ranges are identical; every mutative rearrangement corresponds to two permutations:
+    (1) a **to-permutation** that maps an iterator i to the iterator j that points to the destination of the element at i
+    (2) a **from-permutation** that maps an iterator j to the iterator i that points to the origin of the element moved to j
+A **memory-adaptive** algorithm uses as much additional space as it can acquire to maximize performance
+The permutation p of n elements defined by an index permutation p(i) = (i + k) mod n, where we define (i + k) mod n to be the unique integer in [0, n) that is congruent to i + k (mod n), is called the **k-rotation**
+
+## Chapter 11

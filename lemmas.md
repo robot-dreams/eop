@@ -925,3 +925,187 @@ Let C_1, ..., C_k be the nontrivial cycles of p; we will show that p_C_1 o ... o
   **Proof.** This follows directly from Lemma 10.10.1.
 
 Let p be an arbitrary permutation, and let C_1, ..., C_k be its nontrivial cycles.  Then by Lemma 10.9, p o (p_C_1^-1 o ... o p_C_k^-1) = (p_C_1 o ... o p_C_k) o (p_C_1^-1 o ... o p_C_k^-1).    Using the the commutativity guaranteed by Lemma 10.8, this expression becomes (p_C_1 o p_C_1^-1) o ... o (p_C_k o p_C_k^-1), which is the identity permutation.  The same result holds if we multiply p by the product of the inverses of its cycles on the left, instead of on the right, so we conclude the inverse of p is equal to the product of the inverses of its cycles.
+
+**Lemma 10.11** Every cyclic permutation is a product of transpositions.
+**Proof.** Let p be a cyclic permutation on S, and let C be the corresponding cycle.  If |C| = 2 then p is a transposition, so the claim trivially holds.  Suppose |C| > 2, and choose any element y0 in C.  Since p is onto, there is some x0 such that p(x0) = y0.  Consider the map p' defined as follows:
+
+    p'(x0) = p(y0)
+    p'(y0) = y0    
+    p'(x)  = p(x) if x != x0 ^ x != y0
+
+We will first show that p' is onto.  Choose any y in S.  Since p is onto, there exists x in S such that p(x) = y.  If x = x0, then y = p(x0) = y0, so p'(y0) = y0 = y.  If x = y0, then y = p(x) = p(y0), so p'(x0) = p(y0) = y.  Otherwise, p'(x) = p(x) = y.
+
+Next, we will show that p' is cyclic with cycle size |C| - 1.
+
+Choose any x in S; if x is not in C, then x != x0 and x != y0, so p'(x) = p(x) = x; furthermore, p'(y0) = y0, so every element in a nontrivial cycle of p' must be an element of C \ {y0}.
+
+Now choose any x, y in C \ {y0}.  We will show that x and y are in the same cycle under p'.
+
+Let n be the smallest nonnegative integer such that y = p^n(x).  We will prove by induction on n that there exists some nonnegative integer m such that y = p'^m(x).
+    If n = 0 there is nothing to prove.
+    If n = 1, then we must have x != x0 (otherwise y = p(x0) = y0), and since we also have x != y0, p'(x) = p(x) = y.
+    If n > 1, then consider the following cases:
+        (1) p^{n-1}(x) = x0: this case is impossible because it would imply p^n(x) = y0 = y, which contradicts that y is in C \ {y0}.
+        (2) p^{n-1}(x) = y0: then p^{n-2}(x) = x0.  By our inductive hypothesis, we can find some m such that x0 = p'^m(x); thus p'^{m+1}(x) = p'(x0) = p(y0) = p^n(x).
+        (3) p^{n-1}(x) != x0 ^ p^{n-1}(x) != y0; then by our inductive hypothesis, we can find some m such that p^{n-1}(x) = p'^m(x), so p'^{m+1}(x) = p^n(x) = y.
+
+Thus p' is cyclic with cycle size |C| - 1, and the cycle of p' is precisely C \ {y0}.
+
+Finally, let t be the transposition that swaps x0 and y0.  We will show that p = p' o t.  Consider the following cases:
+    (1) p' o t(y0) = p'(x0) = p(y0)
+    (2) p' o t(x0) = p'(y0) = y0 = p(x0)
+    (3) If x != y0 ^ x != x0, then p' o t(x) = p'(x) = p(x)
+We conclude that for all x in S, p' o t(x) = p(x).  By our inductive hypothesis, p' is a product of transpositions; we conclude that p is the product of transpositions.
+
+**Lemma 10.12** Every permutation is a product of transpositions.
+**Proof.** This follows immediately from Lemma 10.9 (every permutation is a product of cyclic permutations), Lemma 10.11 (every cyclic permutation is a product of transpositions), and associativity of composition.
+
+**Lemma 10.A** choose_S and index_S are bijections.
+**Proof.** Let x be an arbitrary element of S.  Then choose_S(index_S(x)) = x, so choose_S is a surjection.  Similarly, if i is an arbitrary element of [0, n), then index_S(choose_S(i)) = i, so index_S is a surjection.
+
+Next, suppose choose_S(i) = choose_S(j).  Then by definition of index_S together with its regularity, i = index_S(choose_S(i)) = index_S(choose_S(j)) = j, so choose_S is an injection.  Similarly, if index_S(x) = index_S(y), then by definition of choose_S together with its regularity, x = choose_S(index_S(x)) = choose_S(index_S(y)) = y, so index_S is an injection.
+
+**Lemma 10.13** Let p be a permutation on a finite set S of size  n, and let p' be the permutation on [0, n) given by p'(i) = index_S(p(choose_S(i))).  Then p(x) = choose_S(p'(index_S(x))).
+**Proof.** By definition of index_S together with its regularity, index_S(p(x) = index_S(choose_S(p'(index_S(x)))) = p'(index_S(x)).  By definition of choose_S together with its regularity, choose_S(p'(index_S(x))) = choose_S(index_S(p(x))) =  p(x).
+
+**Lemma 10.B** Let p, p' be defined as above; then p'^2(i) = index_S(p^2(choose_S(i)) and p^2(x) = choose_S(p'^2(index_S(x)).
+**Proof.** p'^2(i) = index_S(p(choose_S(index_S(p(choose_S(i)))))) = index_S(p(p(choose_S(i)))) = index_S(p^2(choose_S(i))).  Similarly, p^2(x) = choose_S(p'(index_S(choose_S(p'(index_S(x)))))) = choose_S(p'(p'(index_S(x)))) = choose_S(p'^2(choose_S(i))).
+
+**Lemma 10.C** p^n(x) = y if and only if p'^n(index_S(x)) = index_S(y).
+**Proof.** By induction.
+
+Consider the case n = 0.  If x = y, then index_S(x) = index_S(y), and if index_S(x) and index_S(y), Lemma 10.A implies that x = y.
+
+Now suppose n > 0 and the claim holds for n - 1.  Suppose p^n(x) = y; then p^{n-1}(p(x)) = p(y), so p'^{n-1}(index_S(p(x))) = index_S(y).
+
+Conversely, suppose p'^n(index_S(x)) = index_S(y).  Then p'^{n-1}(p'(index_S(x))) = p'^{n-1}(index_S(p(choose_S(index_S(x))))) = p'^{n-1}(index_S(p(x))) = index_S(y), so p^{n-1}(p(x)) = y, i.e. p^n(x) = y.
+
+**Lemma 10.D** p and p' have the same cycles; in particular:
+(1) x = p^k(x) if and only if index_S(x) = p'^k(index_S(x))
+(2) p(x), ..., p^k(x) are all distinct if and only if p'(index_S(x)), ..., p'^k(index_S(x)) are all distinct
+**Proof.** (1) is a restatement of Lemma 10.C.  (2) follows from Lemma 10.C and the existence of inverse permutations (i.e. p^i(x) = p^j(x) and i < j implies x = p^{j-i}(x)).
+
+**Lemma 10.14** The to-permutation and from-permutation for a rearrangement are inverses of each other.
+**Proof.** Let t and f be the to and from permutations for a rearrangement r, and let i be an arbitrary iterator in the input  range of a particular call to r.  If t(i) = j, then j points to the destination of source(i) under the rearrangement r.  But then i points to the origin of source(j) under the rearrangement r, so f(j) = i.  Thus f o t(i) = i.  On the other hand, let j be an arbitrary iterator in the output range of a particular call to r.  If f(j) = i, then i points to the origin of source(j) under the rearrangement r.  But then j points to the destination of source(i) under the rearrangement r, so t(i) = j.  Thus t o f(j) = j, and we conclude that t and f are inverses.
+
+**Lemma 10.15** Given a from-permutation, it is possible to perform a mutative rearrangement using n + c_N - c_T assignments, where n is the number of elements, c_N the number of nontrivial cycles, and c_T the number of trivial cycles.
+**Proof.** We begin with the following observations:
+  **Lemma 10.15.1** my_cycle_from performs no assignments if i is in a trivial cycle, and n + 1 assignments for a nontrivial cycle of size n.
+  **Proof.** In the case of a trivial cycle, f(i) == i, so the procedure returns immediately.  Otherwise, the procedure performs one assignment (to initialize tmp), one assignment for each case k == f(i), k == f^2(i), ..., k == f^{n-1}(i).  Finally, the procedure performs one final assignment after the while loop for the case k == f^n(i), i.e. k == i, for a total of n + 1 assignments.
+  **Lemma 10.15.2** cycle_representative returns true for exactly one element of any cycle.
+  **Proof.** Suppose cycle_representative returns true for both i and j.  Then we would have both r(i, j) and r(j, i), so by the precondition that r is a total ordering, i and j must be the same element.
+
+By Lemma 10.6, each element belongs to a unique cycle; thus the sum of the number of elements of each cycle of the permutation is the total size of the set being permuted.  By Lemma 10.15.1 and 10.15.2, my_rearrange_from performs (|C| + 1) assignments for each nontrivial cycle.  We split the sum over two parts (a sum over |C| and sum over 1).  For the first part, since the sum of the sizes of all the trivial cycles is simply the number of trivial cycles and the sum over all cycles is n (the total size of the set being permuted), the sum of the sizes of all the nontrivial cycles is n - c_T.  Finally, summing 1 over c_N different indices simply produces c_N, for a total of n + c_N - c_T assignments.
+
+**Lemma 10.16** The number of nontrivial cycles in a reverse permutation is floor(n / 2); the number of trivial cycles is n mod 2.
+**Proof.** By Lemma 10.D, it suffices to prove the lemma for the index permutation p(i) = (n - 1) - i.
+
+Suppose n is even.  Then for any i in [0, n) we have p(i) = n - 1 - i; n - 1 is odd, so if i is even n - 1 - i is odd, and if i is odd then n - 1 - i is even.  It follows that p(i) != i.  Furthermore, p(p(i)) = p(n - 1 - i) = n - 1 - (n - 1 - i) = i, so every element belongs to a cycle of size 2, i.e. every cycle has size 2 (and there are no trivial cycles, i.e. n mod 2 = 0 trivial cycles).  By Lemma 10.6, each element belongs to a unique cycle; thus upon distributing the n elements among cycles of size 2, we find that there are exactly n / 2 (nontrivial) cycles.  Note that n / 2 = floor(n / 2) when n is even.
+
+Next, suppose n is odd.  Suppose i < (n - 1) / 2; then p(i) = (n - 1) - i > (n - 1) - (n - 1) / 2 = (n - 1) / 2, so p(i) != i.  Similarly, if i > (n - 1) / 2, then p(i) = (n - 1) - i < (n - 1) - (n - 1) / 2 = (n - 1) / 2, so p(i) != i.  Furthermore, in both of these cases, p(p(i)) = (n - 1) - (n - 1 - i) = i, so every element that satisfies i < (n - 1) / 2 or i > (n - 1) / 2 belongs to a cycle of size 2.  However, if i = (n - 1) / 2, then p(i) = n - 1 - (n - 1) / 2 = (n - 1) / 2 = i, so in this case i belongs to a trivial cycle.  Thus there are (n - 1) / 2 = floor(n / 2) cycles of size 2, and one (i.e. n mod 2) trivial cycle.
+
+**Lemma 10.17** floor(n / 2) is the largest possible number of nontrivial cycles in a permutation.
+**Proof.** Suppose a permutation has k nontrivial cycles.  Each nontrivial cycle has at least 2 distinct elements, and by Lemma 10.6, each element belongs to at most one nontrivial cycle; thus among the k nontrivial cycles, there are 2k distinct elements.  If k > floor(n / 2) then we would have k >= (n + 1) / 2, but then there would be n + 1 distinct elements among the k nontrivial cycles, which is impossible.
+
+**Lemma 10.19** The reverse permutation on [0, n) is the only permutation satisfying i < j => p(j) < p(i)
+**Proof.** We will first show that the reverse permutation indeed satisfies this condition.  Suppose i < j; then -j < -i, so n - 1 - j < n - 1 - i.
+
+Next, we will show that this condition uniquely determines the permutation.  Since 0 < 1 < ... < n - 1, repeated application of the condition gives p(n - 1) < p(n - 2) < ... < p(1) < p(0).
+  **Lemma 10.19.1** If a_0 < ... < a_{n-1} are elements of [0, n), then a_i = i.
+  **Proof.** We proceed by induction.  If n = 1, then the claim is trivial.  Suppose n > 1 and the claim holds for n - 1.  If a_{n-1} < n - 1, then we would either have a_i = a_j for some i != j, or a_i = n - 1 and a_{n-1} < a_i for some i < n - 1; both of these cases violate the condition a_0 < ... < a_{n-1}, so we must have a_{n-1} = n - 1; thus a_0 < ... < a_{n-2} are elements of [0, n - 1) and the claim follows by the inductive hypothesis.
+
+By Lemma 10.19.1, it follows that p(n - 1) = 0, p(n - 2) = 1, and so on, i.e. p(i) = n - 1 - i.
+
+**Lemma 10.E** The index permutation p corresponding to reverse_n_forward satisfies i < j => p(j) < p(i).
+**Proof.** We will proceed by induction on n.  If n = 1, there is nothing to prove.
+
+Suppose n > 1 and the claim holds for all m < n.
+
+Let i < j, and define the following index permutations:
+  Let p1 be the index permutation on [0, n) corresponding to the result of the first recursive call
+  Let p2 be the index permutation on [0, n) corresponding to the result of the second recursive call
+  Let p_s be the index permutation on [0, n) corresponding to the result of my_swap_ranges_n
+
+Note that p = p_s o p2 o p1, and consider the following cases:
+
+(1) Suppose i < j < h.  The inductive hypothesis implies that p1(j) < p1(i); also, p2(k) = k for 0 <= k < h, and p_s preserves ordering among elements in [0, h); thus we have p(j) < p(i).
+(2) Suppose h + n_mod_2 <= i < j < n.  The inductive hypothesis implies that p2(j) < p2(i); also, p1(k) = k for h + n_mod_2 <= i < j < n, and p_s preserves ordering among elements in [h + n_mod_2, n); thus we have p(j) < p(i).
+(3) Suppose i < h and h + n_mod_2 <= j; then p1(i) < h, p2(p1(i)) = p1(i), and p_s(p1(i)) >= h + n_mod_2.  Furthermore, p1(j) = j, p2(j) >= h + n_mod_2, and p_s(p2(j)) < h.  We conclude that p(j) < p(i).
+(4) Suppose n is odd, i = h, and i < j.  Then p(i) = i; furthermore, p1(j) = j, p2(j) > h, and ps(p2(j)) < h, so the claim holds.
+(5) Finally, suppose n is odd, i < h, and j = h.  Then p(j) = j = h; furthermore, p1(i) < h, p2(p1(i)) = p1(i), and ps(p1(i)) > h, so the claim holds.
+
+**Lemma 10.F** Let p, q be permutations, and let p', q' be the corresponding index permutations.  Then p and q are inverses if and only if p' and q' are inverses.
+**Proof.** Suppose p(q(x)) = x for each x in S.  Then given i in [0, n), we have p'(q'(i)) = p'(index_S(q(choose_S(i)))) = index_S(p(choose_S(index_S(q(choose_S(i)))))) = index_S(p(q(choose_S(i)))) = index_S(choose_S(i)) = i.
+
+Conversely, suppose p'(q'(i)) = i for each i in [0, n).  Then given x in S, we have p(q(x)) = p(choose_S(q'(index_S(x)))) = choose_S(p'(index_S(choose_S(q'(index_S(x)))))) = choose_S(p'(q'(index_S(x)))) = choose_S(index_S(x)) = x.
+
+**Lemma 10.21** The inverse of a k-rotation of n elements is an (n - k) rotation.
+**Proof.** By Lemma 10.F, it suffices to show that the corresponding index index permutations p'(i) = (i + k) mod n and q'(i) = (i - k) mod n are inverses.  Let i be an arbitrary index in [0, n).  Then p'(i) is congruent to i + k (mod n), and p'(q'(i)) is congruent to i + k - k = i (mod n), and since i is the unique integer in [0, n) congruent to itself mod n, we conclude that p'(q'(i)) = i.  Similarly, p'(i) is congruent to i - k (mod n) and q'(p'(i)) is congruent to i - k + k = i (mod n), so q'(p'(i)) = i.
+
+**Lemma 10.G** a / gcd(a, b) and b / gcd(a, b) are relatively prime.
+**Proof.** Suppose d divides a / gcd(a, b) and divides b / gcd(a, b).  Then d * gcd(a, b) divides a and d * gcd(a, b) divides b, which would contradict the definition of gcd if |d| != 1.
+
+**Lemma 10.H** lcm(a, b) * gcd(a, b) = a * b.
+**Proof.** First note that a divides a * b / gcd(a, b) (since b / gcd(a, b) is an integer) and that b divides a * b / gcd(a, b); thus lcm(a, b) is at most a * b / gcd(a, b).
+
+Next, write lcm(a, b) = k * b.  Then a divides k * b, i.e. a / gcd(a, b) divides k * b / gcd(a, b).  But a / gcd(a, b) and b / gcd(a, b) are relatively prime, so a / gcd(a, b) divides k, i.e. a / gcd(a, b) <= k.  So lcm(a, b) is at least a * b / gcd(a, b).  We conclude that lcm(a, b) = a * b / gcd(a, b).
+
+**Lemma 10.I** k-rotation of a range [f, l) is equivalent to interchanging the relative positions of the values in the subranges [f, m) and [m, l), where m = f + ((l - f) - k) = l - k.
+**Proof.** Interchanging the relative positions of the values in [f, m) and [m, l) has the following effect:
+
+    (1) For any x in [f, m), the new value at x + (l - m) becomes the old value at x
+    (2) For any x in [m, l), the new value at f + (x - m) becomes the old value at x
+
+We will show that this is equivalent to a k-rotation.  Given an element x in [f, m), we have p(x) = x + k = x + (l - m); note that x precedes m, so x + (l - m) precedes m + (l - m) = l.  Next, given an element x in [m, l), we have p(x) = x + k - (l - f) = x + (l - m) - (l - f) = m + (x - m) + (l - m) - (l - f) = l + (x - m) - (l - f) = f + (x - m).  Note that we can rewrite x as x - m because either x = m or x precedes m.
+
+**Lemma 10.22** Rotating a range [f, l) around the iterator m and then rotating it around the returned value m' returns m and restores the range to its original state.
+**Proof.** Lemma 10.I shows that rotating a range around the iterator m is equivalent to a k-rotation, where k = l - m.  Furthermore, rotating a range around the iterator m returns the iterator m', where m' - f = k.  But then rotating around m' is equivalent to a j-rotation, where j = l - m' = l - (f + k) = (l - f) - k = n - k, i.e. an (n-k) rotation.  Since i + k + (n - k) = i (mod k) for any i, it follows that rotation around m and rotation around m' are inverse operations.
+
+**Lemma 10.23** The k-rotation on [0, n) is the only permutation p that inverts the relative ordering between the subranges [0, n - k) and [n - k, n) but preserves the relative ordering within each subrange:
+
+(1) i < n - k ^ n - k <= j < n => p(j) < p(i)
+(2) i < j < n - k v n - k <= i < j => p(i) < p(j)
+
+**Proof.** We will show that conditions (1) and (2) uniquely determine a permutation, and that the permutation is precisely a k-rotation.
+  **Lemma 10.23.1** Suppose 0 <= m < k.  Then p(n - k + m) = m.
+  **Proof.** We proceed by induction.  First consider the case m = 0.  If p(n - k) > 0, then condition (2) implies that p(i) = 0 is only possible when i < n - k.  But this would violate condition (1), so we conclude that p(n - k) = 0.  Now suppose m > 0.  If p(n - k + m) > m, then condition (2) implies that p(i) = m is only possible when i < n - k + m.  Since p(i) != m for i = n - k, n - k + 1, ..., n - k + (m - 1), we must have i < n - k.  But this would violate condition (1), so we conclude that p(n - k + m) = m.
+  **Lemma 10.23.2** Suppose 0 <= m < n - k.  Then p(m) = m + k.
+  **Proof.** By Lemma 10.23.1, p(0) cannot be 0, 1, ..., k - 1.  Suppose p(0) > k.  Then we would have p(i) < p(0) for some i in 1, 2, ..., n - k - 1, which contradicts (2).  Thus p(0) = k.  Next, by Lemma 10.23.1 and the inductive hypothesis, p(m) cannot be 0, 1, ..., m + k - 1.  Suppose p(m) > m + k.  Then we would have p(i) < p(m) for some m in m + 1, ..., n - k - 1, which contradicts (2).  Thus p(m) = m + k.
+
+Together, Lemma 10.23.1 and 10.23.2 imply that p must be a k-rotation.
+
+**Lemma 10.25** The first time the else clause is taken in rotate_forward_annotated, f = m', the standard return value for rotate.
+**Proof.** We will proceed by induction on n, the number of times the procedure executed the while loop and took the if clause.
+
+If n = 0, then the procedure takes the else clause immediately.  Let x0 be the element at f at the beginning of the procedure.  At the beginning of the else clause, the element at m is x0; the next iteration will set the element at f to x0, at which point x0 will be in its final position.
+
+Suppose n > 0; we will show that if an iteration of the while loop takes the if clause, then the updated values of f, m, l would produce the same standard return value m' as the original values of f, m, l.
+
+Given the original values f0, m0, l0, the standard return value m' is f0 + (l0 - m0).  In the case where the first element of the pair returned by my_swap_ranges_bounded is equal to m, the iteration sets f to m (i.e. we advance f by m - f), sets m to m + (m - f) (since my_swap_ranges_bounded advances both of its input ranges by the same amount), and leaves l unchanged.  But at the end of the iteration, we have f + (l - m) = f0 + (m0 - f0) + (l0 - (m0 + (m0 - f0))) = f0 + (m0 - f0) + (l0 - m0) - (m0 - f0) = f0 + (l0 - m0) = m'.
+
+Thus the first iteration will result in updated values of f, m, l that produce the same standard return value m' as the original values of f, m, l.  By the inductive hypthesis, after the procedure executes n - 1 more iterations of the while loop taking the if clause and 1 iteration of the while loop taking the else clause, we will have f = m'.
+
+**Lemma 10.26** The postcondition for rotate_partial_nontrivial is that it performs a partial rotation such that the objects in positions [m', l) are k-rotated where k = -(l - f) mod (m - f).
+**Proof.** Consider the sequence of swaps made by the call to my_swap_ranges(m, l, f).
+  **Lemma 10.26.1** After n calls to my_swap_step, the elements [f1, f0) are a -n-rotation of the original elements at [f, m).
+  **Proof.** Since we call my_swap_ranges with f1 = f, f0 = l, the claim holds for n = 0 (the elements [f, m) are not rotated, i.e. they are a -0-rotation).  Suppose n > 0 and the claim holds for n - 1.  Then after n - 1 calls to my_swap_step, the elements at [f1, f0) are a -(n - 1) rotation.  The n-th call exchanges the elements at f1 and f0 and then advances both f1 and f0.  But this has the effect of moving the first element of the old range [f1, f0) to the last position of the new range [f1, f0) and shifting the remaining elements forward by one position; this is precisely a -1-rotation of [f1, f0), which, together with the -(n - 1)-rotation from the previous n - 1 calls to my_swap_step, constitutes a -n-rotation of the original elements at [f, m).
+
+By Lemma 10.26.1, after the call to swap_ranges, the elements at [f + (l - m), l) = [m', l) are a -(l - m)-rotation of the original (m - f) elements at [f, m).  Lemma 10.26 follows from the fact that -(l - f) = -((l - m) + (m - f)) = -(l - m) mod (m - f).
+
+**Lemma 11.1** If m = potential_partition_point(f, l, p) then count_if(f, m, p) = count_if_not(m, l, p).
+**Proof.** m = potential_partition_point(f, l, p) means that after partitioning, the elements of [f, l) that do not satisfy p occupy [f, m); thus count_if_not(f, l, p) = m - f.  Thus count_if_not(f, l, p) = count_if_not(f, m, p) + count_if_not(m, l, p), and we can write:
+
+    [1] count_if_not(f, m, p) + count_if_not(m, l, p) = m - f
+
+Furthermore, before any partitioning has occurred, every element in [f, m) either satisfies or does not satisfy p.  Thus we can also write:
+
+    [2] count_if(f, m, p) + count_if_not(f, m, p) = m - f
+
+Combining [1] and [2] gives the desired result:
+
+    [3] count_if(f, m, p) = count_if_not(m, l, p)
+
+**Lemma 11.2** There are u!v! permutations that partition a range with u false values and v true values.
+**Proof.** We will count the number of index permutations.  There are u choices of an index that maps to 0; for each of these u choices there are u - 1 choices of an index that maps to 1; and so on.  Furthermore, there are v choices of an index that maps to u; for each of these v choices there are v - 1 choices of an index that maps to u + 1; and so on.  This gives a total of u!v! choices.
+
+Note that these are all the choices (for i = 0, 1, ..., u - 1 we must choose one of the u - i remaining positions with a false value, and likewise for i = u, u + 1, ..., u + v - 1 we must choose one of the u + v - i remaining positions with a true value).  Furthermore, we did not double count any choices (making a different choice at any step results in a different permutation).
