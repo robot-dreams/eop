@@ -45,16 +45,6 @@ pair<I, O> my_copy_bounded(I f_i, I l_i, O f_o, O l_o)
     return pair<I, O>(f_i, f_o);
 }
 
-template<typename N>
-    requires(Integer(N))
-bool count_down(N& n)
-{
-    // Precondition: n >= 0
-    if (zero(n)) return false;
-    n = predecessor(n);
-    return true;
-}
-
 template<typename I, typename O, typename N>
     requires(Readable(I) && Iterator(I) &&
         Writable(O) && Iterator(O) &&

@@ -428,6 +428,64 @@ pair<I, I> sort_linked_nonempty_n(I f, DistanceType(I) n, R r, S set_link)
                                  set_link);
 }
 
+template<typename I>
+    requires(ForwardIterator(I))
+struct sort_linked_trivial
+{
+    sort_linked_trivial() {}
+    pair<I, I> operator()(I i)
+    {
+        return pair<I, I>(i, successor(i));
+    }
+};
+
+template<typename I, typename S, typename R>
+    requires(Readable(I) &&
+        ForwardLinker(S) && I == IteratorType(S) &&
+        Relation(R) && ValueType(I) == Domain(R))
+struct sort_linked_op
+{
+    R r;
+    S set_link;
+    sort_linked_op(R r, S set_link) : r(r), set_link(set_link) {}
+    typedef pair<I, I> T;
+    T operator()(const T& x, const T& y)
+    {
+        return merge_linked_nonempty(x.first,
+                                     x.second,
+                                     y.first,
+                                     y.second,
+                                     r,
+                                     set_link);
+    }
+};
+
+template<typename I, typename S, typename R>
+    requires(Readable(I) &&
+        ForwardLinker(S) && I == IteratorType(S) &&
+        Relation(R) && ValueType(I) == Domain(R))
+struct input_type<sort_linked_op<I, S, R>, 0>
+{
+    typedef pair<I, I> type;
+};
+
+template<typename I, typename S, typename R>
+    requires(Readable(I) &&
+        ForwardLinker(S) && I == IteratorType(S) &&
+        Relation(R) && ValueType(I) == Domain(R))
+pair<I, I> sort_linked_nonempty_n_iterative(I f, DistanceType(I) n, R r, S set_link)
+{
+    // Preconditions:
+    //     counted_range(f, n)
+    //     n > 0
+    //     weak_ordering(r)
+    return my_reduce_balanced_n(f,
+                                n,
+                                sort_linked_op<I, S, R>(r, set_link),
+                                sort_linked_trivial<I>(),
+                                pair<I, I>(f, f));
+}
+
 template<typename R>
     requires(BinaryRelation(R))
 struct equivalent_to_prev

@@ -309,6 +309,129 @@ Domain(Op) my_reduce_nonzeros(I f, I l, Op op, F fun, const Domain(Op)& z)
     return x;
 }
 
+template<typename I, typename Op>
+    requires(Iterator(I) && BinaryOperation(Op) &&
+        ValueType(I) == Domain(Op))
+Domain(Op) my_reduce_nonzeros(I f, I l, Op op, const Domain(Op)& z)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //     partially_associative(op)
+    Domain(Op) x;
+    do {
+        if (f == l) return z;
+        x = source(f);
+        f = successor(f);
+    } while (x == z);
+    while (f != l) {
+        Domain(Op) y = source(f);
+        if (y != z) x = op(x, y);
+        f = successor(f);
+    }
+    return x;
+}
+
+template<typename I, typename Op>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        BinaryOperation(Op) && ValueType(I) == Domain(Op))
+Domain(Op) add_to_counter(I f, I l, Op op, Domain(Op) x, const Domain(Op)& z)
+{
+    if (x == z) return z;
+    while (f != l) {
+        if (source(f) == z) {
+            sink(f) = x;
+            return z;
+        }
+        x = op(source(f), x);
+        sink(f) = z;
+        f = successor(f);
+    }
+    return x;
+}
+
+template<typename Op>
+    requires(BinaryOperation(Op))
+struct my_counter_machine
+{
+    typedef Domain(Op) T;
+    Op op;
+    T z;
+    T f[64];
+    T* l;
+    my_counter_machine(Op op, const T& z) : op(op), z(z), l(f) {}
+    void operator()(const T& x)
+    {
+        // Precondition: must not be called more than 2^64 - 1 times
+        T tmp = add_to_counter(f, l, op, x, z);
+        if (tmp != z) {
+            sink(l) = tmp;
+            l = successor(l);
+        }
+    }
+};
+
+template<typename Op>
+    requires(BinaryOperation(Op))
+struct my_transpose_operation
+{
+    Op op;
+    my_transpose_operation(Op op) : op(op) {}
+    typedef Domain(Op) T;
+    T operator()(const T& x, const T& y)
+    {
+        return op(y, x);
+    }
+};
+
+template<typename Op>
+    requires(BinaryOperation(Op))
+struct input_type<my_transpose_operation<Op>, 0>
+{
+    typedef Domain(Op) type;
+};
+
+template<typename I, typename Op, typename F>
+    requires(Iterator(I) && BinaryOperation(Op) &&
+        UnaryFunction(F) && I == Domain(F) &&
+        Domain(Op) == Codomain(F))
+Domain(Op) my_reduce_balanced(I f, I l, Op op, F fun, const Domain(Op)& z)
+{
+    // Preconditions:
+    //     bounded_range(f, l)
+    //     l - f < 2^64
+    //     partially_associative(op)
+    //     (forall x in [f, l)) fun(x) is defined
+    my_counter_machine<Op> c(op, z);
+    while (f != l) {
+        I i = successor(f);
+        c(fun(f));
+        f = i;
+    }
+    my_transpose_operation<Op> po(op);
+    return my_reduce_nonzeros(c.f, c.l, po, z);
+}
+
+template<typename I, typename Op, typename F>
+    requires(Iterator(I) && BinaryOperation(Op) &&
+        UnaryFunction(F) && I == Domain(F) &&
+        Domain(Op) == Codomain(F))
+Domain(Op) my_reduce_balanced_n(I f, DistanceType(I) n, Op op, F fun, const Domain(Op)& z)
+{
+    // Preconditions:
+    //     counted_range(f, n)
+    //     n < 2^64
+    //     partially_associative(op)
+    //     (forall x in [[f, n|)) fun(x) is defined
+    my_counter_machine<Op> c(op, z);
+    while (count_down(n)) {
+        I i = successor(f);
+        c(fun(f));
+        f = i;
+    }
+    my_transpose_operation<Op> po(op);
+    return my_reduce_nonzeros(c.f, c.l, po, z);
+}
+
 template<typename I, typename Op, typename F>
     requires(Iterator(I) && BinaryOperation(Op) &&
         UnaryFunction(F) &&

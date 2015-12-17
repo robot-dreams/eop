@@ -124,4 +124,14 @@ inline I remainder(I a, I b)
     return a % b;
 }
 
+template<typename N>
+    requires(Integer(N))
+bool count_down(N& n)
+{
+    // Precondition: n >= 0
+    if (zero(n)) return false;
+    n = predecessor(n);
+    return true;
+}
+
 #endif
