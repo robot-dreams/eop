@@ -26,6 +26,10 @@ Lemma 10.18
 Clarify axioms for arithmetic between iterators and integers
 [DONE] *Lemma 10.26
 Add versions of reduce (my_iterator.h, plus my_reduce_balanced) that don’t take that god damn “fun” parameter
+Lemma 11.12
+Lemma 11.13
+Mechanism for tracing assignments and comparisons
+Fix linked list iterator type so that arithmetic works
 
 ## Questions
 
@@ -1025,3 +1029,16 @@ The permutation p of n elements defined by an index permutation p(i) = (i + k) m
 
 A partition rearrangement is **stable** if the relative order of elements not satisfying the predicate is preserved, as is the relative order of elements satisfying the predicate
 A partition rearrangement is **semistable** if the relative order of elements not satisfying the predicate is preserved
+
+    property(I: ForwardIterator, N: Integer, R: Relation)
+        requires(Mutable(I) ^ ValueType(I) = Domain(R))
+    mutable: I x N x I x N x R
+        (f0, n0, f1, n1, r) |-> f0 + n0 = f1 ^
+            mutable_counted_range(f0, n0 + n1) ^
+            weak_ordering(r) ^
+            increasing_range(f0, n0) ^
+            increasing_range(f1, n1)
+
+A merge is **stable** if the output range preserves the relative order of equivalent elements both within each input range and between the first and second input range
+A sorting algorithm is **stable** if it preserves the relative order of elements with equivalent values
+An iterator i in a range is a **pivot** if its value is not smaller than any value preceding it and not larger than any value following it

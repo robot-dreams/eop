@@ -630,6 +630,158 @@ I my_partition_stable_n_iterative_with_temporary_buffer(I f,
     return m_prime;
 }
 
+template<typename I, typename B, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        Relation(R) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(R))
+I my_merge_n_with_buffer(I f0, DistanceType(I) n0,
+                         I f1, DistanceType(I) n1, B f_b, R r)
+{
+    // Preconditions:
+    //     mergeable(f0, n0, f1, n1, r)
+    //     mutable_counted_range(f_b, n0)
+    my_copy_n(f0, n0, f_b);
+    return my_merge_copy_n(f_b, n0, f1, n1, f0, r).m2;
+}
+
+template<typename I, typename B, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        Relation(R) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(R))
+I my_sort_n_with_buffer(I f, DistanceType(I) n, B f_b, R r)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    //     weak_ordering(r)
+    //     mutable_counted_range(f_b, ceil(n / 2))
+    typedef DistanceType(I) N;
+    if (n == N(0)) return f;
+    if (n == N(1)) return successor(f);
+    N h = half_nonnegative(n);
+    I m = my_sort_n_with_buffer(f, h, f_b, r);
+          my_sort_n_with_buffer(m, n - h, f_b, r);
+    return my_merge_n_with_buffer(f, h, m, n - h, f_b, r);
+}
+
+template<typename I, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        Relation(R) &&
+        ValueType(I) == Domain(R))
+void my_merge_n_step_0(I f0, DistanceType(I) n0,
+                       I f1, DistanceType(I) n1, R r,
+                       I& f0_0, DistanceType(I)& n0_0,
+                       I& f0_1, DistanceType(I)& n0_1,
+                       I& f1_0, DistanceType(I)& n1_0,
+                       I& f1_1, DistanceType(I)& n1_1)
+{
+    // Precondition: mergeable(f0, n0, f1, n1, r)
+    f0_0 = f0;
+    n0_0 = half_nonnegative(n0);
+    f0_1 = f0 + n0_0;
+    f1_1 = my_lower_bound_n(f1, n1, source(f0_1), r);
+    f1_0 = rotate_dispatch(f0_1, f1, f1_1);
+    n0_1 = f1_0 - f0_1;
+    f1_0 = successor(f1_0);
+    n1_0 = predecessor(n0 - n0_0);
+    n1_1 = n1 - n0_1;
+}
+
+template<typename I, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        Relation(R) &&
+        ValueType(I) == Domain(R))
+void my_merge_n_step_1(I f0, DistanceType(I) n0,
+                       I f1, DistanceType(I) n1, R r,
+                       I& f0_0, DistanceType(I)& n0_0,
+                       I& f0_1, DistanceType(I)& n0_1,
+                       I& f1_0, DistanceType(I)& n1_0,
+                       I& f1_1, DistanceType(I)& n1_1)
+{
+    // Precondition: mergeable(f0, n0, f1, n1, r)
+    f0_0 = f0;
+    n0_1 = half_nonnegative(n1);
+    f1_1 = f1 + n0_1;
+    f0_1 = my_upper_bound_n(f0, n0, source(f1_1), r);
+    f1_1 = successor(f1_1);
+    f1_0 = rotate_dispatch(f0_1, f1, f1_1);
+    n0_0 = f0_1 - f0_0;
+    n1_0 = n0 - n0_0;
+    n1_1 = predecessor(n1 - n0_1);
+}
+
+template<typename I, typename B, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        Relation(R) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(R))
+I my_merge_n_adaptive(I f0, DistanceType(I) n0,
+                      I f1, DistanceType(I) n1,
+                      B f_b, DistanceType(B) n_b,
+                      R r)
+{
+    // Preconditions:
+    //     mergeable(f0, n0, f1, n1, r)
+    //     mutable_counted_range(f_b, n_b)
+    typedef DistanceType(I) N;
+    if (zero(n0) || zero(n1)) return f0 + n0 + n1;
+    if (n0 <= n_b)
+        return my_merge_n_with_buffer(f0, n0, f1, n1, f_b, r);
+    I f0_0; I f0_1; I f1_0; I f1_1;
+    N n0_0; N n0_1; N n1_0; N n1_1;
+    if (n0 < n1) my_merge_n_step_0(f0, n0, f1, n1, r,
+                                   f0_0, n0_0, f0_1, n0_1,
+                                   f1_0, n1_0, f1_1, n1_1);
+    else         my_merge_n_step_1(f0, n0, f1, n1, r,
+                                   f0_0, n0_0, f0_1, n0_1,
+                                   f1_0, n1_0, f1_1, n1_1);
+           my_merge_n_adaptive(f0_0, n0_0, f0_1, n0_1, f_b, n_b, r);
+    return my_merge_n_adaptive(f1_0, n1_0, f1_1, n1_1, f_b, n_b, r);
+}
+
+template<typename I, typename B, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        Relation(R) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(R))
+I my_sort_n_adaptive(I f, DistanceType(I) n,
+                     B f_b, DistanceType(B) n_b, R r)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    //     weak_ordering(r)
+    //     mutable_counted_range(f_b, n_b)
+    typedef DistanceType(I) N;
+    if (n == N(0)) return f;
+    if (n == N(1)) return successor(f);
+    N h = half_nonnegative(n);
+    I m = my_sort_n_adaptive(f, h,     f_b, n_b, r);
+          my_sort_n_adaptive(m, n - h, f_b, n_b, r);
+    return my_merge_n_adaptive(f, h, m, n - h, f_b, n_b, r);
+}
+
+template<typename I, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Relation(R) &&
+        ValueType(I) == Domain(R))
+I my_sort_n(I f, DistanceType(I) n, R r)
+{
+    // Preconditions:
+    //     mutable_counted_range(f, n)
+    //     weak_ordering(r)
+    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer< ValueType(I) >(n);
+    I l = my_sort_n_adaptive(f, n, b.first, b.second, r);
+    return_temporary_buffer(b.first);
+    return l;
+}
+
 // Scratch work
 
 template<typename Op>

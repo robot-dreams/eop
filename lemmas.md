@@ -1194,3 +1194,45 @@ Calling combine_ranges will rotate [x0, y0) around x1 and return the new positio
     [x1, y0) ++ [x0, x1) ++ [y0, y1)
 
 Thus z0 is the new position of x1 and z1 is the old position of y1, and the value at x0 is the old value at x1.  Since the values in the new range [x0, z0) are the values in the old range [x1, y0) and none(x1, y0, p) holds for the old range, it follows that none(x0, z0, p) holds for the new range.  Since the values in the new range [z0, z1) are the combined values of the two old ranges [x0, x1) and [y0, y1), and since all(x0, x1, p) and all(y0, y1, p) hold, it follows that all(z0, z1, p) holds for the new range.
+
+**Lemma 11.14** The postcondition for sort_n_with_buffer is increasing_counted_range(f, n, r).
+**Proof.** We proceed by induction on n.  If n = 0 or n = 1 then the claim trivially holds.  Suppose n > 1 and the claim holds for m < n.  By the inductive hypothesis the following conditions hold immediately before the call of merge_n_with_buffer:
+    increasing_counted_range(f, h, r)
+    increasing_counted_range(m, n - h, r)
+Furthermore, the preconditions ensure that the following conditions also hold:
+    mutable_counted_range(f, h + (n - h), r)
+    weak_ordering(r)
+    mutable_counted_range(f_b, h)
+Thus the preconditions for merge_n_with_buffer are satisfied, and by Lemma 11.12, increasing_counted_range(f, h + (n - h), r) holds when sort_n_with_buffer returns.
+
+**Lemma 11.15** sort_n_with_buffer is stable.
+**Proof.** We again proceed by induction.  If n = 0 or n = 1 then there is nothing to prove.  If n > 1, stability follows by the inductive hypothesis and stability of merge_n_with_buffer (Lemma 11.13).
+
+**Lemma 11.16** The rotate in merge_n_step_0 does not change the relative positions of elements with equivalent values.
+**Proof.** Lemma 10.23 implies that the rotation preserves relative orderings between elements within the two separate subranges [f0_1, f1) and [f1, f1_0).
+
+By definition of lower_bound_n, every element in [f1, f1_1) is strictly less than the element at source(f0_1).  Furthermore, the precondition mergeable(f0, n0, f1, n1, r) implies that every element in [f0_1, f1) is greater than or equal to the element at source(f0_1).  Thus before the rotation, every element in [f0_1, f1) is greater than every element in [f1, f1_0), so there are no equivalent values between the two subranges.
+
+**Lemma 11.17** After merge_n_step_0, predecessor(f1_0) is a pivot.
+**Proof.** Note the following:
+
+    [f0, f1) is an increasing range, so every element in [f0_0, f0_1) has a value less than or equal to the value originally at f0_1
+    [[f1, n1|) is an increasing range, so if f1_1 = lower_bound_n(f1, n1, r) then every element in [[f1_1, n1_1|) has a value greater than or equal to the value originally at f0_1
+    [f0, f1) is an increasing range, so before the rotation, every element in [f0_1, f1) has a value greater than or equal to the value originally at f0_1
+    [[f1, n1|) is an increasing range, so before the rotation, every element in [f1, f1_1) has a value strictly less than the value originally at f0_1
+    After the rotation, the new value at f1_0 is the value originally at f0_1
+    After the rotation, the new values in [f0_1, f1_0) are the old values in [f1, f1_1)
+    After the rotation, the new values in [f1_0, f1_1) are the old values in [f0_1, f1)
+
+Combining all of these results, it follows that the value at f1_0 immediately after the rotation is a pivot; since merge_n_step_0 sets f1_0 to its successor before returning, we conclude that after merge_n_step_0 returns, predecessor(f1_0) is a pivot.
+
+**Lemma 11.18** merge_n_adaptive terminates with an increasing range.
+**Proof.** This follows by induction and Lemma 11.17 (after the call to merge_n_step, predecessor(f1_0) is a pivot).
+
+**Lemma 11.19** merge_n_adaptive is stable.
+**Proof.** This follows by induction and Lemma 11.16 (note that the rotate is the only statement in merge_n_step that may rearrange values).
+
+**Lemma 11.20** There are at most floor(lg(min(n0, n1))) + 1 recursive levels.
+**Proof.** We will consider the case of an empty buffer (a non-empty buffer can only cause there to be fewer recursive levels).    If min(n0, n1) = n1, then after merge_n_step_1, both n0_1 and n1_1 will be at most n1 / 2.  Otherwise, after merge_n_step_0, both n0_0 and n1_0 will be at most n0 / 2.  Either way, the two recursive calls to merge_n_adaptive with new values n0', n1' satisfy min(n0', n1') < min(n0, n1) / 2.
+
+Note that if either n0 = 1 or n1 = 1, then both recursive calls to merge_n_adaptive will return immediately, which establishes the base case (1 recursive level if min(n0, n1) = 1).  Otherwise, there is one more recursive level than the case of min(n0, n1) / 2, thus by the inductive hypothesis, 1 + floor(lg(min(n0, n1) / 2)) + 1 = 1 + floor(lg(min(n0, n1)) - 1) + 1 = floor(lg(min(n0, n1))) + 1.
