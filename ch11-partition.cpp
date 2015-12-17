@@ -942,28 +942,22 @@ void print(T x)
     cout << x << " ";
 }
 
+template<typename T>
+struct input_type<less<T>, 0>
+{
+    typedef T type;
+};
+
 int main() {
-
-    int n = 100;
-
-    /*
-    typedef link_node<int>* I;
-    typedef link_node_forward_linker<int> S;
-
-    pair<I, I> p = new_linked_list(n, 1, 1);
-    I x = p.first;
-
-    pair<I, I> q = new_linked_list(n, 0, 0);
-    I y = q.first;
-    */
+    clock_t start;
+    clock_t stop;
+    int n = 100000;
 
     int* x = new_array_list(n, 1, 1);
-    int* y = new_array_list(n, 0, 0);
-    my_for_each(x, x + n, print<int>); cout << endl;
-    // my_partition_stable_n_iterative_with_temporary_buffer(x, n, even<int>);
-    // my_partition_stable_n(x, n, even<int>);
-    my_reverse_n_iterative_with_temporary_buffer(x, n);
-    // my_reverse_n_forward(x, n);
-    my_for_each(x, x + n, print<int>); cout << endl;
-
+    for (int i = 0; i < n; ++i) x[i] = rand();
+    start = clock();
+    sort(x, x + n, less<int>());
+    stop = clock();
+    cout << stop - start << endl;
+    delete[] x;
 }

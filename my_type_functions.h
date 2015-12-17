@@ -191,28 +191,28 @@ struct value_type< T* > {
 
 template<typename T>
     requires(Regular(T))
-ValueType(T) source(T x)
+const T& source(const T& x)
 {
     return x;
 }
 
 template<typename T>
     requires(Regular(ValueType(T)))
-ValueType(T*) source(T* x)
+const T& source(T* x)
 {
     return *x;
 }
 
 template<typename T>
     requires(Regular(T))
-ValueType(T)& sink(T& x)
+T& sink(T& x)
 {
     return x;
 }
 
 template<typename T>
     requires(Regular(T))
-ValueType(T)& sink(T* x)
+T& sink(T* x)
 {
     return *x;
 }
@@ -263,14 +263,16 @@ struct triple
 };
 
 template<typename T0, typename T1, typename T2>
-    requires(Regular(T0), Regular(T1), Regular(T2))
+    requires(Regular(T0) && Regular(T1) && Regular(T2))
 bool operator==(const triple<T0, T1, T2>& x, const triple<T0, T1, T2>& y)
 {
     return x.m0 == y.m0 && x.m1 == y.m1 && x.m2 == y.m2;
 }
 
 template<typename T0, typename T1, typename T2>
-    requires(Regular(T0), Regular(T1), Regular(T2))
+    requires(TotalOrdering(T0) &&
+        TotalOrdering(T1) &&
+        TotalOrdering(T2))
 bool operator<(const triple<T0, T1, T2>& x, const triple<T0, T1, T2>& y)
 {
     return x.m0 < y.m0 ||

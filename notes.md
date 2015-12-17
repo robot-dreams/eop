@@ -30,6 +30,7 @@ Lemma 11.12
 Lemma 11.13
 Mechanism for tracing assignments and comparisons
 Fix linked list iterator type so that arithmetic works
+What is an “output-restricted” deque?
 
 ## Questions
 
@@ -62,6 +63,8 @@ In linker_to_tail, why don't we need the precondition that successor(t) is defin
     Sharing proper tails can save memory, but would also lead to strange behavior (i.e. changing one iterator's source value can change the outcome of seemingly unrelated traversals)
 Is there a stable way to partition a range of n elements using 2n + 1 assignments?
 How can the iterative version do up to a linear amount of extra work, and what does that even mean (page 202)?
+Exercise 12.1: is the implementation of less any different from operator<?
+How would make “requires” serve as more than just documentation?
 
 ## Definitions
 
@@ -1042,3 +1045,45 @@ A partition rearrangement is **semistable** if the relative order of elements no
 A merge is **stable** if the output range preserves the relative order of equivalent elements both within each input range and between the first and second input range
 A sorting algorithm is **stable** if it preserves the relative order of elements with equivalent values
 An iterator i in a range is a **pivot** if its value is not smaller than any value preceding it and not larger than any value following it
+
+    Linearizable(W) :=
+        Regular(W)
+      ^ IteratorType: Linearizable -> Iterator
+      ^ ValueType: Linearizable -> Regular
+            W |-> ValueType(IteratorType(W))
+      ^ SizeType: Linearizable -> Integer
+            W |-> DistanceType(IteratorType(W))
+      ^ begin: W -> IteratorType(W)
+      ^ end: W -> IteratorType(W)
+      ^ size: W -> SizeType(W)
+            x |-> end(x) - begin(x)
+      ^ empty: W -> bool
+            x |-> begin(x) == end(x)
+      ^ []: W x SizeType(W) -> ValueType(W)&
+            (w, i) |-> deref(begin(x) + i)
+
+A **container** is a sequence that owns its elements; a linearizable type is not necessarily a container
+An object is a **composite object** if it is made up of other objects, called its **parts**; the whole-part relationship satisfies the following properties:
+    (1) **connectedness**: an object has an affiliated coordinate structure that allows every part of the object to be reached from the object’s starting address
+    (2) **noncircularity**: an object is not a subpart of itself, where **subparts** of an object are its parts and subparts of its parts
+    (3) **disjointness** means that if two objects have a subpart in common, one of the two is a subpart of another
+    (4) **ownership** means that copying an object copies its parts, and destroying an object destroys its parts
+[Note that B might be reachable from A’s starting address even though B is not a subpart of A]
+A composite object is **dynamic** if the set of its parts could change over its lifetime
+
+    Sequence(S) :=
+        Linearizable(S)
+      ^ (forall s in S) (forall i in [begin(s), end(s)))
+            deref(i) is a part of s
+      ^ =: S x S -> bool
+            (s, s’) |-> lexicographical_equal(begin(s), end(s), begin(s’), end(s’))
+      ^ <: S x S -> bool
+            (s, s’) |-> lexicographical_less(begin(s), end(s), begin(s’), end(s’))
+
+    property(I: Readable, F: UnaryFunction)
+        requires(Domain(F) = I)
+    projection_regular_function: F
+        f |-> (forall i, j in I) source(i) = source(j) implies f(i) = f(j)
+
+A part is **remote** if it does not reside at a constant offset from the address of an object but must be reached via a traversal of the object’s coordinate structure starting at its **header**
+The header of a composite object is the collection of its **local** parts

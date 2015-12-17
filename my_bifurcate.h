@@ -493,7 +493,7 @@ template<typename I0, typename I1, typename R>
         Readable(I1) && BoundedRange(I1) &&
         ValueType(I0) == ValueType(i1) &&
         Relation(R) && ValueType(I0) == Domain(R))
-bool lexicographical_equivalent(I0 f0, I0 l0, I1 f1, I1 l1, R r)
+bool my_lexicographical_equivalent(I0 f0, I0 l0, I1 f1, I1 l1, R r)
 {
     // Preconditions:
     //     readable_bounded_range(f0, l0)
@@ -517,12 +517,12 @@ template<typename I0, typename I1>
     requires(Readable(I0) && Iterator(I0) &&
         Readable(I1) && BoundedRange(I1) &&
         ValueType(I0) == ValueType(i1))
-bool lexicographical_equal(I0 f0, I0 l0, I1 f1, I1 l1)
+bool my_lexicographical_equal(I0 f0, I0 l0, I1 f1, I1 l1)
 {
     // Preconditions:
     //     readable_bounded_range(f0, l0)
     //     readable_bounded_range(f1, l1)
-    return lexicographical_equivalent(f0, l0, f1, l1, my_equal< ValueType(I0) >());
+    return my_lexicographical_equivalent(f0, l0, f1, l1, my_equal< ValueType(I0) >());
 }
 
 template<typename C0, typename C1, typename R>
