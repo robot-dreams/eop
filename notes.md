@@ -25,6 +25,7 @@ What’s an example of an ordering-based arrangement?
 Lemma 10.18
 Clarify axioms for arithmetic between iterators and integers
 [DONE] *Lemma 10.26
+Add versions of reduce (my_iterator.h, plus my_reduce_balanced) that don’t take that god damn “fun” parameter
 
 ## Questions
 
@@ -56,6 +57,7 @@ In linker_to_tail, why don't we need the precondition that successor(t) is defin
 [DONE] What's meant by "to avoid sharing of proper tails"?
     Sharing proper tails can save memory, but would also lead to strange behavior (i.e. changing one iterator's source value can change the outcome of seemingly unrelated traversals)
 Is there a stable way to partition a range of n elements using 2n + 1 assignments?
+How can the iterative version do up to a linear amount of extra work, and what does that even mean (page 202)?
 
 ## Definitions
 

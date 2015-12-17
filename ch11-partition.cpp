@@ -1,7 +1,9 @@
 #include <iostream>
+#include <stack>
 #include "my_copy.h"
 #include "my_integer.h"
 #include "my_intrinsics.h"
+#include "my_iterator.h"
 #include "my_link.h"
 #include "my_rearrangement.h"
 #include "my_type_functions.h"
@@ -45,7 +47,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && I == Domain(P))
 I potential_partition_point(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     I i = f;
     while (f != l) {
@@ -60,7 +62,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I potential_partition_point_source(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     predicate_source<I, P> ps(p);
     return potential_partition_point(f, l, ps);
@@ -71,7 +73,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_semistable(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     I i = my_find_if(f, l, p);
     if (i == l) return i;
@@ -92,7 +94,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_semistable_2(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     I i = my_find_if(f, l, p);
     if (i == l) return i;
@@ -117,7 +119,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_remove_if(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     I i = my_find_if(f, l, p);
     // In the case i == l, postcondition (1) is trivially satisfied
@@ -165,7 +167,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 void my_partition_semistable_3(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     if (f == l) return;
     I i = f;
@@ -189,7 +191,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_bidirectional(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     while (true) {
         f = my_find_if(f, l, p);
@@ -208,7 +210,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_forward(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     I m = potential_partition_point_source(f, l, p);
     while (true) {
@@ -232,7 +234,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_bidirectional_single_cycle(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     f = my_find_if(f, l, p);
     if (f == l) return f;
@@ -251,7 +253,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_forward_single_cycle(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     I m = potential_partition_point_source(f, l, p);
     if (m == f) return f;
@@ -280,7 +282,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_bidirectional_unguarded(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     f = my_find_if(f, l, p);
     l = my_find_backward_if_not(f, l, p);
@@ -306,7 +308,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 I my_partition_bidirectional_single_cycle_unguarded(I f, I l, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_bounded_range(f, l)
     f = my_find_if(f, l, p);
     l = my_find_backward_if_not(f, l, p);
@@ -359,7 +361,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 pair<I, I> my_partition_stable_singleton(I f, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     readable_bounded_range(f, successor(f))
     I l = successor(f);
     if (!p(source(f))) f = l;
@@ -395,7 +397,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 pair<I, I> my_partition_stable_n(I f, DistanceType(I) n, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_counted_range(f, n)
     if (zero(n)) return pair<I, I>(f, f);
     return my_partition_stable_n_nonempty(f, n, p);
@@ -455,7 +457,7 @@ template<typename I, typename P>
         UnaryPredicate(P) && ValueType(I) == Domain(P))
 pair<I, I> my_partition_stable_n_with_temporary_buffer(I f, DistanceType(I) n, P p)
 {
-    // Preconditions:
+    // Precondition:
     //     mutable_counted_range(f, n)
     if (zero(n)) return pair<I, I>(f, f);
     if (one(n))  return my_partition_stable_singleton(f, p);
@@ -469,6 +471,203 @@ pair<I, I> my_partition_stable_n_with_temporary_buffer(I f, DistanceType(I) n, P
 // End Exercise 11.10
 /////
 
+template<typename I, typename P>
+    requires(Readable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+struct my_partition_trivial
+{
+    P p;
+    my_partition_trivial(P p) : p(p) {}
+    pair<I, I> operator()(I i)
+    {
+        return my_partition_stable_singleton<I, P>(i, p);
+    }
+};
+
+template<typename I, typename P>
+    requires(ForwardIterator(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+I my_partition_stable_iterative(I f, I l, P p)
+{
+    // Precondition:
+    //     bounded_range(f, l)
+    //     l - f < 2^64
+    return my_reduce_balanced(f,
+                              l,
+                              my_combine_ranges<I>,
+                              my_partition_trivial<I, P>(p),
+                              pair<I, I>(f, f)).first;
+}
+
+template<typename I, typename P>
+    requires(ForwardIterator(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+I my_partition_stable_iterative_n(I f, DistanceType(I) n, P p)
+{
+    // Precondition:
+    //     counted_range(f, l)
+    //     n < 2^64
+    return my_reduce_balanced_n(f,
+                                n,
+                                my_combine_ranges<I>,
+                                my_partition_trivial<I, P>(p),
+                                pair<I, I>(f, f)).first;
+}
+
+// Scratch work
+
+template<typename Op>
+    requires(BinaryOperation(Op))
+struct my_counter_machine_2
+{
+    typedef Domain(Op) T;
+    Op op;
+    T z;
+    T f[64];
+    T* l;
+    my_counter_machine_2(Op op, const T& z) : op(op), z(z)
+    {
+        fill(begin(f), end(f), z);
+        l = f;
+    }
+    void add(T x)
+    {
+        T* i = f;
+        while (i != l) {
+            if (source(i) == z) {
+                sink(i) = x;
+                return;
+            }
+            x = op(source(i), x);
+            sink(i) = z;
+            i = successor(i);
+        }
+        sink(i) = x;
+        l = successor(l);
+    }
+    T combine()
+    {
+        T x = z;
+        T* i = l;
+        while (i != f) {
+            i = predecessor(i);
+            if (source(i) != z) x = op(x, source(i));
+        }
+        return x;
+    }
+};
+
+template<typename I, typename Op, typename F>
+    requires(Readable(I) && ForwardIterator(I) &&
+        BinaryOperation(Op) && UnaryFunction(F) &&
+        I == Domain(F) && Domain(Op) == Codomain(F))
+Domain(Op) my_reduce_balanced_2(I f, I l, Op op, F fun, const Domain(Op)& z)
+{
+    my_counter_machine_2<Op> m(op, z);
+    while (f != l) {
+        m.add(fun(f));
+        f = successor(f);
+    }
+    return m.combine();
+}
+
+template<typename I>
+    requires(ForwardIterator(I))
+struct my_partition_weighted_range
+{
+    typedef pair<I, I> T;
+    stack<pair<T, int> > elements;
+    my_partition_weighted_range(T x, int weight = 1)
+    {
+        elements.push(pair<T, int>(x, weight));
+    }
+    T combine()
+    {
+        while (elements.size() > 1) {
+            pair<T, int> p_y = elements.top();
+            elements.pop();
+            pair<T, int> p_x = elements.top();
+            elements.pop();
+            elements.push(pair<T, int>(my_combine_ranges(p_x.first, p_y.first),
+                                       p_x.second + p_y.second));
+        }
+        return elements.top().first;
+    }
+    void adjoin(T y)
+    {
+        int weight = 1;
+        while (!elements.empty() && weight == elements.top().second) {
+            pair<T, int> p_x = elements.top();
+            elements.pop();
+            y = my_combine_ranges(p_x.first, y);
+            weight = twice(weight);
+        }
+        elements.push(pair<T, int>(y, weight));
+    }
+};
+
+template<typename I, typename P>
+    requires(Readable(I) && UnaryPredicate(P) &&
+        ValueType(I) == Domain(P))
+struct my_partition_trivial_2
+{
+    P p;
+    my_partition_trivial_2(P p) : p(p) {}
+    my_partition_weighted_range<I> operator()(I f)
+    {
+        // Precondition:
+        //     mutable_bounded_range(f, successor(f))
+        I l = successor(f);
+        if (!p(source(f))) f = l;
+        return my_partition_weighted_range<I>(pair<I, I>(f, l));
+    }
+};
+
+template<typename I>
+    requires(ForwardIterator(I))
+my_partition_weighted_range<I>
+my_combine_weighted_ranges(my_partition_weighted_range<I> x,
+                           my_partition_weighted_range<I> y)
+{
+    pair<I, I> p = y.combine();
+    x.adjoin(p);
+    return x;
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_reduce_0(I f, I l, P p)
+{
+    // Precondition:
+    //     mutable_bounded_range(f, l)
+    if (f == l) return pair<I, I>(f, f);
+    return my_reduce_nonempty(f,
+                              l,
+                              my_combine_weighted_ranges<I>,
+                              my_partition_trivial_2<I, P>(p)).combine();
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+pair<I, I> my_partition_stable_reduce_1(I f, I l, P p)
+{
+    // Precondition:
+    //     mutable_bounded_range(f, l)
+    return my_reduce_balanced(f,
+                              l,
+                              my_combine_ranges<I>,
+                              my_partition_trivial<I, P>(p),
+                              pair<I, I>(f, f));
+}
+
+template<typename T>
+struct input_type<plus<T>, 0>
+{
+    typedef T type;
+};
+
 template<typename T>
 void print(T x)
 {
@@ -477,22 +676,19 @@ void print(T x)
 
 int main() {
     typedef link_node<int>* I;
-    int n = 100;
+    typedef link_node_forward_linker<int> S;
 
-    // pair<I, I> p = new_linked_list(n, 1, 1);
-    // I x = p.first;
-    int* x = new_array_list(n, 1, 1);
-    int* y = new int[n];
+    int n = 1000000;
 
-    /*
-    cout << boolalpha << my_partitioned_at_point_source(x, x + n, x + 5, even<int>) << endl;
-    cout << boolalpha << my_partitioned_at_point_source(x, x + n, x + 5, bind2nd(greater<int>(), 5)) << endl;
-    */
+    pair<I, I> p = new_linked_list(n, 1, 1);
+    I x = p.first;
 
-    my_for_each_n(x, n, print<int>); cout << endl;
-    my_partition_stable_n_with_temporary_buffer(x, n, even<int>);
-    my_for_each_n(x, n, print<int>); cout << endl;
+    pair<I, I> q = new_linked_list(n, 0, 0);
+    I y = q.first;
 
-    delete [] x;
-    delete [] y;
+    // my_for_each(x, p.second, print<int>); cout << endl;
+    my_reverse_n_adaptive_iterative(x, n, y, n);
+    // my_reverse_n_forward(x, n);
+    // my_for_each(x, p.second, print<int>); cout << endl;
+
 }
