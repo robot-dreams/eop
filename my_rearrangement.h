@@ -283,10 +283,11 @@ template<typename I>
 I my_reverse_n_forward(I f, DistanceType(I) n)
 {
     typedef DistanceType(I) N;
-    if (n < N(2)) return f + n;
+    if (n == N(0)) return f;
+    if (n == N(1)) return successor(f);
     N h = half_nonnegative(n);
-    N n_mod_2 = n - twice(h);
-    I m = my_reverse_n_forward(f, h) + n_mod_2;
+    I m = my_reverse_n_forward(f, h);
+    if (odd(n)) m = successor(m);
     I l = my_reverse_n_forward(m, h);
     my_swap_ranges_n(f, m, h);
     return l;
@@ -302,13 +303,12 @@ I my_reverse_n_adaptive(I f_i, DistanceType(I) n_i, B f_b, DistanceType(B) n_b)
     //     mutable_counted_range(f_i, n_i)
     //     mutable_counted_range(b_b, n_b)
     typedef DistanceType(I) N;
-    if (n_i < N(2))
-        return f_i + n_i;
-    if (n_i <= n_b)
-        return my_reverse_n_with_buffer(f_i, n_i, f_b);
+    if (n_i == N(0)) return f_i;
+    if (n_i == N(1)) return successor(f_i);
+    if (n_i <= n_b)  return my_reverse_n_with_buffer(f_i, n_i, f_b);
     N h_i = half_nonnegative(n_i);
-    N n_mod_2 = n_i - twice(h_i);
-    I m_i = my_reverse_n_adaptive(f_i, h_i, f_b, n_b) + n_mod_2;
+    I m_i = my_reverse_n_adaptive(f_i, h_i, f_b, n_b);
+    if (odd(n_i)) m_i = successor(m_i);
     I l_i = my_reverse_n_adaptive(m_i, h_i, f_b, n_b);
     my_swap_ranges_n(f_i, m_i, h_i);
     return l_i;
