@@ -325,114 +325,6 @@ I my_reverse_n_with_temporary_buffer(I f, DistanceType(I) n)
     return l;
 }
 
-template<typename I, typename B>
-    requires(Mutable(I) && ForwardIterator(I) &&
-        Mutable(B) && BidirectionalIterator(B) &&
-        ValueType(I) == ValueType(B))
-struct my_reverse_n_buffer_adapter
-{
-    typedef DistanceType(I) N;
-    typedef DistanceType(B) N_b;
-    I f;
-    I l;
-    N n;
-    B f_b;
-    N_b n_b;
-    my_reverse_n_buffer_adapter(I f,
-                                N n,
-                                B f_b,
-                                N_b n_b) :
-        f(f), n(n), f_b(f_b), n_b(n_b)
-    {
-        l = my_reverse_n_with_buffer(f, min(n, n_b), f_b);
-    }
-    my_reverse_n_buffer_adapter successor() const
-    {
-        return my_reverse_n_buffer_adapter(l, max(N(n - n_b), N(0)), f_b, n_b);
-    }
-};
-
-template<typename I, typename B>
-    requires(Mutable(I) && ForwardIterator(I) &&
-        Mutable(B) && BidirectionalIterator(B) &&
-        ValueType(I) == ValueType(B))
-struct distance_type<my_reverse_n_buffer_adapter<I, B> >
-{
-    typedef unsigned long type;
-};
-
-template<typename I, typename B>
-    requires(Mutable(I) && ForwardIterator(I) &&
-        Mutable(B) && BidirectionalIterator(B) &&
-        ValueType(I) == ValueType(B))
-my_reverse_n_buffer_adapter<I, B> successor(const my_reverse_n_buffer_adapter<I, B>& x)
-{
-    return x.successor();
-}
-
-template<typename I, typename B>
-    requires(Mutable(I) && ForwardIterator(I) &&
-        Mutable(B) && BidirectionalIterator(B) &&
-        ValueType(I) == ValueType(B))
-struct my_reverse_n_trivial
-{
-    pair<I, I> operator()(const my_reverse_n_buffer_adapter<I, B>& x)
-    {
-        return pair<I, I>(x.f, x.l);
-    }
-};
-
-template<typename I>
-    requires(Mutable(I) && ForwardIterator(I))
-struct my_reverse_n_op
-{
-    typedef pair<I, I> T;
-    T operator()(const T& x, const T& y)
-    {
-        assert(x.second == y.first);
-        rotate_dispatch(x.first, x.second, y.second);
-        return T(x.first, y.second);
-    }
-};
-
-template<typename I>
-    requires(Mutable(I) && ForwardIterator(I))
-struct input_type<my_reverse_n_op<I>, 0>
-{
-    typedef pair<I, I> type;
-};
-
-template<typename I, typename B>
-    requires(Mutable(I) && ForwardIterator(I) &&
-        Mutable(B) && BidirectionalIterator(B) &&
-        ValueType(I) == ValueType(B))
-I my_reverse_n_adaptive_iterative(I f_i, DistanceType(I) n_i, B f_b, DistanceType(B) n_b)
-{
-    // Preconditions:
-    //     mutable_counted_range(f_i, n_i)
-    //     mutable_counted_range(b_b, n_b)
-    typedef DistanceType(I) N;
-    if (n_i == N(0)) return f_i;
-    if (n_i == N(1)) return successor(f_i);
-    if (n_i <= n_b)  return my_reverse_n_with_buffer(f_i, n_i, f_b);
-    my_reverse_n_buffer_adapter<I, B> x(f_i, n_i, f_b, n_b);
-    return my_reduce_balanced_n(x,
-                                (n_i + (n_b - 1)) / n_b,
-                                my_reverse_n_op<I>(),
-                                my_reverse_n_trivial<I, B>(),
-                                pair<I, I>(f_i, f_i)).second;
-}
-
-template<typename I>
-    requires(Mutable(I) && ForwardIterator(I))
-I my_reverse_n_iterative_with_temporary_buffer(I f, DistanceType(I) n)
-{
-    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer< ValueType(I) >(n);
-    I l = my_reverse_n_adaptive_iterative(f, n, b.first, b.second);
-    return_temporary_buffer(b.first);
-    return l;
-}
-
 template<typename I>
     requires(RandomAccessIterator(I))
 struct k_rotate_from_permutation_random_access
@@ -694,6 +586,117 @@ I rotate_nontrivial(I f, I m, I l, my_random_access_iterator_tag)
     //     mutable_bounded_range(f, l)
     //     f precedes m, m precedes l
     return rotate_random_access_nontrivial(f, m, l);
+}
+
+template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        ValueType(I) == ValueType(B))
+struct my_reverse_n_buffer_adapter
+{
+    typedef DistanceType(I) N;
+    typedef DistanceType(B) N_b;
+    I f;
+    I l;
+    N n;
+    B f_b;
+    N_b n_b;
+    my_reverse_n_buffer_adapter(I f,
+                                N n,
+                                B f_b,
+                                N_b n_b) :
+        f(f), n(n), f_b(f_b), n_b(n_b)
+    {
+        l = my_reverse_n_with_buffer(f, min(N(n), N(n_b)), f_b);
+    }
+    my_reverse_n_buffer_adapter successor() const
+    {
+        return my_reverse_n_buffer_adapter(l, max(N(n - n_b), N(0)), f_b, n_b);
+    }
+};
+
+template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        ValueType(I) == ValueType(B))
+struct distance_type<my_reverse_n_buffer_adapter<I, B> >
+{
+    typedef unsigned long type;
+};
+
+template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        ValueType(I) == ValueType(B))
+my_reverse_n_buffer_adapter<I, B> successor(const my_reverse_n_buffer_adapter<I, B>& x)
+{
+    return x.successor();
+}
+
+template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        ValueType(I) == ValueType(B))
+struct my_reverse_n_buffered_trivial
+{
+    pair<I, I> operator()(const my_reverse_n_buffer_adapter<I, B>& x)
+    {
+        return pair<I, I>(x.f, x.l);
+    }
+};
+
+template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+struct my_reverse_n_buffered_op
+{
+    typedef pair<I, I> T;
+    T operator()(const T& x, const T& y)
+    {
+        assert(x.second == y.first);
+        rotate_dispatch(x.first, x.second, y.second);
+        return T(x.first, y.second);
+    }
+};
+
+template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+struct input_type<my_reverse_n_buffered_op<I>, 0>
+{
+    typedef pair<I, I> type;
+};
+
+template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        ValueType(I) == ValueType(B))
+I my_reverse_n_adaptive_iterative(I f_i, DistanceType(I) n_i, B f_b, DistanceType(B) n_b)
+{
+    // Preconditions:
+    //     mutable_counted_range(f_i, n_i)
+    //     mutable_counted_range(b_b, n_b)
+    typedef DistanceType(I) N;
+    if (n_i == N(0)) return f_i;
+    if (n_i == N(1)) return successor(f_i);
+    if (n_i <= n_b)  return my_reverse_n_with_buffer(f_i, n_i, f_b);
+    return my_reduce_balanced_n(my_reverse_n_buffer_adapter<I, B>(
+                                            f_i,
+                                            n_i,
+                                            f_b,
+                                            n_b),
+                                (n_i + (n_b - 1)) / n_b,
+                                my_reverse_n_buffered_op<I>(),
+                                my_reverse_n_buffered_trivial<I, B>(),
+                                pair<I, I>(f_i, f_i)).second;
+}
+
+template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+I my_reverse_n_iterative_with_temporary_buffer(I f, DistanceType(I) n)
+{
+    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer< ValueType(I) >(n);
+    I l = my_reverse_n_adaptive_iterative(f, n, b.first, b.second);
+    return_temporary_buffer(b.first);
+    return l;
 }
 
 #endif

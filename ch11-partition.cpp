@@ -502,7 +502,7 @@ I my_partition_stable_iterative(I f, I l, P p)
 template<typename I, typename P>
     requires(ForwardIterator(I) && UnaryPredicate(P) &&
         ValueType(I) == Domain(P))
-I my_partition_stable_iterative_n(I f, DistanceType(I) n, P p)
+I my_partition_stable_n_iterative(I f, DistanceType(I) n, P p)
 {
     // Precondition:
     //     counted_range(f, l)
@@ -512,6 +512,122 @@ I my_partition_stable_iterative_n(I f, DistanceType(I) n, P p)
                                 my_combine_ranges<I>,
                                 my_partition_trivial<I, P>(p),
                                 pair<I, I>(f, f)).first;
+}
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        UnaryPredicate(P) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(P))
+struct my_partition_n_buffer_adapter
+{
+    typedef DistanceType(I) N;
+    typedef DistanceType(B) N_b;
+    I f;
+    pair<I, I> x;
+    N n;
+    B f_b;
+    N_b n_b;
+    P p;
+    my_partition_n_buffer_adapter(I f,
+                                N n,
+                                B f_b,
+                                N_b n_b,
+                                P p) :
+        f(f), n(n), f_b(f_b), n_b(n_b), p(p)
+    {
+        x = my_partition_stable_n_with_buffer(f, min(N(n), N(n_b)), f_b, p);
+    }
+    my_partition_n_buffer_adapter successor() const
+    {
+        return my_partition_n_buffer_adapter(x.second,
+                                           max(N(n - n_b), N(0)),
+                                           f_b,
+                                           n_b,
+                                           p);
+    }
+};
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        UnaryPredicate(P) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(P))
+struct distance_type<my_partition_n_buffer_adapter<I, B, P> >
+{
+    typedef unsigned long type;
+};
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        UnaryPredicate(P) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(P))
+my_partition_n_buffer_adapter<I, B, P>
+successor(const my_partition_n_buffer_adapter<I, B, P>& x)
+{
+    return x.successor();
+}
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && BidirectionalIterator(B) &&
+        UnaryPredicate(P) &&
+        ValueType(I) == ValueType(B) &&
+        ValueType(I) == Domain(P))
+struct my_partition_n_buffered_trivial
+{
+    pair<I, I> operator()(const my_partition_n_buffer_adapter<I, B, P>& x)
+    {
+        return x.x;
+    }
+};
+
+template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        Mutable(B) && ForwardIterator(B) &&
+        ValueType(I) == ValueType(B) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_stable_n_adaptive_iterative(I f,
+                                           DistanceType(I) n,
+                                           B f_b,
+                                           DistanceType(B) n_b,
+                                           P p)
+{
+    // Precondition:
+    //     counted_range(f, n)
+    //     counted_range(f_b, n_b)
+    //     n < 2^64
+    return my_reduce_balanced_n(my_partition_n_buffer_adapter<I, B, P>(
+                                    f,
+                                    n,
+                                    f_b,
+                                    n_b,
+                                    p),
+                                (n + (n_b - 1)) / n_b,
+                                my_combine_ranges<I>,
+                                my_partition_n_buffered_trivial<I, B, P>(),
+                                pair<I, I>(f, f)).first;
+}
+
+template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+        UnaryPredicate(P) && ValueType(I) == Domain(P))
+I my_partition_stable_n_iterative_with_temporary_buffer(I f,
+                                                        DistanceType(I) n,
+                                                        P p)
+{
+    // Precondition:
+    //     counted_range(f, n)
+    //     counted_range(f_b, n_b)
+    //     n < 2^64
+    pair<ValueType(I)*, ptrdiff_t> b = get_temporary_buffer< ValueType(I) >(n);
+    I m_prime = my_partition_stable_n_adaptive_iterative(f, n, b.first, b.second, p);
+    return_temporary_buffer(b.first);
+    return m_prime;
 }
 
 // Scratch work
@@ -675,20 +791,27 @@ void print(T x)
 }
 
 int main() {
+
+    int n = 100;
+
+    /*
     typedef link_node<int>* I;
     typedef link_node_forward_linker<int> S;
-
-    int n = 1000000;
 
     pair<I, I> p = new_linked_list(n, 1, 1);
     I x = p.first;
 
     pair<I, I> q = new_linked_list(n, 0, 0);
     I y = q.first;
+    */
 
-    // my_for_each(x, p.second, print<int>); cout << endl;
-    my_reverse_n_adaptive_iterative(x, n, y, n);
+    int* x = new_array_list(n, 1, 1);
+    int* y = new_array_list(n, 0, 0);
+    my_for_each(x, x + n, print<int>); cout << endl;
+    // my_partition_stable_n_iterative_with_temporary_buffer(x, n, even<int>);
+    // my_partition_stable_n(x, n, even<int>);
+    my_reverse_n_iterative_with_temporary_buffer(x, n);
     // my_reverse_n_forward(x, n);
-    // my_for_each(x, p.second, print<int>); cout << endl;
+    my_for_each(x, x + n, print<int>); cout << endl;
 
 }
