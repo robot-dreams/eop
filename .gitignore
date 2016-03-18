@@ -1,3 +1,4 @@
 a.out*
 *.swp
 test*
+.DS_Store
