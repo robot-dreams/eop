@@ -2,8 +2,6 @@
 
 In December 2015 I spent 11 days working through the masterpiece "Elements of Programming" by Alexander Stepanov and Paul McJones.  This repository is the result of those 11 days.
 
-EOP is probably one of the two books (the other being SICP) that "saved" my programming career.  I was bored, fed up, stagnating, and just about ready to look for other fields, but working through EOP reminded me of how much I actually like programming.
-
 I've written up proofs to most of the lemmas stated in the text here:
 https://github.com/robot-dreams/eop/blob/master/lemmas.md
 
