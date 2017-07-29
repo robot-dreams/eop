@@ -192,6 +192,7 @@ Since 0 <= d < c and 0 <= r < c, we must have q - m = 1 (q - m < 1 would imply t
                 = a^{m+n}
 
 **Lemma 3.2** (a^n)^m = a^{nm}
+
 **Proof.** We consider only positive integers m and n, and we will proceed by induction on m + n.  If m + n = 2, then we must have m = n = 1, so (a^n)^m = (a^1)^1 = a, and a^{nm} = a^{1*1} = a^1 = a.  Now suppose the claim is true for m + n = k - 1, where k > 2, and consider the following cases:
 
 1. If m = 1, then
@@ -476,6 +477,7 @@ Next, we consider the case where b does not divide a.  If a and b are both posit
 **Proof.** Take any k in DistanceType(I) such that 0 <= k <= j.  Then 0 <= k <= i, so weak_range(f, i) implies that successor^k(f) is defined.
 
 **Lemma 6.2** (f + n) + m = f + (n + m)
+
 **Proof.** If n = 0, then f + n = f and n + m = m; thus (f + n) + m = f + m and f + (n + m) = f + m.  Consider n > 0, and suppose the claim is true for predecessor(n).  Then
 
     f + (n + m) = f + successor(predecessor(n) + m)
@@ -511,6 +513,7 @@ Next, we consider the case where b does not divide a.  If a and b are both posit
     (2) The size of a closed weak range [[f, n]] is n + 1
     (3) The size of a half-open bounded range [f, l) is l - f
     (4) The size of a closed bounded range [f, l] is (l - f) + 1
+
 **Proof.**
     (1) [[f, n|) is the sequence of iterators {successor^k(f) | 0 <= k < n}; since there are n values of k such that 0 <= k < n, the sequence has n terms.  Note that for a weak range that's not a counted range, even though the sequence of iterators has n terms, the set of iterators that appear in the sequence might have fewer than n elements.
     (2) [[f, n]] is the sequence of iterators {successor^k(f) | 0 <= k <= n}; since there are n + 1 values of k such that 0 <= k <= n, the sequence has n + 1 terms.
@@ -693,11 +696,16 @@ Given the condition “either h0 == l or for every adjacent pair of iterators i,
 **Proof.** We will begin by showing that it is a link rearrangement. The input ranges are pairwise disjoint by the precondition; there is only one output range, so we do not need to show that the output ranges are pairwise disjoint.  We will demonstrate conservation by the following sequence of lemmas.
 
   **Lemma 8.5.1** At any point in the procedure, f0 = successor^j(f0’) for some j, where f0’ is the original value of the argument f0.  Furthermore, if l0 = successor^k(f0’), then j <= k.  Similarly, at any point in the procedure, f1 = successor^j(f1’) for some j, where f1’ is the original value of the argument f1.  Furthermore, if l1 = successor^k(f1’), then j <= k.
+
   **Proof.** We will show that the condition holds initially, and that every statement preserves this condition.
   Initially, f0 = f0’, so the condition trivially holds.  The only statements that modify f0 are calls to advance_tail or link_tail with f0 as the second argument.  In this case, the call sets f0 = successor(f0); thus if f0 = successor^j{f0’} before the call, then f0 = successor^{j+1}(f0’) after the call.  Furthermore, note that advance_tail or link_tail is only called then f0 == l0 does not hold; thus j < k before the call, so j <= k after the call, and the entire condition still holds after the call.  The claim for f1 is handled analogously.
+
   **Lemma 8.5.2** In state s0, successor(t) = f0, and in state s1, successor(t) = f1.
+
   **Proof.** Both ‘goto s0’ statements follow a call to advance_tail(t, f0), which sets t = f0, f0 = successor(f0); thus the claim follows by regularity of successor.  The claim for s1 is handled analogously.
+
   **Lemma 8.5.3** At any point in the procedure, if h and t have been initialized, then every iterator in [h, t] appears in either [f0, l0) or [f1, l1).
+
   **Proof.** We will show that the condition holds initially, and that every block of statements (i.e. sequence of statements enclosed within curly braces) preserves the condition.
   Initially, h and t have not been initialized, so the condition trivially holds.  Note that h and t are initialized one of the first two blocks of the procedure, so for all subsequent blocks we can assume that h and t have been initialized.
    The block { h = f1; advance_tail(t, f1); goto s1; } sets [h, t] to the range with the single element f1, and the precondition f1 != l1 implies that this element appears in [f1’, l1).
@@ -706,24 +714,36 @@ Given the condition “either h0 == l or for every adjacent pair of iterators i,
   Similarly, the block { link_to_tail(t, f0); goto s0; } sets successor(t) to s0 and then sets t to f0; in particular, this extends the range [h, t] by the single element f0, and Lemma 8.5.1 implies that this new element appears in [f0’, l0).
   The block { advance_tail(t, f0); goto s0; } occurs in state s0, and Lemma 8.5.2 implies that successor(t) = f0 in this case; thus this block again extends the range [h, t] by the single element f0, and Lemma 8.5.1 again implies that this new element appears in [f0’, l0).
   Finally, the block { advance_tail(t, f1); goto s1; } occurs in state s1, and Lemma 8.5.2 implies that successor(t) = f1 in this case; thus this block again extends the range [h, t] by the single element f1, and Lemma 8.5.1 again implies that this new element appears in [f1’, l1).
+
   **Lemma 8.5.4** If the procedure returns (h, t, l), then every iterator in [h, l) appears in either [f0, l0) or [f1, l1).
+
   **Proof.** By Lemma 8.5.3, at the beginning of the s2 label, every iterator in [h, t] appears in either [f0, l0) or [f1, l1).    By Lemma 8.5.1, at the beginning of the s2 label, f1 = successor^j(f1’), where f1’ is the original value of the argument f1 and j <= k (where successor^k(f1’) = l1).  Thus after the call to set_link(t, f1), the range [h, l) contains the elements of [h, t] together with the elements successor^j(f1’), successor^{j+1}(f1’), …, successor^k(f1’), all of which appear in either [f0, l0) or [f1, l1).
   Similarly, by Lemma 8.5.3, at the beginning of the s3 label, every iterator in [h, t] appears in either [f0, l0) or [f1, l1).    By Lemma 8.5.1, at the beginning of the s3 label, f0 = successor^j(f0’), where f0’ is the original value of the argument f0 and j <= k (where successor^k(f0’) = l0).  Thus after the call to set_link(t, f0), the range [h, l) contains the elements of [h, t] together with the elements successor^j(f0’), successor^{j+1}(f0’), …, successor^k(f0’), all of which appear in either [f0, l0) or [f1, l1).
+
   **Lemma 8.5.5** At any point in the procedure, every element in [f0’, l0), [f1’, l1) appears in either [h, t], [f0, l0), or [f1, l1).
+
   **Proof.** Initially, f0 = f0’ and f1 = f1’, so the claim follows trivially.  Every subsequent statement that removes an element from [f0, l0) adds that same element to [h, t]; similarly, every subsequent statement that removes an element from [f1, l1) adds that same element to [h, t].
+
   **Lemma 8.5.6** If the procedure returns (h, t, l), then every iterator in [f0, l0) and [f1, l1) appears in [h, l).
+
   **Proof.** At s2, we have f0 == l0, so [f0, l0) is empty, and by Lemma 8.5.5, every iterator in [f0’, l0), [f1’, l1) appears in either [h, t] or [f1, l1).  Setting successor(t) to f1 and l to l1 results in a range [h, l) that contains every iterator in both [h, t] and [f1, l1), i.e. every iterator in [f0’, l0) and [f1’, l1).
   Similarly, at s3, we have f1 == l1, so [f1, l1) is empty, and by Lemma 8.5.5, every iterator in [f0’, l0), [f1’, l1) appears in either [h, t] or [f0, l0).  Setting successor(t) to f0 and l to l0 results in a range [h, l) that contains every iterator in both [h, t] and [f0, l0), i.e. every iterator in [f0’, l0) and [f1’, l1).
 
 Lemma 8.5.4 and Lemma 8.5.6 together demonstrate conservation.  Finally, we will show that the procedure is precedence-preserving.  By Lemma 8.5.1, at any point in the procedure, the iterators in [f0, l0) and [f1, l1) that appear in the original ranges [f0’, l0) and [f1’, l1) have the same precedence relations that they do in the original ranges.
+
   **Lemma 8.5.7** At s2, t precedes f1, and at s3, t precedes f0.
+
   **Proof.** This follows immediately from Lemma 8.5.2 and the fact that whenever successor is defined, an iterator precedes its successor.
+
   **Lemma 8.5.8** At any point in the procedure, any element of [h, t] that originally appeared in [f0’, l0) precedes f0.  Similarly, any element of [h, t] that originally appeared in [f1’, l1) precedes f1.
+
   **Proof.** We will prove this by showing that the claim holds initially, and that every block preserves this claim.
   Initially, h and t are uninitialized, so there is nothing to prove.
   The block { h = f1; advance_tail(t, f1); goto s1 } sets [h, t] to the singleton range containing f1’ and sets f1 to successor(f1’); since f1’ precedes successor(f1’), the claim holds.  Similarly, the block { h = f0; advance_tail(t, f0); goto s0 } sets [h, t] to the singleton range containing f0’ and sets f0 to successor(f0’); since f0’ precedes successor(f0’), the claim holds.
   Calling link_to_tail(t, f1) or advance_tail(t, f1) extends [h, t] by the element f1 and sets f1 to successor(f1).  By transitivity of the precedence relation and the fact that f1 precedes successor(f1), the claim still holds after one of these calls.  Similarly, calling link_to_tail(t, f0) or advance_tail(t, f0) extends [h, t] by the element f0 and sets f0 to successor(f0).  By transitivity of the precedence relation and the fact that f0 precedes successor(f0), the claim still holds after one of these calls.
+
   **Lemma 8.5.9** At any point in the procedure, if i precedes j in [h, t] and i, j both came from [f0’, l0), then i precedes j in [f0’, l0).  Similarly, at any point in the procedure, if i precedes j in [h, t] and i, j both came from [f1’, l1), then i precedes j in [f1’, l1).
+
   **Proof.** We will show that the claim is initially true, and that every statement preserves this claim.  Initially, h and t are uninitialized, so there is nothing to prove.  The blocks that start with h = f1 and h = f0 set [h, t] to a singleton range, so there is again nothing to prove.  Finally, by Lemma 8.5.8, any calls to advance_tail or link_to_tail preserve this claim.
 
 Suppose i precedes j in [h, ll) immediately before the return statement in s2.  If i and j are both in [f1, l1) then Lemma 8.5.1 implies that i precedes j in [f1’, l1).  If i and j are both in [h, t], then Lemma 8.5.9 implies that i precedes j in [f1’, l1).  Finally, if i is in [h, t] and j is in [f1, l1), then by Lemma 8.5.1, Lemma 8.5.7, and transitivity of precedence, i precedes j in [f1’, l1).  Similarly, suppose i precedes j in [h, l0) immediately before the return statement in s3.  If i and j are both in [f0, l0) then Lemma 8.5.1 implies that i precedes j in [f0’, l0).  If i and j are both in [h, t], then Lemma 8.5.9 implies that i precedes j in [f0’, l0).  Finally, if i is in [h, t] and j is in [f0, l0), then by Lemma 8.5.1, Lemma 8.5.7, and transitivity of precedence, i precedes j in [f0’, l0).
@@ -733,14 +753,22 @@ We conclude that combine_linked_nonempty is a precedence-preserving link rearran
 **Lemma 8.6** If [f0, l0) and [f1, l1) are nonempty increasing bounded ranges, their merge with merge_linked_nonempty is an increasing bounded range.
 
 **Proof.** We will proceed with another sequence of lemmas.
+
   **Lemma 8.6.1** Let f0’ be the original value of the argument f0 (i.e. before the procedure has performed any assignments to f0).  At the beginning of the label s0, t is an element of [f0’, l0), and at the beginning of the label s1, t is an element of [f1’, l1).
+
   **Proof.** Any ‘goto s0’ statement immediately follows either advance_tail(t, f0) or link_to_tail(t, f0); both advance_tail and link_to_tail, called with t as the first argument, have the effect of setting t to the second argument.  Lemma 8.5.1 implies that at any point in the procedure, f0 is an element of [f0’, l0), so the claim follows.  The case with s1 in place of s0 is handled analogously.
+
   **Lemma 8.6.2** If [f0, l0) and [f1, l1) are increasing, then in combine_linked_nonempty, [h, t] is always increasing.
+
   **Proof.** Above s0, either h and t are uninitialized, or [h, t] is a singleton, so there is nothing to prove.  Suppose [h, t] is increasing at the beginning of s0.  By Lemma 8.5.2, !r(f1, t), so link_to_tail(t, f1) will extend [h, t] by the element f1 and preserve the fact that [h, t] is increasing.  By Lemma 8.6.1, t is an element of [f0’, l0), and again by Lemma 8.5.2, successor(t) = f0; thus the assumption that [f0’, l0) is increasing implies that !r(f0, t), so advance_tail(t, f0) will extend [h, t] by the element f0 and preserve the fact that [h, t] is increasing.  Similarly, if [h, t] is increasing at the beginning of s0, then it is increasing at the end of s0.  No other statements in the procedure modify the range [h, t], so the proof is complete.
+
   **Lemma 8.6.3** If [f0, l0) and [f1, l1) are increasing, and if combine_linked_nonempty returns (h, t, l), then [h, l) is increasing.
+
   **Proof.** At the beginning of s2, [h, t] is increasing (by Lemma 8.6.2), t precedes f1 (by Lemma 8.5.7), and [f1, l1) is increasing (by Lemma 8.5.1 and the assumption that the [f1, l1) was increasing for the original value of f1).  We conclude that the combined range [h, l1) returned by the procedure is increasing.
   Similarly, at the beginning of s3, [h, t] is increasing (by Lemma 8.6.2), t precedes f0 (by Lemma 8.5.7), and [f0, l0) is increasing (by Lemma 8.5.1 and the assumption that the [f0, l0) was increasing for the original value of f0).  We conclude that the combined range [h, l0) returned by the procedure is increasing.
+
   **Lemma 8.6.4** If the preconditions to combine_linked_nonempty hold, and the procedure returns (h, t, l), then [h, l) is a bounded range.
+
   **Proof.** We will first show that any point in the procedure, if h and t are initialized then t = successor^j(h) for some nonnegative integer j.  Above the label s0, either h and t are uninitialized or h = t, so there is nothing to prove.  Let t0 be the value of t before a call to link_to_tail.  Then link_to_tail sets t to successor(t0), so after the link_to_tail call, t = successor^{j+1}(h).  Now let t0 be the value of t before a call to advance_tail; then Lemma 8.5.2 ensures that after the call, successor(t0) = t; thus after the advance_tail call, t = successor^{j+1}(h).
   Next, by Lemma 8.5.2, at the beginning of s2 we have l1 = successor^j(f0), so set_link(t, f1) along with the result of the previous paragraph shows that l1 = successor^k(h) for some nonnegative integer k.  Similarly, at the beginning of s3 we have l0 = successor^j(f0), so set_link(t, f0) along with the result of the previous paragraph shows that l0 = successor^k(h) for some nonnegative integer k.  We conclude that [h, l) is a bounded range.
 
@@ -749,15 +777,19 @@ Finally, Lemma 8.6.3, Lemma 8.6.4, and the definition of merge_linked_nonempty (
 **Lemma 8.7** If i0 in [f0, l0) and i1 in [f1, l1) are iterators whose values are equivalent under r, in the merge of these ranges with merge_linked_nonempty, i0 precedes i1.
 
 **Proof.** Consider the relation r’ that holds for two iterators i, j whenever r(i, j) holds, and also holds if i and j are equivalent under r but i is an element of the range [f0, l0) and j is an element of the range [f1, l1).
+
   **Lemma 8.7.1** r’ is a weak ordering.
-	We will first show that if r is a weak ordering and [f0, l0) and [f1, l1) are disjoint, then r’ is also a weak ordering.
+  
+  **Proof.** We will first show that if r is a weak ordering and [f0, l0) and [f1, l1) are disjoint, then r’ is also a weak ordering.
   Let i, j, be iterators.  If i and j are both from [f0, l0) or both from [f1, l1), then weak-trichotomy of r implies weak-trichotomy of r’ for i and j.  If i is from [f0, l0) and j is from [f1, l1), weak-trichotomy of r implies that either r(i, j), in which case r’(i, j), r’(j, i), in which case r’(j, i), or i and j are equivalent under i, in which case r’(i, j).  By the assumption that [f0, l0) and [f1, l1) are disjoint, r’(j, i) does not hold, so weak-trichotomy holds.  The situation is analogous if i is from [f1, l1) and j is from [f0, l0).
   Next, let i, j, k be iterators.  If r’(i, j) then either r(i, j) or i and j are equivalent but i is from [f0, l0) and j is from [f1, l1).  If r’(j, k) then either r(j, k) or j and k are equivalent but j is from [f0, l0) and k is from [f1, l1).  We consider each combination:
   If r(i, j) and r(j, k), then transitivity of r implies r(i, k), and the definition of r’ implies r’(i, k).
   If r(i, j) and j and k are equivalent, then also r(i, k) holds (if i and k are equivalent, transitivity of equivalence would imply that j and i are equivalent, which would contradict weak-trichotomy of r; if r(k, i) then transitivity of r would imply r(k, j), which would again contradict weak-trichotomy of r), and r’(i, k) holds by definition of r’.
   Similarly, if i and j are equivalent and r(j, k), then by an analogous argument to the previous paragraph, r(i, k) holds, so by definition of r’, r’(i, k) holds.
   Finally, by the assumption that [f0, l0) and [f1, l1) are disjoint, if r’(i, j) and r’(j, k), it cannot be the case that i is equivalent to j under r and j is equivalent to k under r, because otherwise, j would be in both [f1, l1) and [f0, l0).
+  
   **Lemma 8.7.2** Using r’ in place of r in combine_linked_nonempty produces the same result.
+
   **Proof.** combine_linked_nonempty only ever passes the arguments f1, f0 (in that order) to r.  By Lemma 8.5.1, f1 is an element of the original range [f1, l1) and f0 is an element of the original range [f0, l0).  If r(f1, f0) returns true, then r’(f1, f0) would also return true.  If r(f1, f0) returns false, then by weak-trichotomy either r(f0, f1) holds, in which case r’(f0, f1) holds and r’(f1, f0) would return false (by the weak-trichotomy proved in Lemma 8.7.1), or r(f0, f1) does not hold, in which case f0 and f1 are equivalent under r, r’(f0, f1) holds, and r’(f1, f0) would return false.  Thus we have proved that r(f1, f0) returns true if and only if r’(f1, f0) returns true.
 
 Finally, if i0 is an element of [f0, l0), i1 is an element of [f1, l1), and i1 precedes i0 in the output of merge_linked_nonempty, then by Lemma 8.7.2, i1 would also precede i0 in the output of merge_linked_nonempty called with r’ in place of r.  But this would contradict Lemma 8.6, because r’(i0, i1), so the output of merge_linked_nonempty would not be an increasing range.  We conclude that i0 precedes i1 in the output of merge_linked_nonempty.
@@ -765,9 +797,13 @@ Finally, if i0 is an element of [f0, l0), i1 is an element of [f1, l1), and i1 p
 **Lemma 8.8** sort_linked_nonempty_n is a link rearrangement.
 
 **Proof.** We begin with the following lemma:
+
   **Lemma 8.8.1** Provided that set_link does not change any iterator values, merge_linked_nonempty is a link rearrangement.
+
   **Proof.** The fact that the input ranges are disjoint is a precondition of the procedure.  Since there is only one output range, the output ranges are trivially disjoint.  Let t.m2 = successor^j(t.m0); by the precondition that the input ranges are nonempty, we have j > 0.  Thus find_last(t.m1, t.m2) returns the element whose successor is t.m2, i.e. successor^{j-1}(t.m0), and then establishes successor(successor^{j-1}(t.m0)) = l1.  But then [t.m0, l1) consists of the elements t.m0, successor(t.m0), …, successor{j-1}(t.m0), and these are precisely the same elements as [t.m0, t.m2).  Together with Lemma 8.5, this implies that the set of iterators in the input and output ranges are the same.  We assumed that set_link does not change any iterator values; finally, Lemma 8.5 shows that combine_linked_nonempty does not change any iterators’ values either, so the last condition holds.
+
   **Lemma 8.8.2** The limit of the range returned by sort_linked_nonempty_n is precisely the limit of the input range, i.e. successor^n(f).
+
   **Proof.** We proceed by induction on n.  If n == 1, then the returned limit is successor(f), and there is nothing to prove.  Otherwise, by our inductive hypothesis, the limit of the range returned by the first recursive call is successor^h(f).  sort_linked_nonempty_n only rearranges links in its input range, and since none of successor^h(f), …, successor^n(f) were in the input range to the first recursive call, these elements are precisely the range [[successor^h(f), n - h)).  Applying our inductive hypothesis again, the limit of the range returned by the second recursive call is successor^{n-h}(successor^(f)), i.e. successor^n(f).  Finally, since successor^n(f) is the fourth argument to the call to merge_linked_nonempty, and the last step of merge_linked_nonempty is to set its limit to the value of its fourth argument, we conclude that the limit returned by sort_linked_nonempty_n is successor^n(f).
 
 We will now proceed with Lemma 8.8.  Since there is only one input range and one output range, disjointness of input and output ranges is trivial.  For the remaining conditions, we will proceed by induction on n.  If n == 1, then the output is the same as the input, so there is nothing to prove.  Suppose n > 1, and the claim is true for m < n.  Then the claim is true for both h and n - h (when n > 1, we have half_nonnegative(n) >= 1).  Thus both recursive calls to sort_linked_nonempty_n are link rearrangements.  Furthermore, by Lemma 8.8.1, the call to merge_linked_nonempty is also a link rearrangement.
@@ -787,7 +823,9 @@ Finally, since neither of the two recursive calls nor the call to merge_linked_n
 **Lemma 8.10** sort_linked_nonempty_n is stable with respect to the supplied weak ordering r.
 
 **Proof.** We will begin with the following:
+
   **Lemma 8.10.1** merge_linked_nonempty is precedence-preserving.
+
   **Proof.** The proof of Lemma 8.8.1 shows that after the statement set_link(find_last(t.m1, t.m2), l1), [t.m0, l1) is identical to the range returned by combine_linked_nonempty.  Thus the fact that merge_linked_nonempty is precedence-preserving follows immediately from the fact that combine_linked_nonempty is precedence-preserving, and we established the latter in Lemma 8.5.
 
 For Lemma 8.10, we will proceed by induction on n.  If n == 1 then there are no precedence relations in the input and output ranges, and thus nothing to prove.  Suppose n > 1 and the claim holds for all m < n.  Suppose i and j have equivalent values under r, and that i precedes j in the input range.  If i and j are both in [[f, h|) or both in [[p.m1, n - h|)  then the claim follows from the inductive hypothesis, which implies that i precedes j in the output range of the recursive call to sort_linked_nonempty_n, and from Lemma 8.10.1, which implies that i precedes j in the output range of merge_linked_nonempty, which is the same as the output range of the entire procedure.  If i appears in [[f, h|) and j appears in [[p.m1, n - h|) (the other way around is impossible since every element in the former range precedes every element in the latter range), then since sort_linked_nonempty_n is a link rearrangement, i appears in [p0.m0, p0.m1), j appears in [p1.m0, p1.m1), and Lemma 8.7 implies that i precedes j in the output of merge_linked_nonempty, i.e. the output of the entire procedure.
@@ -796,6 +834,7 @@ For Lemma 8.10, we will proceed by induction on n.  If n == 1 then there are no 
     (a) The next 3n calls to tree_rotate will not modify the tree rooted at p
     (b) After 3n calls, we will have prev = c, curr = p
     (c) At no point before 3n calls will we have curr equal to any descendants of p
+
 **Proof.** We proceed by induction.
 
 If n = 1, then the claim follows immediately from the definition of tree_rotate.
@@ -859,24 +898,36 @@ If i != c, then let n = weight(c) and n_i = weight(i).  Lemma 8.C implies that c
 **Lemma 9.1** If the sizes of the input ranges are n_0 and n_1, my_merge_copy and my_merge_copy_backward perform n_0 + n_1 assignments and, in the worst case, n_0 + n_1 - 1 comparisons.
 
 **Proof.**
+
   **Lemma 9.1.1** If l_i - f_i == n when my_copy is about to enter an iteration of the while loop, then my_copy performs n more assignments before returning.
+
   **Proof.** We proceed by induction.  If n == 0, then f_i == l_i, so my_copy returns immediately.  If n > 0 then f_i != l_i, so my_copy calls my_copy_step, performs one assignment, and sets f_i to successor(f_i).  At this point, my_copy is about to enter another iteration of the while loop, but the new value of f_i satisfies l_i - f_i == n - 1; thus the claim holds by our inductive hypothesis.
+
   **Lemma 9.1.2** If l_i - f_i == n for a given call to my_copy, then my_copy performs n assignments before returning.
+
   **Proof.** This follows from Lemma 9.1.1 and the fact that my_copy starts with the while loop.
+
   **Lemma 9.1.3** If l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1 when my_combine_copy is about to enter an iteration of the while loop, then my_combine_copy performs n0 + n1 assignments before returning.
+
   **Proof.** We proceed by induction on n0 + n1.
   If n0 + n1 == 0, then n0 == n1 == 0 and f_i0 != l_i0 and f_i1 != l_i1 both fail, so the body of the while loop does not executed.  Lemma 9.1.2 implies that both calls to my_copy perform no assignments,  so in the case n0 + n1 == 0, my_combine_copy returns without performing any assignments.
   Suppose n0 + n1 > 0 and n0 == 0.  Then f_i0 != l_i0 fails, so the body of the while loop does not get executed.  Lemma 9.1.2 implies that the first call to my_copy, with [f_i0, l_i0) as the input range, performs no assignments, and the second call to my_copy, with [f_i1, l_i1) as the input range, performs n1 assignments, so our claim holds in this case.
   Similarly, if n0 + n1 > 0 and n1 == 0, then my_combine_copy returns after performing n0 assignments, as claimed.
   Finally, suppose n0 + n1 > 0, n0 > 0, and n1 > 0 all hold.  Whether or not r(f_i1, f_i0) holds, my_combine_copy calls my_copy_step, which performs one assignment and sets either f_i0 or f_i1 to its successor.  At this point, my_combine_copy is about to enter another iteration of the while loop, with the quantity n0 + n1 decreased by one (as compared to the previious iteration); thus by our inductive hypothesis, my_combine_copy performs a total of 1 + (n0 + n1 - 1) = n0 + n1 assignments.
+
   **Lemma 9.1.4** If [f_i0, l_i0) and [f_i1, l_i1) are the input ranges to my_combine_copy, where l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1, then my_combine_copy performs n0 + n1 assignments before returning.
+
   **Proof.** This follows from Lemma 9.1.3 and the fact that my_combine_copy starts with the while loop.
+
   **Lemma 9.1.5** If l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1 when my_combine_copy is about to enter an iteration of the while loop, then my_combine_copy performs at most n0 + n1 - 1 comparisons before returning.
+
   **Proof.** We will proceed by induction on n0 + n1.
   If n0 + n1 == 0, then the body the while loop does not get executed, and since my_copy does not perform any comparisons, my_combine_copy returns without performing any comparisons.
   If n0 + n1 > 0 and n0 == 0, then again the body of the while loop does not get executed, so my_combine_copy returns without performing any comparisons, i.e. the claim holds in this case (note that n0 + n1 > 0 implies n0 + n1 - 1 >= 0).  Similarly, the claim also holds in the case where n0 + n1 > 0 and n1 == 0.
   Now suppose n0 + n1 > 0, n0 > 0, and n1 > 0.  Then my_combine_copy will perform one comparison and then call my_copy_step, which performs no comparisons but sets either f_l0 or f_l1 to its successor.  At this point, my_combine_copy is about to enter another iteration of the while loop, with the quantity n0 + n1 decreased by one since the previous iteration; thus by our inductive hypothesis, my_combine_copy performs at most 1 + (n0 + n1 - 1) - 1 = n0 + n1 - 1 comparisons.
+
   **Lemma 9.1.6** If [f_i0, l_i0) and [f_i1, l_i1) are the input ranges to my_combine_copy, where l_i0 - f_i0 == n0 and l_i1 - f_i1 == n1, then my_combine_copy performs at most n0 + n1 - 1 comparisons before returning.
+
   **Proof.** This follows from Lemma 9.1.5 and the fact that my_combine_copy starts with the while loop.
 
 Finally, to prove Lemma 9.1, note that the only step in my_merge_copy is to call my_combine_copy with the same input and output ranges; thus Lemma 9.1.4 and Lemma 9.1.6 imply Lemma 9.1 for my_merge_copy.  The case of my_merge_copy_backward is handled analogously.
@@ -975,15 +1026,25 @@ Taking q = p^-1 completes the proof.
 **Lemma 10.5** Every finite group is [isomorphic to] a subgroup of the permutation group of its elements, where every permutation in the subgroup is generated by multiplying all the elements by an individual element.
 
 **Proof.** Let G be a finite group, let x be an arbitrary element of G, and let e be the identity element of G.
+
   **Lemma 10.5.1** The transformation p_x that maps g to x * g is a permutation of G.
+
   **Proof.** Let h be an arbitrary element of G.  Then since x has an inverse and  * is associative, p_x(x^-1 * h) = x * (x^-1 * h) = (x * x^-1) * h = e * h = h.
+
   **Lemma 10.5.2** If x != x', then the transformations p_x and p_x' are distinct permutations of G.
+
   **Proof.** p_x maps e to x, but p_x' maps e to x'.
+
   **Lemma 10.5.3** The map f that sends x to p_x is a group homomorphism (multiplication in the domain becomes composition in the codomain).
+
   **Proof.** Let z = x * y.  Then p_z is the transformation that maps g to x * y * g.  But we also have p_x o p_y(g) = p_x(p_y(g)) = p_x(y * g) = x * y * g; thus f(x * y) = f(x) o f(y).
+
   **Lemma 10.5.4** The image of G under f is a subgroup of the set of permutations of G.
+
   **Proof.** The image of any group homomorphism is a subgroup of the codomain.
+
   **Lemma 10.5.5** f is a group isomorphism from G to f(G).
+
   **Proof.** Lemma 10.5.3 shows that f is a group homomorphism.  Clearly, f is onto.  Lemma 10.5.2 shows that f is also one-to-one, so f is a bijective group homomorphism, i.e. a group isomorphism.
 
 Lemma 10.5.4 and Lemma 10.5.5 together show that G is isomorphic to a subgroup of the permutation group of G.
@@ -1001,7 +1062,9 @@ Suppose x is in the circular orbits of both y and z.  Then there exists m0, n0 s
 **Lemma 10.8** Disjoint cyclic permutations commute (i.e. cyclic permutations whose cycles are disjoint).
 
 **Proof.** Let p, q be cyclic permutations on S, and let C, D be their nontrivial cycles.
+
   **Lemma 10.8.1** For any x in S \ C, p(x) = x.
+
   **Proof.** Suppose not; then the orbit of x would be a nontrivial cycle of p distinct from C, which contradicts that p is a cyclic permutation.
 If x is neither in C nor D, then p o q(x) = q o p(x) = x.  If x is in C, then neither x nor p(x) are in D, so q(x) = x and q(p(x)) = p(x).  Thus p o q(x) = p(x) and q o p(x) = p(x).  Finally, if x is in D, then neither x nor q(x) are in C, so p(x) = x and p(q(x)) = q(x).  Thus q o p(x) = q(x) and p o q(x) = q(x).
 
@@ -1019,9 +1082,13 @@ Let C_1, ..., C_k be the nontrivial cycles of p; we will show that p_C_1 o ... o
 **Lemma 10.10** The inverse of a permutation is the product of the inverses of all of its cycles.
 
 **Proof.**
+
   **Lemma 10.10.1** p and p^-1 have the same cycles.
+
   **Proof.** Suppose x is in some cycle C of p, and let y be in the orbit of x under p.  Since the orbit of x is circular, we can find some m such that p^m(y) = x.  Thus (p^-1)^m(x) = y, so y is also in the orbit of x under p^-1.  Conversely, suppose y in some cycle C of p^-1, and let x be in the orbit of y under p^-1.  Since the orbit of y is circular, we can find some n such that (p^-1)^n(x) = y.  Thus p^n(y) = x, so x is also in the orbit of y under p.
+
   **Corollary 10.10.2** The inverse of a cyclic permutation is cyclic.
+
   **Proof.** This follows directly from Lemma 10.10.1.
 
 Let p be an arbitrary permutation, and let C_1, ..., C_k be its nontrivial cycles.  Then by Lemma 10.9, p o (p_C_1^-1 o ... o p_C_k^-1) = (p_C_1 o ... o p_C_k) o (p_C_1^-1 o ... o p_C_k^-1).    Using the the commutativity guaranteed by Lemma 10.8, this expression becomes (p_C_1 o p_C_1^-1) o ... o (p_C_k o p_C_k^-1), which is the identity permutation.  The same result holds if we multiply p by the product of the inverses of its cycles on the left, instead of on the right, so we conclude the inverse of p is equal to the product of the inverses of its cycles.
@@ -1089,6 +1156,7 @@ Conversely, suppose p'^n(index_S(x)) = index_S(y).  Then p'^{n-1}(p'(index_S(x))
 **Lemma 10.D** p and p' have the same cycles; in particular:
 (1) x = p^k(x) if and only if index_S(x) = p'^k(index_S(x))
 (2) p(x), ..., p^k(x) are all distinct if and only if p'(index_S(x)), ..., p'^k(index_S(x)) are all distinct
+
 **Proof.** (1) is a restatement of Lemma 10.C.  (2) follows from Lemma 10.C and the existence of inverse permutations (i.e. p^i(x) = p^j(x) and i < j implies x = p^{j-i}(x)).
 
 **Lemma 10.14** The to-permutation and from-permutation for a rearrangement are inverses of each other.
@@ -1098,9 +1166,13 @@ Conversely, suppose p'^n(index_S(x)) = index_S(y).  Then p'^{n-1}(p'(index_S(x))
 **Lemma 10.15** Given a from-permutation, it is possible to perform a mutative rearrangement using n + c_N - c_T assignments, where n is the number of elements, c_N the number of nontrivial cycles, and c_T the number of trivial cycles.
 
 **Proof.** We begin with the following observations:
+
   **Lemma 10.15.1** my_cycle_from performs no assignments if i is in a trivial cycle, and n + 1 assignments for a nontrivial cycle of size n.
+
   **Proof.** In the case of a trivial cycle, f(i) == i, so the procedure returns immediately.  Otherwise, the procedure performs one assignment (to initialize tmp), one assignment for each case k == f(i), k == f^2(i), ..., k == f^{n-1}(i).  Finally, the procedure performs one final assignment after the while loop for the case k == f^n(i), i.e. k == i, for a total of n + 1 assignments.
+
   **Lemma 10.15.2** cycle_representative returns true for exactly one element of any cycle.
+
   **Proof.** Suppose cycle_representative returns true for both i and j.  Then we would have both r(i, j) and r(j, i), so by the precondition that r is a total ordering, i and j must be the same element.
 
 By Lemma 10.6, each element belongs to a unique cycle; thus the sum of the number of elements of each cycle of the permutation is the total size of the set being permuted.  By Lemma 10.15.1 and 10.15.2, my_rearrange_from performs (|C| + 1) assignments for each nontrivial cycle.  We split the sum over two parts (a sum over |C| and sum over 1).  For the first part, since the sum of the sizes of all the trivial cycles is simply the number of trivial cycles and the sum over all cycles is n (the total size of the set being permuted), the sum of the sizes of all the nontrivial cycles is n - c_T.  Finally, summing 1 over c_N different indices simply produces c_N, for a total of n + c_N - c_T assignments.
@@ -1118,10 +1190,13 @@ Next, suppose n is odd.  Suppose i < (n - 1) / 2; then p(i) = (n - 1) - i > (n -
 **Proof.** Suppose a permutation has k nontrivial cycles.  Each nontrivial cycle has at least 2 distinct elements, and by Lemma 10.6, each element belongs to at most one nontrivial cycle; thus among the k nontrivial cycles, there are 2k distinct elements.  If k > floor(n / 2) then we would have k >= (n + 1) / 2, but then there would be n + 1 distinct elements among the k nontrivial cycles, which is impossible.
 
 **Lemma 10.19** The reverse permutation on [0, n) is the only permutation satisfying i < j => p(j) < p(i)
+
 **Proof.** We will first show that the reverse permutation indeed satisfies this condition.  Suppose i < j; then -j < -i, so n - 1 - j < n - 1 - i.
 
 Next, we will show that this condition uniquely determines the permutation.  Since 0 < 1 < ... < n - 1, repeated application of the condition gives p(n - 1) < p(n - 2) < ... < p(1) < p(0).
+
   **Lemma 10.19.1** If a_0 < ... < a_{n-1} are elements of [0, n), then a_i = i.
+
   **Proof.** We proceed by induction.  If n = 1, then the claim is trivial.  Suppose n > 1 and the claim holds for n - 1.  If a_{n-1} < n - 1, then we would either have a_i = a_j for some i != j, or a_i = n - 1 and a_{n-1} < a_i for some i < n - 1; both of these cases violate the condition a_0 < ... < a_{n-1}, so we must have a_{n-1} = n - 1; thus a_0 < ... < a_{n-2} are elements of [0, n - 1) and the claim follows by the inductive hypothesis.
 
 By Lemma 10.19.1, it follows that p(n - 1) = 0, p(n - 2) = 1, and so on, i.e. p(i) = n - 1 - i.
@@ -1184,9 +1259,13 @@ We will show that this is equivalent to a k-rotation.  Given an element x in [f,
 (2) i < j < n - k v n - k <= i < j => p(i) < p(j)
 
 **Proof.** We will show that conditions (1) and (2) uniquely determine a permutation, and that the permutation is precisely a k-rotation.
+
   **Lemma 10.23.1** Suppose 0 <= m < k.  Then p(n - k + m) = m.
+
   **Proof.** We proceed by induction.  First consider the case m = 0.  If p(n - k) > 0, then condition (2) implies that p(i) = 0 is only possible when i < n - k.  But this would violate condition (1), so we conclude that p(n - k) = 0.  Now suppose m > 0.  If p(n - k + m) > m, then condition (2) implies that p(i) = m is only possible when i < n - k + m.  Since p(i) != m for i = n - k, n - k + 1, ..., n - k + (m - 1), we must have i < n - k.  But this would violate condition (1), so we conclude that p(n - k + m) = m.
+
   **Lemma 10.23.2** Suppose 0 <= m < n - k.  Then p(m) = m + k.
+
   **Proof.** By Lemma 10.23.1, p(0) cannot be 0, 1, ..., k - 1.  Suppose p(0) > k.  Then we would have p(i) < p(0) for some i in 1, 2, ..., n - k - 1, which contradicts (2).  Thus p(0) = k.  Next, by Lemma 10.23.1 and the inductive hypothesis, p(m) cannot be 0, 1, ..., m + k - 1.  Suppose p(m) > m + k.  Then we would have p(i) < p(m) for some m in m + 1, ..., n - k - 1, which contradicts (2).  Thus p(m) = m + k.
 
 Together, Lemma 10.23.1 and 10.23.2 imply that p must be a k-rotation.
@@ -1206,7 +1285,9 @@ Thus the first iteration will result in updated values of f, m, l that produce t
 **Lemma 10.26** The postcondition for rotate_partial_nontrivial is that it performs a partial rotation such that the objects in positions [m', l) are k-rotated where k = -(l - f) mod (m - f).
 
 **Proof.** Consider the sequence of swaps made by the call to my_swap_ranges(m, l, f).
+
   **Lemma 10.26.1** After n calls to my_swap_step, the elements [f1, f0) are a -n-rotation of the original elements at [f, m).
+
   **Proof.** Since we call my_swap_ranges with f1 = f, f0 = l, the claim holds for n = 0 (the elements [f, m) are not rotated, i.e. they are a -0-rotation).  Suppose n > 0 and the claim holds for n - 1.  Then after n - 1 calls to my_swap_step, the elements at [f1, f0) are a -(n - 1) rotation.  The n-th call exchanges the elements at f1 and f0 and then advances both f1 and f0.  But this has the effect of moving the first element of the old range [f1, f0) to the last position of the new range [f1, f0) and shifting the remaining elements forward by one position; this is precisely a -1-rotation of [f1, f0), which, together with the -(n - 1)-rotation from the previous n - 1 calls to my_swap_step, constitutes a -n-rotation of the original elements at [f, m).
 
 By Lemma 10.26.1, after the call to swap_ranges, the elements at [f + (l - m), l) = [m', l) are a -(l - m)-rotation of the original (m - f) elements at [f, m).  Lemma 10.26 follows from the fact that -(l - f) = -((l - m) + (m - f)) = -(l - m) mod (m - f).
